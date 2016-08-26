@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/index.js | tap-spec"
   },
   "author": "Tim Ermilov <yamalight@gmail.com> (http://codezen.net)",
   "license": "ISC",
@@ -19,14 +19,20 @@
     "babel-cli": "^6.14.0",
     "babel-core": "^6.14.0",
     "babel-preset-es2015-node": "^6.1.1",
-    "babel-preset-stage-0": "^6.5.0"
+    "babel-preset-stage-0": "^6.5.0",
+    "supertest": "^2.0.0",
+    "tap-spec": "^4.1.1",
+    "tape": "^4.6.0"
   },
   "dependencies": {
     "bluebird": "^3.4.3",
     "body-parser": "^1.15.2",
     "dockerode": "^2.3.0",
     "express": "^4.14.0",
+    "jsonwebtoken": "^7.1.9",
+    "moment": "^2.14.1",
     "morgan": "^1.7.0",
+    "nedb": "^1.8.0",
     "winston": "^2.2.0"
   }
 }
