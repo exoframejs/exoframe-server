@@ -5,15 +5,9 @@ import morgan from 'morgan';
 
 // our packages
 import logger from './logger';
-import {generateServerCerts} from './docker';
 
 // express routes
 import auth from './auth';
-
-// generate server certificates
-if (process.env.NODE_ENV !== 'testing') {
-  generateServerCerts();
-}
 
 // init server
 const app = express();

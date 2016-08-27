@@ -7,7 +7,6 @@ import {auth as authConf} from '../../config';
 import logger from '../logger';
 import {asyncRequest} from '../util';
 import basicAuth from './basicAuth';
-import {generateClientCert} from '../docker';
 
 export default (app) => {
   // TODO: allow extension
@@ -42,8 +41,6 @@ export default (app) => {
     const token = jwt.sign(user, authConf.jwtSecret, {expiresIn: `${expireDays}d`});
     // expiration date
     logger.debug('expires:', expires);
-    // generate client certificates
-    generateClientCert(user.username);
     // send token
     res.status(200).json({token, user});
   }));
