@@ -33,6 +33,7 @@
     "moment": "^2.14.1",
     "morgan": "^1.7.0",
     "nedb": "^1.8.0",
+    "openssl-wrapper": "^0.3.4",
     "winston": "^2.2.0"
   }
 }
