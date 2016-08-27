@@ -23,8 +23,7 @@ const defaultConfig = {
 let userConfig = defaultConfig;
 
 // reload function
-const reloadUserConfig = (event, changePath) => {
-  logger.debug(event, changePath);
+const reloadUserConfig = () => {
   // mon
   try {
     userConfig = yaml.safeLoad(fs.readFileSync(configPath, 'utf8'));
@@ -44,9 +43,6 @@ if (process.env.NODE_ENV !== 'testing') {
 
   // monitor config for changes if not running in test mode
   chokidar.watch(configPath).on('all', reloadUserConfig);
-
-  // trigger initial reload
-  reloadUserConfig();
 }
 
 // function to get latest config read config file

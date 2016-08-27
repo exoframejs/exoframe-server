@@ -1,10 +1,12 @@
 // npm packages
+import fs from 'fs';
 import {execSync} from 'child_process';
 
 // our packages
 import logger from '../../logger';
 import {cert as certConfig} from '../../../config';
 import {
+  baseFolder,
   caKeyPath,
   caPath,
   serverKeyPath,
@@ -14,6 +16,25 @@ import {
 } from './paths';
 
 export const generateServerCerts = () => {
+  // check if certs already generated
+  try {
+    fs.statSync(caPath);
+    fs.statSync(serverCertPath);
+    fs.statSync(serverKeyPath);
+    // if yes - just return
+    logger.debug('certs already exist!');
+    return;
+  } catch (e) {
+    logger.debug('one or more cert files missing, generating new ones..');
+  }
+
+  // create folder if needed
+  try {
+    fs.mkdirSync(baseFolder);
+  } catch (e) {
+    logger.debug('could not create folder:', e);
+  }
+
   // First generate CA private and public keys:
   logger.debug('Generate CA private key');
   execSync(`openssl genrsa \

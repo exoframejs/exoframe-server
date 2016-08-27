@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import logger from '../logger';
 import {getConfig} from '../config';
 
@@ -14,10 +15,7 @@ export default {
       logger.error('Incorrect username or password:', username);
       return {error: 'Incorrect username or password!'};
     }
-
-    // delete password field
-    delete user.password;
-
-    return {user};
+    // return user without password
+    return {user: _.omit(user, 'password')};
   },
 };
