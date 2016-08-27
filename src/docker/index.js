@@ -1,1 +1,1 @@
-import './certs';
+export {generateServerCerts, generateClientCert} from './certs';
