@@ -10,7 +10,7 @@ import logger from '../logger';
 
 // construct paths
 const baseFolder = path.join(os.homedir(), '.exoframe');
-const configPath = path.join(baseFolder, 'config.yml');
+const configPath = path.join(baseFolder, 'server.config.yml');
 
 const defaultConfig = {
   users: [{
