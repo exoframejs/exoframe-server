@@ -7,8 +7,8 @@ import logger from '../logger';
  * @param  {Object} res         express response object
  * @return {void}
  */
-export const asyncRequest = (asyncFn) => (req, res) =>
-  asyncFn(req, res)
+export const asyncRequest = (asyncFn) => (req, res, next) =>
+  asyncFn(req, res, next)
   .catch(e => {
     logger.error('Error during async request:', e);
     res.status(500).json({error: e.message});
