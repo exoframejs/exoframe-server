@@ -12,10 +12,19 @@ import logger from '../logger';
 const baseFolder = path.join(os.homedir(), '.exoframe');
 const configPath = path.join(baseFolder, 'server.config.yml');
 
+// create base folder if doesn't exist
+try {
+  fs.statSync(baseFolder);
+} catch (e) {
+  fs.mkdirSync(baseFolder);
+}
+
+// default config
 const defaultConfig = {
   users: [{
     username: 'admin',
     password: 'admin',
+    admin: true,
   }],
 };
 
