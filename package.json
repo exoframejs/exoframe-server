@@ -33,6 +33,7 @@
     "moment": "^2.14.1",
     "morgan": "^1.7.0",
     "nedb-promise": "^2.0.0",
+    "node-uuid": "^1.4.7",
     "winston": "^2.2.0"
   }
 }
