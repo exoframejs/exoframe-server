@@ -8,6 +8,7 @@ import logger from './logger';
 
 // express routes
 import auth from './auth';
+import docker from './docker';
 
 // init server
 const app = express();
@@ -19,6 +20,7 @@ app.use(bodyParser.urlencoded({extended: true})); // for parsing application/x-w
 
 // setup routes
 auth(app);
+docker(app);
 
 // error handling inside of express
 app.use((err, req, res, next) => { // eslint-disable-line
