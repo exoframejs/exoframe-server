@@ -45,6 +45,12 @@ export default (app) => {
         cfg.Env = svc.env;
       }
 
+      if (svc.labels) {
+        svc.labels.forEach(l => {
+          cfg.Labels[l.key] = l.value;
+        });
+      }
+
       if (svc.ports) {
         const PortBindings = {};
         // convert to port config
