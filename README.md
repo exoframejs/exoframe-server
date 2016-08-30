@@ -20,8 +20,8 @@ All of this happens completely automatically. So after running the command, the 
 ```
 docker run -d \
   -p 3000:3000 \
-  -v /var/run/docker.sock:/tmp/docker.sock:ro \
-  -v /root/.exoframe/server.config.yml:/my/path/to/server.config.yml \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
+  -v /path/to/exoframe-folder:/root/.exoframe \
   exoframe-server
 ```
 
