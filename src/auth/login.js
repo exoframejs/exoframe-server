@@ -25,7 +25,8 @@ export default (app) => {
     // if not found - use auth strategies
     if (!user) {
       const config = getConfig();
-      const authStrategies = [basicAuth].concat(config.plugins.auth
+      const authPlugins = config.plugins ? config.plugins.auth || [] : [];
+      const authStrategies = [basicAuth].concat(authPlugins
         .map(plugin => {
           const name = _.isObject(plugin) ? Object.keys(plugin)[0] : plugin;
           return require(name); // eslint-disable-line
