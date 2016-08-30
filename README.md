@@ -22,7 +22,7 @@ docker run -d \
   -p 3000:3000 \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   -v /path/to/exoframe-folder:/root/.exoframe \
-  exoframe-server
+  exoframe/server
 ```
 
 Then grab [Exoframe CLI](https://github.com/exoframejs/exoframe), point it to your new Exoframe server and use it.
