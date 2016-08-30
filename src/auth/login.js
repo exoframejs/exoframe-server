@@ -28,7 +28,7 @@ export default (app) => {
       const authStrategies = [basicAuth].concat(config.plugins.auth
         .map(plugin => {
           const name = _.isObject(plugin) ? Object.keys(plugin)[0] : plugin;
-          return require(name);
+          return require(name); // eslint-disable-line
         })
       );
 
