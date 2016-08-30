@@ -36,16 +36,19 @@ export default (app) => {
           break;
         }
       }
-    }
-    // if ended with error - throw
-    if (error) {
-      res.status(401).json({error});
-      return;
+
+      // if ended with error - throw
+      if (error) {
+        res.status(401).json({error});
+        return;
+      }
+
+      // save user to local db
+      await users.insert(user);
     }
 
+    // log user
     logger.info('got user: ', user);
-    // save user to local db
-    await users.insert(user);
 
     // generate JWT
     const userWithoutPass = _.omit(user, ['password']);
