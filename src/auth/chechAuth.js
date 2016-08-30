@@ -9,7 +9,15 @@ import {asyncRequest} from '../util';
 
 export const checkAuth = asyncRequest(async (req, res, next) => {
   const token = req.headers['x-access-token'];
-  const decoded = jwt.verify(token, authConf.jwtSecret);
+  let decoded;
+  try {
+    decoded = jwt.verify(token, authConf.jwtSecret);
+  } catch (e) {
+    if (e.name === 'TokenExpiredError') {
+      return res.status(403).send({error: 'Token expired! Please re-login.'});
+    }
+    throw e;
+  }
   logger.debug('decoded: ', decoded);
   const {username} = decoded;
   logger.debug('searching for: ', username);
