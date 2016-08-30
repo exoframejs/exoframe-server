@@ -1,9 +1,11 @@
 import build from './build';
-import list from './list';
+import images from './images';
+import services from './services';
 import deploy from './deploy';
 
 export default (app) => {
   build(app);
-  list(app);
+  images(app);
+  services(app);
   deploy(app);
 };
