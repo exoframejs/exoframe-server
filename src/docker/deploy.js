@@ -45,6 +45,20 @@ export default (app) => {
         cfg.Env = svc.env;
       }
 
+      if (svc.ports) {
+        const PortBindings = {};
+        // convert to port config
+        svc.ports.forEach(p => {
+          const pair = p.toString().split(':');
+          const internal = pair[0];
+          const external = pair[1] || pair[0];
+          PortBindings[internal] = [{HostPort: external}];
+        });
+        // assign
+        cfg.HostConfig = {PortBindings};
+      }
+
+      logger.debug('Starting service with config:', cfg);
       return docker.createContainerAsync(cfg);
     }));
     // start containers
