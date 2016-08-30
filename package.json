@@ -1,14 +1,24 @@
 {
   "name": "exoframe-server",
   "version": "0.1.0",
-  "description": "",
+  "description": "Exoframe server",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "node test/index.js | tap-spec"
+    "start": "node index.js"
   },
+  "keywords": [
+    "docker",
+    "cli",
+    "exoframe",
+    "build",
+    "deploy"
+  ],
   "author": "Tim Ermilov <yamalight@gmail.com> (http://codezen.net)",
-  "license": "ISC",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:exoframejs/exoframe-server.git"
+  },
   "babel": {
     "presets": [
       "es2015-node",
