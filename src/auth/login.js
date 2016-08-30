@@ -5,15 +5,13 @@ import moment from 'moment';
 
 // our packages
 import {users} from '../db';
+import {getConfig} from '../config';
 import {auth as authConf} from '../../config';
 import logger from '../logger';
 import {asyncRequest} from '../util';
 import basicAuth from './basicAuth';
 
 export default (app) => {
-  // TODO: allow extension
-  const authStrategies = [basicAuth];
-
   app.post('/api/login', asyncRequest(async(req, res) => {
     const {username, remember, password} = req.body;
     logger.info('authenticating for: ', {username});
@@ -26,9 +24,17 @@ export default (app) => {
 
     // if not found - use auth strategies
     if (!user) {
+      const config = getConfig();
+      const authStrategies = [basicAuth].concat(config.plugins.auth
+        .map(plugin => {
+          const name = _.isObject(plugin) ? Object.keys(plugin)[0] : plugin;
+          return require(name);
+        })
+      );
+
       for (let i = 0; i < authStrategies.length; i++) {
         const ex = authStrategies[i];
-        const authRes = await ex.authenticate({username, password});
+        const authRes = await ex.authenticate({username, password, config, logger});
         user = authRes.user;
         error = authRes.error;
         if (user) {
@@ -40,6 +46,12 @@ export default (app) => {
       // if ended with error - throw
       if (error) {
         res.status(401).json({error});
+        return;
+      }
+
+      // if ended without user - throw
+      if (!user) {
+        res.status(403).json({error: 'Incorrect username or password!'});
         return;
       }
 

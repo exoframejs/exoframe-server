@@ -7,6 +7,7 @@ import chokidar from 'chokidar';
 
 // our packages
 import logger from '../logger';
+import installPlugins from './plugin';
 
 // construct paths
 const baseFolder = path.join(os.homedir(), '.exoframe');
@@ -36,6 +37,7 @@ const reloadUserConfig = () => {
   // mon
   try {
     userConfig = yaml.safeLoad(fs.readFileSync(configPath, 'utf8'));
+    installPlugins(userConfig);
     logger.debug('loaded new config:', userConfig);
   } catch (e) {
     logger.error('error parsing user config:', e);
