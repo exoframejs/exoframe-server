@@ -65,6 +65,17 @@ export default (app) => {
         cfg.HostConfig = {PortBindings};
       }
 
+      if (svc.restart && svc.restart.name) {
+        if (!cfg.HostConfig) {
+          cfg.HostConfig = {};
+        }
+
+        cfg.HostConfig.RestartPolicy = {Name: svc.restart.name};
+        if (svc.restart.retries) {
+          cfg.HostConfig.RestartPolicy.MaximumRetryCount = svc.restart.retries;
+        }
+      }
+
       logger.debug('Starting service with config:', cfg);
       return docker.createContainerAsync(cfg);
     }));
