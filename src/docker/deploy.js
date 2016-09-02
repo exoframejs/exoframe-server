@@ -76,6 +76,20 @@ export default (app) => {
         }
       }
 
+      if (svc.volumes) {
+        cfg.Volumes = {};
+        svc.volumes.forEach(v => {
+          const [host] = v.split(':');
+          cfg.Volumes[host] = {};
+        });
+
+        if (!cfg.HostConfig) {
+          cfg.HostConfig = {};
+        }
+
+        cfg.HostConfig.Binds = svc.volumes;
+      }
+
       logger.debug('Starting service with config:', cfg);
       return docker.createContainerAsync(cfg);
     }));
