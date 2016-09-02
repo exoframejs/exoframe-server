@@ -1,4 +1,5 @@
 // npm packages
+import _ from 'lodash';
 import uuid from 'node-uuid';
 
 // our packages
@@ -35,7 +36,7 @@ export default (app) => {
     const containers = await Promise.all(services.map(svc => {
       const cfg = {
         Image: `${svc.image.RepoTags[0]}`,
-        name: `exo-${svc.name}-${deployLabel}`,
+        name: `exo-${_.kebabCase(svc.name)}-${deployLabel}`,
         Labels: {
           'exoframe.deployment': `ex-pipeline-${deployLabel}`,
         },
