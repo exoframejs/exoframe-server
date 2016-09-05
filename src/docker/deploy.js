@@ -54,14 +54,17 @@ export default (app) => {
 
       if (svc.ports) {
         const PortBindings = {};
+        const ExposedPorts = {};
         // convert to port config
         svc.ports.forEach(p => {
           const pair = p.toString().split(':');
           const internal = pair[0];
           const external = pair[1] || pair[0];
+          ExposedPorts[internal] = {};
           PortBindings[internal] = [{HostPort: external}];
         });
         // assign
+        cfg.ExposedPorts = ExposedPorts;
         cfg.HostConfig = {PortBindings};
       }
 
