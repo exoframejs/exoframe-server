@@ -111,6 +111,14 @@ export default (app) => {
         cfg.HostConfig.Binds = svc.volumes;
       }
 
+      if (svc.links && svc.links.length) {
+        if (!cfg.HostConfig) {
+          cfg.HostConfig = {};
+        }
+
+        cfg.HostConfig.Links = svc.links;
+      }
+
       logger.debug('Starting service with config:', cfg);
       return docker.createContainerAsync(cfg);
     }));
