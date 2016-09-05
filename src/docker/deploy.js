@@ -19,18 +19,29 @@ export default (app) => {
 
     // get existing user images
     const allImages = await docker.listImagesAsync();
-    const images = allImages.filter(img => img.Labels && img.Labels['exoframe.user'] === req.userInfo.username);
-    logger.debug('Got user images:', images);
+    const images = allImages.filter(img =>
+      (img.RepoDigests && img.RepoDigests.length > 0) ||
+      (img.Labels && img.Labels['exoframe.user'] === req.userInfo.username)
+    );
+    logger.debug('Got user and public images:', images);
 
     // get required services
     const services = reqServices.map(service => {
-      const image = images.find(svc => svc.RepoTags[0].indexOf(service.name) !== -1);
+      const parts = service.name.split(':');
+      const name = parts.length === 1 ? `${service.name}:latest` : service.name;
+      const image = images.find(svc => svc.RepoTags[0].includes(name));
       return {
         ...service,
         image,
       };
-    });
+    })
+    .filter(service => service.image !== undefined);
     logger.debug('Got services:', services);
+
+    if (services.length === 0) {
+      res.status(400).send('Could not find specified images!');
+      return;
+    }
 
     // create containers
     const containers = await Promise.all(services.map(svc => {
@@ -41,6 +52,13 @@ export default (app) => {
           'exoframe.deployment': `ex-pipeline-${deployLabel}`,
         },
       };
+
+      if (!svc.image.Labels['exoframe.user']) {
+        cfg.Labels['exoframe.user'] = req.userInfo.username;
+      }
+      if (!svc.image.Labels['exoframe.type']) {
+        cfg.Labels['exoframe.type'] = 'registry image';
+      }
 
       if (svc.env) {
         cfg.Env = svc.env;
