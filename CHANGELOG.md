@@ -1,4 +1,10 @@
 
+0.5.0 / 2016-09-08
+==================
+
+  * Filter out non-named images for deploy
+  * Add way to link containers during deployment
+
 0.4.0 / 2016-09-05
 ==================
 

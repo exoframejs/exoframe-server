@@ -12,6 +12,8 @@ To run it you need two parts - [Exoframe CLI](https://github.com/exoframejs/exof
 It will detect your project type, pick fitting Dockerfile, ignore files that are not needed (e.g. logs, local build artifacts, etc), tag your image, add labels that reflect your ownership and much more.  
 All of this happens completely automatically. So after running the command, the only thing you need to do is wait a few seconds until your files have been built or deployed!
 
+[Read more about Exoframe in main repo](https://github.com/exoframejs/exoframe).
+
 ## Installation and Usage
 
 1. Make sure you have docker running on your host.
