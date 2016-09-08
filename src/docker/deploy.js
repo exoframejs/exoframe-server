@@ -22,7 +22,7 @@ export default (app) => {
     const images = allImages.filter(img =>
       (img.RepoDigests && img.RepoDigests.length > 0) ||
       (img.Labels && img.Labels['exoframe.user'] === req.userInfo.username)
-    );
+    ).filter(img => img.RepoTags);
     logger.debug('Got user and public images:', images);
 
     // get required services
