@@ -7,6 +7,7 @@ import start from './start';
 import remove from './remove';
 import pull from './pull';
 import logs from './logs';
+import inspect from './inspect';
 
 export default (app) => {
   build(app);
@@ -18,4 +19,5 @@ export default (app) => {
   remove(app);
   pull(app);
   logs(app);
+  inspect(app);
 };
