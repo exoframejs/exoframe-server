@@ -5,6 +5,7 @@ import deploy from './deploy';
 import stop from './stop';
 import remove from './remove';
 import pull from './pull';
+import logs from './logs';
 
 export default (app) => {
   build(app);
@@ -14,4 +15,5 @@ export default (app) => {
   stop(app);
   remove(app);
   pull(app);
+  logs(app);
 };
