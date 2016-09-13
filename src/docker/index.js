@@ -3,6 +3,7 @@ import images from './images';
 import services from './services';
 import deploy from './deploy';
 import stop from './stop';
+import start from './start';
 import remove from './remove';
 import pull from './pull';
 import logs from './logs';
@@ -13,6 +14,7 @@ export default (app) => {
   services(app);
   deploy(app);
   stop(app);
+  start(app);
   remove(app);
   pull(app);
   logs(app);
