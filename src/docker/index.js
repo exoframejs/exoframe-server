@@ -9,6 +9,7 @@ import pull from './pull';
 import logs from './logs';
 import inspect from './inspect';
 import removeImage from './remove-image';
+import clean from './clean';
 
 export default (app) => {
   build(app);
@@ -22,4 +23,5 @@ export default (app) => {
   logs(app);
   inspect(app);
   removeImage(app);
+  clean(app);
 };
