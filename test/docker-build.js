@@ -6,6 +6,7 @@ import request from 'supertest';
 
 // our packages
 import app from '../src/app';
+import docker from '../src/docker/docker';
 
 test('Should build docker project', (t) => {
   const stream = tar.pack(path.join(__dirname, 'fixtures', 'docker-project'));
@@ -19,8 +20,18 @@ test('Should build docker project', (t) => {
   // wait for upload stream to end
   s.on('end', () => {
     // this is required for supertest to end correctly
-    req.end((err) => {
+    req.end(async (err) => {
       t.error(err, 'No error');
+
+      // get all docker images and make sure new one was correctly built
+      const allImages = await docker.listImagesAsync();
+      const image = allImages.find(img =>
+        img.Labels['exoframe.user'] === app.get('user').username &&
+        img.Labels['test.label'] === '1' &&
+        img.RepoTags[0] === 'exoframe-test:latest'
+      );
+      t.ok(image);
+
       t.end();
     });
   });
