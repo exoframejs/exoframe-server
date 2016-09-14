@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon index.js",
-    "build": "babel src -d dist"
+    "build": "babel src -d dist",
+    "cover": "NODE_ENV=testing babel-node ./node_modules/istanbul/lib/cli cover ./node_modules/tape/bin/tape ./test",
+    "test": "NODE_ENV=testing node test/index.js | tap-spec"
   },
   "keywords": [
     "docker",
@@ -31,7 +33,12 @@
     "babel-core": "^6.14.0",
     "babel-preset-es2015-node": "^6.1.1",
     "babel-preset-stage-0": "^6.5.0",
-    "nodemon": "^1.10.2"
+    "istanbul": "^1.1.0-alpha.1",
+    "nodemon": "^1.10.2",
+    "supertest": "^2.0.0",
+    "tap-spec": "^4.1.1",
+    "tape": "^4.6.0",
+    "tar-fs": "^1.13.2"
   },
   "dependencies": {
     "bluebird": "^3.4.3",

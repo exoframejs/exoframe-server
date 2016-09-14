@@ -10,7 +10,13 @@ import logger from '../logger';
 import installPlugins from './plugin';
 
 // construct paths
-const baseFolder = path.join(os.homedir(), '.exoframe');
+const baseFolder = do {
+  if (process.env.NODE_ENV === 'testing') {
+    path.join(__dirname, '..', '..', 'test', 'fixtures');
+  } else {
+    path.join(os.homedir(), '.exoframe');
+  }
+};
 const configPath = path.join(baseFolder, 'server.config.yml');
 
 // create base folder if doesn't exist
@@ -33,11 +39,11 @@ const defaultConfig = {
 let userConfig = defaultConfig;
 
 // reload function
-const reloadUserConfig = () => {
+const reloadUserConfig = async () => {
   // mon
   try {
     userConfig = yaml.safeLoad(fs.readFileSync(configPath, 'utf8'));
-    installPlugins(userConfig);
+    await installPlugins(userConfig);
     logger.debug('loaded new config:', userConfig);
   } catch (e) {
     logger.error('error parsing user config:', e);
@@ -58,3 +64,4 @@ if (process.env.NODE_ENV !== 'testing') {
 
 // function to get latest config read config file
 export const getConfig = () => userConfig;
+export const waitForConfig = reloadUserConfig;

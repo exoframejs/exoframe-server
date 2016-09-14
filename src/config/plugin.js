@@ -1,7 +1,5 @@
 // npm packages
 import _ from 'lodash';
-// import {stat} from 'fs';
-// import {join} from 'path';
 import {exec} from 'child_process';
 import Bluebird from 'bluebird';
 
@@ -10,12 +8,8 @@ import logger from '../logger';
 
 // promisify
 const execPromise = Bluebird.promisify(exec);
-// const statPromise = Bluebird.promisify(stat);
-
-const installNodeModule = ({module}) =>
-  // statPromise(join(__dirname, '..', '..', 'node_modules', name))
-  // .catch(() =>
-  execPromise(`npm install ${module}`); // );
+// install function
+const installNodeModule = ({module}) => execPromise(`npm install ${module}`);
 
 export default async (config) => {
   if (!config.plugins) {
