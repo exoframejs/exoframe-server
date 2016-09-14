@@ -14,5 +14,8 @@ Bluebird.promisifyAll(network.constructor.prototype);
 // promisify container
 const container = docker.getContainer('promisify-container');
 Bluebird.promisifyAll(container.constructor.prototype);
+// promisify image
+const image = docker.getImage('promisify-image');
+Bluebird.promisifyAll(image.constructor.prototype);
 
 export default docker;
