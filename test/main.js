@@ -7,4 +7,5 @@ waitForConfig()
   require('./error');
   require('./docker-build');
   require('./docker-images');
+  require('./docker-deploy');
 });
