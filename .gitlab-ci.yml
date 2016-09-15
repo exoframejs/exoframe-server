@@ -21,11 +21,10 @@ build:
     - docker push $SERVER_TEST_IMAGE
 
 test:
+  image: node:latest
   stage: test
   script:
-    - docker pull $SERVER_TEST_IMAGE
-    - docker run -d --privileged --name docker-server docker:dind
-    - docker run --link docker-server:docker $SERVER_TEST_IMAGE npm test
+    - npm test
 
 release:
   stage: release
