@@ -16,7 +16,7 @@ test('Should pull given image', (t) => {
 
       // make sure that busybox was really pulled
       const log = res.text;
-      t.ok(log.includes('Image is up to date for busybox:latest'), 'Image pulled');
+      t.ok(log.includes('busybox:latest'), 'Image pulled');
 
       t.end();
     });

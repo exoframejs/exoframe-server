@@ -6,9 +6,3 @@ node_js:
 
 services:
   - docker
-
-before_install:
-- npm install
-
-script:
-- npm test
