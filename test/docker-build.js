@@ -32,6 +32,9 @@ test('Should build docker project', (t) => {
       );
       t.ok(image, 'Image exists');
 
+      // save image for later use
+      app.set('image', image);
+
       t.end();
     });
   });
