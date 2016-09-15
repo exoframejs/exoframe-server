@@ -16,7 +16,7 @@ test('Should start user service', (t) => {
     .end(async (err) => {
       t.error(err, 'No error');
 
-      // make sure the container was really stopped
+      // make sure the container was really started
       // get all containers
       const allContainers = await docker.listContainersAsync({all: true});
       const container = allContainers.find(c => c.Id === svc.Id);

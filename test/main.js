@@ -11,4 +11,5 @@ waitForConfig()
   require('./docker-services');
   require('./docker-stop');
   require('./docker-start');
+  require('./docker-inspect');
 });
