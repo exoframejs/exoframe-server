@@ -52,7 +52,8 @@ plugins: # list of plugins, currently only auth plugins are supported
 
 1. Fork this repository to your own GitHub account and then clone it to your local device.
 2. Install dependencies: `npm install`
-3. Start the server: `npm start`
+3. Execute tests to make sure everything's working: `npm test`
+4. Start the server: `npm start`
 
 Now can point your Exoframe CLI to `http://localhost:3000` and use it.
 
