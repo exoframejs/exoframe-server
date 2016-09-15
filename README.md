@@ -2,6 +2,8 @@
 
 > Power armor for docker containers
 
+[![build status](https://gitlab.com/exoframejs/exoframe-server/badges/master/build.svg)](https://gitlab.com/exoframejs/exoframe-server/commits/master)
+
 [![asciicast](https://asciinema.org/a/85060.png)](https://asciinema.org/a/85060)
 
 ## How it works
