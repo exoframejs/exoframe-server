@@ -6,3 +6,6 @@ node_js:
 
 services:
   - docker
+
+after_success:
+  - 'cat ./coverage/lcov.info | ./node_modules/.bin/coveralls'

@@ -3,6 +3,7 @@
 > Power armor for docker containers
 
 [![Build Status](https://travis-ci.org/exoframejs/exoframe-server.svg?branch=master)](https://travis-ci.org/exoframejs/exoframe-server)
+[![Coverage Status](https://coveralls.io/repos/github/exoframejs/exoframe-server/badge.svg?branch=master)](https://coveralls.io/github/exoframejs/exoframe-server?branch=master)
 
 [![asciicast](https://asciinema.org/a/85060.png)](https://asciinema.org/a/85060)
 

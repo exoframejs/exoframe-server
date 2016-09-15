@@ -33,6 +33,7 @@
     "babel-core": "^6.14.0",
     "babel-preset-es2015-node": "^6.1.1",
     "babel-preset-stage-0": "^6.5.0",
+    "coveralls": "^2.11.12",
     "istanbul": "^1.1.0-alpha.1",
     "nodemon": "^1.10.2",
     "supertest": "^2.0.0",
