@@ -11,11 +11,10 @@ variables:
   SERVER_TEST_IMAGE: exoframe/server:$CI_BUILD_REF_NAME
   SERVER_RELEASE_IMAGE: exoframe/server:latest
 
-before_script:
-  - docker login -u yamalight -p $CI_DOCKERHUB_PASSWORD
-
 build:
   stage: build
+  before_script:
+    - docker login -u yamalight -p $CI_DOCKERHUB_PASSWORD
   script:
     - docker build --pull -t $SERVER_TEST_IMAGE .
     - docker push $SERVER_TEST_IMAGE
@@ -24,10 +23,13 @@ test:
   image: node:latest
   stage: test
   script:
+    - npm install
     - npm test
 
 release:
   stage: release
+  before_script:
+    - docker login -u yamalight -p $CI_DOCKERHUB_PASSWORD
   script:
     - docker pull $SERVER_TEST_IMAGE
     - docker tag $SERVER_TEST_IMAGE $SERVER_RELEASE_IMAGE
