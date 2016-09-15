@@ -10,7 +10,11 @@ test('Should remove user service', async (t) => {
   const svc = app.get('service');
 
   // stop service
-  await docker.getContainer(svc.Id).stopAsync();
+  try {
+    await docker.getContainer(svc.Id).stopAsync();
+  } catch (e) {
+    // ignore errors
+  }
 
   // send remove request
   request(app)
