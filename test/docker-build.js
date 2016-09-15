@@ -8,7 +8,38 @@ import request from 'supertest';
 import app from '../src/app';
 import docker from '../src/docker/docker';
 
-test('Should build docker project', (t) => {
+test('Should build docker project without labels', (t) => {
+  const stream = tar.pack(path.join(__dirname, 'fixtures', 'docker-project'));
+
+  const req = request(app)
+    .post('/api/build')
+    .query({tag: 'exoframe-test'})
+    .set('x-access-token', app.get('token'))
+    .expect(200);
+  const s = stream.pipe(req);
+  // wait for upload stream to end
+  s.on('end', () => {
+    // this is required for supertest to end correctly
+    req.end(async (err) => {
+      t.error(err, 'No error');
+
+      // get all docker images and make sure new one was correctly built
+      const allImages = await docker.listImagesAsync();
+      const image = allImages.find(img =>
+        img.Labels['exoframe.user'] === app.get('user').username &&
+        img.RepoTags[0] === 'exoframe-test:latest'
+      );
+      t.ok(image, 'Image exists');
+
+      // save image for later use
+      app.set('image-other', image);
+
+      t.end();
+    });
+  });
+});
+
+test('Should build second docker project with labels', (t) => {
   const stream = tar.pack(path.join(__dirname, 'fixtures', 'docker-project'));
 
   const req = request(app)

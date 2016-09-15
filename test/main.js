@@ -15,4 +15,5 @@ waitForConfig()
   require('./docker-logs');
   require('./docker-remove');
   require('./docker-remove-image');
+  require('./docker-clean');
 });

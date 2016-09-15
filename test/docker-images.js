@@ -15,12 +15,11 @@ test('Should get user images', (t) => {
 
       // make sure newly built image is included in the list
       const images = res.body;
-      t.equal(images.length, 1, 'One image');
-      const img = images[0];
+      t.equal(images.length, 2, 'Two images');
+      const img = images.find(image => image.RepoTags[0] === 'exoframe-test:latest');
       t.ok(img, 'Image exists');
       t.ok(img.Labels['exoframe.user'] === app.get('user').username, 'Correct image owner');
       t.ok(img.Labels['test.label'] === '1', 'Correct test label');
-      t.ok(img.RepoTags[0] === 'exoframe-test:latest', 'Correct tag');
 
       t.end();
     });
