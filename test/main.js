@@ -8,4 +8,5 @@ waitForConfig()
   require('./docker-build');
   require('./docker-images');
   require('./docker-deploy');
+  require('./docker-services');
 });
