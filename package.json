@@ -7,6 +7,7 @@
     "start": "nodemon index.js",
     "build": "babel src -d dist",
     "cover": "NODE_ENV=testing babel-node ./node_modules/istanbul/lib/cli cover ./node_modules/tape/bin/tape ./test",
+    "coveralls": "npm run cover && cat ./coverage/lcov.info | coveralls",
     "test": "NODE_ENV=testing node test/index.js | tap-spec"
   },
   "keywords": [
