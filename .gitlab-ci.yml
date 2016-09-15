@@ -24,7 +24,8 @@ test:
   stage: test
   script:
     - docker pull $SERVER_TEST_IMAGE
-    - docker run $SERVER_TEST_IMAGE npm test
+    - docker run -d --privileged --name docker-server docker:dind
+    - docker run --link docker-server:docker $SERVER_TEST_IMAGE npm test
 
 release:
   stage: release
