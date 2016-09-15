@@ -30,7 +30,7 @@ test('Should build docker project', (t) => {
         img.Labels['test.label'] === '1' &&
         img.RepoTags[0] === 'exoframe-test:latest'
       );
-      t.ok(image);
+      t.ok(image, 'Image exists');
 
       t.end();
     });

@@ -9,6 +9,9 @@ import {asyncRequest} from '../util';
 
 export const checkAuth = asyncRequest(async (req, res, next) => {
   const token = req.headers['x-access-token'];
+  if (!token || !token.length) {
+    return res.status(403).json({error: 'No auth token given! Please login first.'});
+  }
   let decoded;
   try {
     decoded = jwt.verify(token, authConf.jwtSecret);
