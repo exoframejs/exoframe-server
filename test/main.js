@@ -5,6 +5,7 @@ waitForConfig()
 .then(() => {
   require('./login');
   require('./error');
+  require('./docker-pull');
   require('./docker-build');
   require('./docker-images');
   require('./docker-deploy');
