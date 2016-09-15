@@ -20,6 +20,10 @@ test('Should get all user services', (t) => {
       t.ok(svc, 'Service exists');
       t.equal(svc.Image, 'exoframe-test:latest', 'Correct image');
       t.equal(svc.Labels['exoframe.user'], 'admin', 'Correct user');
+      t.equal(svc.State, 'running', 'Container running');
+
+      // save service data for later use
+      app.set('service', svc);
 
       t.end();
     });

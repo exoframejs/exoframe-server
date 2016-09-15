@@ -9,4 +9,5 @@ waitForConfig()
   require('./docker-images');
   require('./docker-deploy');
   require('./docker-services');
+  require('./docker-stop');
 });
