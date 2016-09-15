@@ -36,3 +36,14 @@ test('Should build docker project', (t) => {
     });
   });
 });
+
+test('Should not build docker project without tag', (t) => {
+  request(app)
+    .post('/api/build')
+    .set('x-access-token', app.get('token'))
+    .expect(400)
+    .end((err) => {
+      t.error(err, 'No error');
+      t.end();
+    });
+});
