@@ -1,4 +1,22 @@
 
+0.6.0 / 2016-09-16
+==================
+
+Additions:
+  * Add clean method that removes all untagged docker images
+  * Add method to remove images
+  * Add method to inspect containers
+  * Add method to start containers
+  * Add method to get container logs
+  * Add unit tests and test coverage
+
+Changes:
+  * Enforce current user info during build
+  * Better build test completion validation
+
+Fixes:
+  * Do not build without tag, correctly catch issues with parsing of labels during build
+
 0.5.0 / 2016-09-08
 ==================
 
