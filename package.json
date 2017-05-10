@@ -1,0 +1,21 @@
+{
+  "name": "exoframe-server",
+  "version": "1.0.0",
+  "description": "Exoframe server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": "git@github.com:exoframejs/exoframe-server.git",
+  "author": "Tim Ermilov <yamalight@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^1.7.0",
+    "hapi": "^16.1.1",
+    "hapi-auth-jwt": "^4.0.0",
+    "js-yaml": "^3.8.4",
+    "jsonwebtoken": "^7.4.0",
+    "lodash": "^4.17.4",
+    "winston": "^2.3.1"
+  }
+}
