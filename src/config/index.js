@@ -21,6 +21,7 @@ try {
 
 // default config
 const defaultConfig = {
+  acmeEmail: 'admin@domain.com',
   users: [
     {
       username: 'admin',
