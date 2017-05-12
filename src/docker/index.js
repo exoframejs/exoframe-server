@@ -5,7 +5,7 @@ const logger = require('../logger');
 const generateDockerfile = require('./dockerfile');
 const build = require('./build');
 const start = require('./start');
-const {unpack} = require('./util');
+const {cleanTemp, unpack} = require('./util');
 
 module.exports = server => {
   server.route({
@@ -22,6 +22,9 @@ module.exports = server => {
       // get username
       const {username} = request.auth.credentials;
 
+      // clean temp folder
+      await cleanTemp();
+
       // unpack to temp folder
       await unpack(request.payload.path);
 
@@ -34,7 +37,7 @@ module.exports = server => {
 
       // start image
       const container = await start(Object.assign(buildRes, {username}));
-      logger.debug(container);
+      logger.debug(container.Name);
 
       reply({status: 'success', name: container.Name.substring(1)});
     },
