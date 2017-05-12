@@ -48,27 +48,36 @@ module.exports = async () => {
     mkdirp.sync(acmePath);
   }
 
+  // debug flags
+  const debug = ['--debug', '--logLevel=DEBUG'];
+
+  // letsencrypt flags
+  const letsencrypt = [
+    '--acme',
+    `--acme.email=${config.letsencryptEmail}`,
+    '--acme.storage=/var/acme/acme.json',
+    '--acme.entrypoint=https',
+    '--acme.ondemand=true',
+    '--acme.onhostrule=true',
+    '--accesslogsfile=/var/acme/access.log',
+    '--entryPoints=Name:https Address::443 TLS',
+    '--entryPoints=Name:http Address::80',
+  ];
+
+  // construct command
+  const Cmd = [
+    'traefik',
+    '-c /dev/null',
+    '--docker',
+    ...(config.letsencrypt ? letsencrypt : []),
+    ...(config.debug ? debug : []),
+  ];
+
   // start traefik
   const container = await docker.createContainer({
     Image: 'traefik:latest',
     name: traefikName,
-    Cmd: [
-      'traefik',
-      '-c /dev/null',
-      '--debug',
-      '--web',
-      '--docker',
-      '--acme',
-      `--acme.email=${config.acmeEmail}`,
-      '--acme.storage=/var/acme/acme.json',
-      '--acme.entrypoint=https',
-      '--acme.ondemand=true',
-      '--acme.onhostrule=true',
-      '--accesslogsfile=/var/acme/access.log',
-      '--entryPoints=Name:https Address::443 TLS',
-      '--entryPoints=Name:http Address::80',
-      '--logLevel=DEBUG',
-    ],
+    Cmd,
     Labels: {
       'exoframe.deployment': 'ex-traefik',
       'exoframe.user': 'admin',

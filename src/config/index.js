@@ -21,7 +21,9 @@ try {
 
 // default config
 const defaultConfig = {
-  acmeEmail: 'admin@domain.com',
+  debug: false,
+  letsencrypt: false,
+  letsencryptEmail: 'admin@domain.com',
   users: [
     {
       username: 'admin',
