@@ -34,6 +34,11 @@ module.exports = () => {
 
   logger.debug('Using dockerfile:', dockerfile);
 
+  if (!dockerfile) {
+    logger.error('No suitable dockerfile found');
+    throw new Error('No suitable dockerfile found');
+  }
+
   // add dockerfile
   const dfPath = path.join(tempDockerDir, 'Dockerfile');
   fs.writeFileSync(dfPath, dockerfile, 'utf-8');

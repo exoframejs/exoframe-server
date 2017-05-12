@@ -24,17 +24,10 @@ exports.unpack = tarPath =>
   });
 
 exports.getProjectConfig = () => {
-  let config;
-
-  // try to get project exoframe config
-  try {
-    const projectConfigString = fs.readFileSync(
-      path.join(tempDir, 'exoframe.json')
-    );
-    config = JSON.parse(projectConfigString);
-  } catch (e) {
-    logger.debug('No config given');
-  }
+  const projectConfigString = fs.readFileSync(
+    path.join(tempDir, 'exoframe.json')
+  );
+  const config = JSON.parse(projectConfigString);
 
   return config;
 };
