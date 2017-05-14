@@ -17,7 +17,7 @@ module.exports = server => {
 
       const allContainers = await docker.listContainers();
       const userContainers = allContainers
-        .filter(c => c.Labels['exoframe.user'] === username)
+        .filter(c => c.Labels['exoframe.user'] === username) // get only user containers
         .filter(c => !c.Names.find(n => n === '/exoframe-traefik')); // filter out traefik
 
       reply(userContainers);
