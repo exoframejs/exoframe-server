@@ -2,6 +2,7 @@
 
 // our modules
 const logger = require('../logger');
+const {hasCompose, updateCompose, executeCompose} = require('./dockercompose');
 const generateDockerfile = require('./dockerfile');
 const build = require('./build');
 const start = require('./start');
@@ -27,6 +28,23 @@ module.exports = server => {
 
       // unpack to temp folder
       await unpack(request.payload.path);
+
+      // check if it's a docker-compose project
+      if (hasCompose()) {
+        // if it does - run compose workflow
+        logger.debug('Docker-compose file found, executing compose workflow..');
+
+        // update compose file with project params
+        const composeConfig = updateCompose({username});
+        logger.debug('Compose modified:', composeConfig);
+
+        // execute compose
+        const {log} = await executeCompose();
+        logger.debug('Compose executed:', log);
+
+        reply({status: 'success', name: 'ok'});
+        return;
+      }
 
       // generate dockerfile
       generateDockerfile();

@@ -39,6 +39,14 @@ module.exports = async ({image, username}) => {
     },
   });
 
+  // connect container to exoframe network
+  const nets = await docker.listNetworks();
+  const exoNetInfo = nets.find(n => n.Name === 'exoframe');
+  const exoNet = docker.getNetwork(exoNetInfo.Id);
+  await exoNet.connect({
+    Container: container.id,
+  });
+
   // start container
   await container.start();
 

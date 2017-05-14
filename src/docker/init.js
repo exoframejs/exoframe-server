@@ -38,6 +38,19 @@ module.exports = async () => {
     await traefikContainer.remove();
   }
 
+  // create exoframe network if needed
+  const nets = await docker.listNetworks();
+  let exoNet = nets.find(n => n.Name === 'exoframe');
+  if (!exoNet) {
+    logger.info('Exoframe network does not exists, creating...');
+    exoNet = await docker.createNetwork({
+      Name: 'exoframe',
+      Driver: 'bridge',
+    });
+  } else {
+    exoNet = docker.getNetwork(exoNet.Id);
+  }
+
   // get config
   const config = getConfig();
   // build acme path
@@ -96,6 +109,11 @@ module.exports = async () => {
       },
     },
   });
+  // connect traefik to exoframe net
+  await exoNet.connect({
+    Container: container.id,
+  });
+  // start container
   await container.start();
   logger.info('Traefik instance started..');
 };
