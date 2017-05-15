@@ -23,11 +23,8 @@ module.exports = () => {
   const filesList = fs.readdirSync(tempDockerDir);
 
   // if it's a node.js project
-  if (
-    filesList.includes('package.json') &&
-    filesList.includes('node_modules')
-  ) {
-    dockerfile = nodeDockerfile;
+  if (filesList.includes('package.json')) {
+    dockerfile = nodeDockerfile({hasYarn: filesList.includes('yarn.lock')});
   } else if (filesList.includes('index.html')) {
     dockerfile = nginxDockerfile;
   }

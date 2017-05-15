@@ -1,0 +1,4 @@
+{
+  "name": "test-node-deploy",
+  "restart": "no"
+}
