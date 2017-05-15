@@ -24,7 +24,7 @@ module.exports = async () => {
 
   // setup auth
   const authServer = await setupAuth(server);
-  // setup routes with auth
+  // setup docker routes with auth
   setupDocker(authServer);
 
   // start server

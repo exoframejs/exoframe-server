@@ -6,7 +6,6 @@ const uuid = require('uuid');
 const {exec} = require('child_process');
 
 // our packages
-const logger = require('../../logger');
 const {tempDockerDir, getProjectConfig} = require('../util');
 
 // compose file path

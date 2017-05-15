@@ -1,14 +1,14 @@
 // npm modules
+const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const tar = require('tar-fs');
 const rimraf = require('rimraf');
 
-// our modules
-const logger = require('../logger');
-
 // dir for temporary files used to build docker images
-const tempDir = path.join(__dirname, '..', '..', 'temp', 'deploying');
+// construct paths
+const baseFolder = path.join(os.homedir(), '.exoframe');
+const tempDir = path.join(baseFolder, 'deploying');
 exports.tempDockerDir = tempDir;
 
 // cleanup temp folder
