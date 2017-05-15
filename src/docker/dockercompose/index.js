@@ -1,4 +1,5 @@
 // npm packages
+const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
@@ -26,7 +27,7 @@ exports.updateCompose = ({username}) => {
   const config = getProjectConfig();
 
   // generate name
-  const baseName = config.name.split(':').shift();
+  const baseName = `exo-${_.kebabCase(username)}-${_.kebabCase(config.name.split(':').shift())}`;
   const uid = uuid.v1();
 
   // read compose file

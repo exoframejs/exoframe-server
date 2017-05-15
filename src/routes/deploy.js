@@ -42,7 +42,10 @@ module.exports = server => {
         const {log} = await executeCompose();
         logger.debug('Compose executed:', log);
 
-        reply({status: 'success', name: 'ok'});
+        // get container names
+        const names = Object.keys(composeConfig.services).map(svc => composeConfig.services[svc].container_name);
+        // return them
+        reply({status: 'success', names});
         return;
       }
 
@@ -60,7 +63,7 @@ module.exports = server => {
       // clean temp folder
       await cleanTemp();
 
-      reply({status: 'success', name: container.Name.substring(1)});
+      reply({status: 'success', names: [container.Name.substring(1)]});
     },
   });
 };

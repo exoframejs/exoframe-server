@@ -1,0 +1,4 @@
+{
+  "name": "test-compose-deploy",
+  "restart": "no"
+}

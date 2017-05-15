@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "NODE_ENV=testing tap --reporter=spec test/index.js",
-    "cover": "NODE_ENV=testing tap --cov --coverage-report=lcov ./test",
-    "cover-lcov": "NODE_ENV=testing tap --cov --coverage-report=text-lcov ./test",
+    "test": "NODE_ENV=testing tap --reporter=spec ./test/index.js",
+    "cover": "NODE_ENV=testing tap --cov --coverage-report=lcov ./test/index.js",
+    "cover-lcov": "NODE_ENV=testing tap --cov --coverage-report=text-lcov ./test/index.js",
     "coveralls": "NODE_ENV=testing npm run cover-lcov | coveralls"
   },
   "repository": "git@github.com:exoframejs/exoframe-server.git",
