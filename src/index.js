@@ -9,7 +9,7 @@ const initDocker = require('./docker/init');
 
 // paths
 const setupAuth = require('./auth');
-const setupDocker = require('./docker');
+const setupRoutes = require('./routes');
 
 // create server
 const server = new Hapi.Server();
@@ -24,8 +24,8 @@ module.exports = async () => {
 
   // setup auth
   const authServer = await setupAuth(server);
-  // setup docker routes with auth
-  setupDocker(authServer);
+  // setup routes with auth
+  setupRoutes(authServer);
 
   // start server
   await server.start();

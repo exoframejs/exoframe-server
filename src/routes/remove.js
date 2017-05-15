@@ -1,8 +1,5 @@
-// npm modules
-
 // our modules
-const logger = require('../logger');
-const docker = require('./docker');
+const docker = require('../docker/docker');
 
 module.exports = server => {
   server.route({

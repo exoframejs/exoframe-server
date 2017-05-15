@@ -3,7 +3,7 @@ const uuid = require('uuid');
 
 // our modules
 const docker = require('./docker');
-const {getProjectConfig} = require('./util');
+const {getProjectConfig} = require('../util');
 
 module.exports = async ({image, username}) => {
   const baseName = image.split(':').shift();

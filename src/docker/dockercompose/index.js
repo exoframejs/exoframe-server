@@ -6,7 +6,7 @@ const uuid = require('uuid');
 const {exec} = require('child_process');
 
 // our packages
-const {tempDockerDir, getProjectConfig} = require('../util');
+const {tempDockerDir, getProjectConfig} = require('../../util');
 
 // compose file path
 const composePath = path.join(tempDockerDir, 'docker-compose.yml');

@@ -2,11 +2,15 @@
 
 // our modules
 const logger = require('../logger');
-const {hasCompose, updateCompose, executeCompose} = require('./dockercompose');
-const generateDockerfile = require('./dockerfile');
-const build = require('./build');
-const start = require('./start');
-const {cleanTemp, unpack} = require('./util');
+const {
+  hasCompose,
+  updateCompose,
+  executeCompose,
+} = require('../docker/dockercompose');
+const generateDockerfile = require('../docker/dockerfile');
+const build = require('../docker/build');
+const start = require('../docker/start');
+const {cleanTemp, unpack} = require('../util');
 
 module.exports = server => {
   server.route({

@@ -4,7 +4,7 @@ const path = require('path');
 
 // our packages
 const logger = require('../../logger');
-const {tempDockerDir} = require('../util');
+const {tempDockerDir} = require('../../util');
 const nodeDockerfile = require('./node-docker');
 const nginxDockerfile = require('./nginx-dockerfile');
 

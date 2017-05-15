@@ -5,7 +5,7 @@ const tar = require('tar-fs');
 // our modules
 const logger = require('../logger');
 const docker = require('./docker');
-const {tempDockerDir, getProjectConfig} = require('./util');
+const {tempDockerDir, getProjectConfig} = require('../util');
 
 module.exports = ({username}) =>
   new Promise(async (resolve, reject) => {
