@@ -52,7 +52,7 @@ module.exports = server =>
           );
 
           if (!user) {
-            reply({error: 'Wrong username or password!'}).code(401);
+            reply({error: 'Incorrect username or password!'}).code(401);
             return;
           }
 

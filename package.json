@@ -4,7 +4,8 @@
   "description": "Exoframe server",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "NODE_ENV=testing tap --reporter=spec test/index.js"
   },
   "repository": "git@github.com:exoframejs/exoframe-server.git",
   "author": "Tim Ermilov <yamalight@gmail.com>",
@@ -22,5 +23,8 @@
     "tar-fs": "^1.15.2",
     "uuid": "^3.0.1",
     "winston": "^2.3.1"
+  },
+  "devDependencies": {
+    "tap": "^10.3.2"
   }
 }

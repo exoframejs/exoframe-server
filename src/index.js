@@ -17,15 +17,25 @@ const server = new Hapi.Server();
 // setup connection
 server.connection({port: 8080, host: '0.0.0.0'});
 
-// export start function
-module.exports = async () => {
-  // init required docker service
-  await initDocker();
-
+const setupServer = async () => {
   // setup auth
   const authServer = await setupAuth(server);
   // setup routes with auth
   setupRoutes(authServer);
+
+  return server;
+};
+
+// export server for testing
+exports.setupServer = setupServer;
+
+// export start function
+exports.start = async () => {
+  // init required docker service
+  await initDocker();
+
+  // setup server
+  await setupServer();
 
   // start server
   await server.start();
