@@ -66,7 +66,7 @@ module.exports = server =>
     });
 
     // return token
-    tap.test(t => {
+    tap.test('Return token', t => {
       resolve(token);
       t.end();
     });

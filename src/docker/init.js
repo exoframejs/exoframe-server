@@ -17,7 +17,7 @@ const traefikName = 'exoframe-traefik';
 module.exports = async () => {
   logger.info('Initializing docker services...');
   // get all containers
-  const allContainers = await docker.listContainers({all: true});
+  const allContainers = await docker.listContainers();
   // try to find traefik instance
   const traefik = allContainers.find(c => c.Image === 'traefik:latest' && c.Names.find(n => n === `/${traefikName}`));
 
@@ -89,7 +89,7 @@ module.exports = async () => {
     name: traefikName,
     Cmd,
     Labels: {
-      'exoframe.deployment': 'ex-traefik',
+      'exoframe.deployment': 'exo-traefik',
       'exoframe.user': 'admin',
     },
     HostConfig: {

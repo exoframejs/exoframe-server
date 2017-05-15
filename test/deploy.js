@@ -139,7 +139,7 @@ module.exports = async (server, token) => {
     });
   });
 
-  tap.test('Should deploy simple compose project', t => {
+  tap.test('Should deploy simple compose project', {timeout: 30000}, t => {
     const options = Object.assign(optionsBase, {
       payload: streamCompose,
     });
