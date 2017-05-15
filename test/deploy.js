@@ -22,7 +22,7 @@ module.exports = async (server, token) => {
     },
   };
 
-  tap.test('Should deploy simple docker project', t => {
+  tap.test('Should deploy simple docker project', {timeout: 30000}, t => {
     const options = Object.assign(optionsBase, {
       payload: streamDocker,
     });
@@ -61,7 +61,7 @@ module.exports = async (server, token) => {
     });
   });
 
-  tap.test('Should deploy simple node project', t => {
+  tap.test('Should deploy simple node project', {timeout: 30000}, t => {
     const options = Object.assign(optionsBase, {
       payload: streamNode,
     });
@@ -100,7 +100,7 @@ module.exports = async (server, token) => {
     });
   });
 
-  tap.test('Should deploy simple HTML project', t => {
+  tap.test('Should deploy simple HTML project', {timeout: 30000}, t => {
     const options = Object.assign(optionsBase, {
       payload: streamHtml,
     });
@@ -130,10 +130,8 @@ module.exports = async (server, token) => {
       t.equal(container.Labels['traefik.frontend.rule'], 'Host:localhost', 'Should have correct frontend label');
       t.ok(container.NetworkSettings.Networks.exoframe, 'Should be in exoframe network');
 
-      // cleanup
-      const instance = docker.getContainer(container.Id);
-      await instance.stop();
-      await instance.remove();
+      // this deployment is not cleaned up
+      // it will be used in following list/remove tests
 
       t.end();
     });
