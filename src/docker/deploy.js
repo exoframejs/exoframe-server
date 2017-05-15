@@ -57,6 +57,9 @@ module.exports = server => {
       const container = await start(Object.assign(buildRes, {username}));
       logger.debug(container.Name);
 
+      // clean temp folder
+      await cleanTemp();
+
       reply({status: 'success', name: container.Name.substring(1)});
     },
   });
