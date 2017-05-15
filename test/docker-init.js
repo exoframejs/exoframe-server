@@ -40,8 +40,8 @@ module.exports = () => {
       t.equal(container.Ports.length, 1, 'Should have one port binding');
       t.equal(container.Ports[0].PrivatePort, 80, 'Should have correct private port binding');
       t.equal(container.Ports[0].PublicPort, 80, 'Should have correct public port binding');
-      t.equal(container.Mounts[0].Destination, '/var/run/docker.sock', 'Should have correct first mount');
-      t.equal(container.Mounts[1].Destination, '/var/acme', 'Should have correct second mount');
+      t.ok(container.Mounts.find(m => m.Destination === '/var/run/docker.sock'), 'Should have correct first mount');
+      t.ok(container.Mounts.find(m => m.Destination === '/var/acme'), 'Should have correct second mount');
 
       // cleanup
       const instance = docker.getContainer(container.Id);

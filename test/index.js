@@ -8,6 +8,7 @@ const {setupServer} = require('../src');
 const login = require('./login');
 const deploy = require('./deploy');
 const list = require('./list');
+const remove = require('./remove');
 const dockerInit = require('./docker-init');
 
 const run = async () => {
@@ -22,7 +23,9 @@ const run = async () => {
   // test deployment
   deploy(server, token);
   // test listing
-  list(server, token);
+  const name = await list(server, token);
+  // test removal
+  remove(server, token, name);
   // test docker init
   dockerInit();
 
