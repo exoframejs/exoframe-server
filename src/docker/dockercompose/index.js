@@ -61,11 +61,7 @@ exports.updateCompose = ({username}) => {
       'exoframe.user': username,
       'traefik.backend': backend,
     };
-    compose.services[svcKey].labels = Object.assign(
-      {},
-      extLabels,
-      compose.services[svcKey].labels
-    );
+    compose.services[svcKey].labels = Object.assign({}, extLabels, compose.services[svcKey].labels);
   });
 
   // write new compose back to file

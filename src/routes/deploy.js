@@ -2,11 +2,7 @@
 
 // our modules
 const logger = require('../logger');
-const {
-  hasCompose,
-  updateCompose,
-  executeCompose,
-} = require('../docker/dockercompose');
+const {hasCompose, updateCompose, executeCompose} = require('../docker/dockercompose');
 const generateDockerfile = require('../docker/dockerfile');
 const build = require('../docker/build');
 const start = require('../docker/start');

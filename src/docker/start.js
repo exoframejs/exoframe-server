@@ -17,9 +17,9 @@ module.exports = async ({image, username}) => {
   const host = config.domain || 'localhost';
 
   // generate env vars
-  const Env = config.env
-    ? Object.keys(config.env).map(key => `${key}=${config.env[key]}`)
-    : [];
+  const Env = config.env ? Object.keys(config.env).map(key => `${key}=${config.env[key]}`) : [];
+
+  const restartPolicy = config.restart || 'always';
 
   // create container
   const container = await docker.createContainer({
@@ -34,7 +34,7 @@ module.exports = async ({image, username}) => {
     },
     HostConfig: {
       RestartPolicy: {
-        Name: 'always',
+        Name: restartPolicy,
       },
     },
   });

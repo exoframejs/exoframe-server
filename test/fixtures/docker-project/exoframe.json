@@ -1,0 +1,4 @@
+{
+  "name": "test-docker-deploy",
+  "restart": "no"
+}

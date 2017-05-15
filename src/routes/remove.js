@@ -15,9 +15,7 @@ module.exports = server => {
 
       const allContainers = await docker.listContainers();
       const containerInfo = allContainers.find(
-        c =>
-          c.Labels['exoframe.user'] === username &&
-          c.Names.find(n => n === `/${id}`)
+        c => c.Labels['exoframe.user'] === username && c.Names.find(n => n === `/${id}`)
       );
 
       const service = docker.getContainer(containerInfo.Id);

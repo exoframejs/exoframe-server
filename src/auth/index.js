@@ -6,9 +6,7 @@ const {auth} = require('../../config');
 const {getConfig} = require('../config');
 
 const validate = (request, decodedToken, callback) => {
-  const credentials = getConfig().users.find(
-    u => u.username === decodedToken.username
-  );
+  const credentials = getConfig().users.find(u => u.username === decodedToken.username);
 
   if (!credentials) {
     return callback(null, false, credentials);
@@ -46,10 +44,7 @@ module.exports = server =>
         handler(request, reply) {
           const users = getConfig().users;
           const reqUser = request.payload;
-          const user = users.find(
-            u =>
-              u.username === reqUser.username && u.password === reqUser.password
-          );
+          const user = users.find(u => u.username === reqUser.username && u.password === reqUser.password);
 
           if (!user) {
             reply({error: 'Incorrect username or password!'}).code(401);

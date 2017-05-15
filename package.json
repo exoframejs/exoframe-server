@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "NODE_ENV=testing tap --reporter=spec test/index.js"
+    "test": "NODE_ENV=testing tap --reporter=spec test/index.js",
+    "cover": "NODE_ENV=testing tap --cov --coverage-report=lcov ./test",
+    "cover-lcov": "NODE_ENV=testing tap --cov --coverage-report=text-lcov ./test",
+    "coveralls": "NODE_ENV=testing npm run cover-lcov | coveralls"
   },
   "repository": "git@github.com:exoframejs/exoframe-server.git",
   "author": "Tim Ermilov <yamalight@gmail.com>",

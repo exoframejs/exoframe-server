@@ -19,10 +19,7 @@ module.exports = async () => {
   // get all containers
   const allContainers = await docker.listContainers({all: true});
   // try to find traefik instance
-  const traefik = allContainers.find(
-    c =>
-      c.Image === 'traefik:latest' && c.Names.find(n => n === `/${traefikName}`)
-  );
+  const traefik = allContainers.find(c => c.Image === 'traefik:latest' && c.Names.find(n => n === `/${traefikName}`));
 
   // if traefik exists and running - just return
   if (traefik && !traefik.Status.includes('Exited')) {
@@ -99,10 +96,7 @@ module.exports = async () => {
       RestartPolicy: {
         Name: 'always',
       },
-      Binds: [
-        '/var/run/docker.sock:/var/run/docker.sock',
-        `${acmePath}:/var/acme`,
-      ],
+      Binds: ['/var/run/docker.sock:/var/run/docker.sock', `${acmePath}:/var/acme`],
       PortBindings: {
         '80/tcp': [{HostPort: '80'}],
         '443/tcp': [{HostPost: '443'}],

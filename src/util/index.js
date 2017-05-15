@@ -24,9 +24,7 @@ exports.unpack = tarPath =>
   });
 
 exports.getProjectConfig = () => {
-  const projectConfigString = fs.readFileSync(
-    path.join(tempDir, 'exoframe.json')
-  );
+  const projectConfigString = fs.readFileSync(path.join(tempDir, 'exoframe.json'));
   const config = JSON.parse(projectConfigString);
 
   return config;

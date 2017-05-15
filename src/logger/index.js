@@ -1,9 +1,7 @@
 const winston = require('winston');
 
 const levelTesting = process.env.NODE_ENV === 'testing' ? 'error' : false;
-const level = levelTesting || process.env.NODE_ENV === 'production'
-  ? 'info'
-  : 'debug';
+const level = levelTesting || process.env.NODE_ENV === 'production' ? 'info' : 'debug';
 
 const logger = new winston.Logger({
   transports: [
