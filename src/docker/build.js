@@ -28,9 +28,13 @@ module.exports = ({username}) =>
       parts.filter(s => s.length > 0).forEach(s => {
         try {
           const data = JSON.parse(s);
-          log.push(data.stream);
+          if (data.stream && data.stream.length) {
+            log.push(data.stream);
+          }
         } catch (e) {
-          log.push(s);
+          if (s && s.length) {
+            log.push(s);
+          }
         }
       });
     });
