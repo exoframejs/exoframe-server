@@ -1,5 +1,5 @@
 module.exports = ({hasYarn}) =>
-  `FROM node:latest
+  `FROM node:alpine
 
 # create folder and set it as workdir
 RUN mkdir -p /usr/src/app
