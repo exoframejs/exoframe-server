@@ -20,7 +20,7 @@ After running exoframe, the only thing you need to do is wait a few seconds unti
 
 ## Installation and Usage
 
-1. Make sure you have docker running on your host.
+1. Make sure you have Docker [installed and running](https://docs.docker.com/engine/installation/) on your host.
 2. Pull and run Exoframe server using docker:
 
 ```
@@ -56,9 +56,9 @@ users: # list of users for basic auth
 ## Contribute
 
 1. Fork this repository to your own GitHub account and then clone it to your local device.
-2. Install dependencies: `npm install`
-3. Execute tests to make sure everything's working: `npm test`
-4. Start the server: `npm start`
+2. Install dependencies: `yarn`
+3. Execute tests to make sure everything's working: `yarn test`
+4. Start the server: `yarn start`
 
 Now can point your Exoframe CLI to `http://localhost:8080` and use it.
 
