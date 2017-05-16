@@ -10,13 +10,13 @@
 
 ## How it works
 
-Exoframe intends to do all the heavy lifting required to build and deploy docker images for you.
+Exoframe intends to do all the heavy lifting required to build and deploy web services for you.  
 To run it you need two parts - [Exoframe CLI](https://github.com/exoframejs/exoframe) and Exoframe server.
 
-It will detect your project type, pick fitting Dockerfile, ignore files that are not needed (e.g. logs, local build artifacts, etc), tag your image, add labels that reflect your ownership and much more.  
-All of this happens completely automatically. So after running the command, the only thing you need to do is wait a few seconds until your files have been built or deployed!
+Exoframe automatically detects your project type, builds and deploys it to the server using [Docker](https://www.docker.com/) and [Traefik](https://github.com/containous/traefik).  
+After running exoframe, the only thing you need to do is wait a few seconds until your files have been built or deployed!
 
-[Read more about Exoframe in main repo](https://github.com/exoframejs/exoframe).
+[Read more about Exoframe and how it works in the main repo](https://github.com/exoframejs/exoframe).
 
 ## Installation and Usage
 
@@ -27,19 +27,26 @@ All of this happens completely automatically. So after running the command, the 
 docker run -d \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /path/to/exoframe-folder:/root/.exoframe \
+  -e EXO_PRIVATE_KEY=your_private_key \
   --label traefik.backend=exoframe-server \
   --label traefik.frontend.rule=Host:exoframe.your-host.com \
+  --name exoframe-server \
   exoframe/server
 ```
+
+3. Edit config file to fit your needs (see section below)
 
 Then grab [Exoframe CLI](https://github.com/exoframejs/exoframe), point it to your new Exoframe server and use it.
 
 ## Configuration
 
 Exoframe stores its config in `~/.exoframe/server.config.yml`.  
-Currently it contains list of users for basic auth and list of plugins to be used:
+Currently it contains list of users for basic auth, debug and letsencrypt settings:
 
 ```yaml
+debug: false # whether debug mode is enabled, default "false"
+letsencrypt: false # whether to enable letsencrypt, default "false"
+letsencryptEmail: your@email.com # email used for letsencrypt
 users: # list of users for basic auth
   - username: admin # default admin user
     password: admin
