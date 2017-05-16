@@ -1,3 +1,3 @@
 FROM busybox
 
-CMD ["echo", "123"]
+CMD ["sleep", "300"]

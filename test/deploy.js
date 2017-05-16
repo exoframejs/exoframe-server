@@ -55,11 +55,7 @@ module.exports = (server, token) =>
 
         // cleanup
         const instance = docker.getContainer(container.Id);
-        try {
-          await instance.stop();
-        } catch (e) {
-          // already stopped, just continue
-        }
+        await instance.stop();
         await instance.remove();
 
         t.end();
