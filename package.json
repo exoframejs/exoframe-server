@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "NODE_ENV=testing tap --cov --coverage-report=text-summary --reporter=spec ./test/index.js",
-    "cover": "NODE_ENV=testing tap --cov --coverage-report=lcov ./test/index.js"
+    "test": "NODE_ENV=testing tap --timeout=300 --cov --coverage-report=text-summary --reporter=spec ./test/index.js",
+    "cover": "NODE_ENV=testing tap --timeout=300 --cov --coverage-report=lcov ./test/index.js"
   },
   "repository": "git@github.com:exoframejs/exoframe-server.git",
   "author": "Tim Ermilov <yamalight@gmail.com>",

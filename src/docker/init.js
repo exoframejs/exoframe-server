@@ -13,8 +13,40 @@ const logger = require('../logger');
 const baseFolder = path.join(os.homedir(), '.exoframe');
 const traefikName = 'exoframe-traefik';
 
+// pull image
+const pullImage = tag =>
+  new Promise(async (resolve, reject) => {
+    docker.pull(tag, (err, stream) => {
+      if (err) {
+        logger.error('Error pulling:', err);
+        reject(err);
+        return;
+      }
+      stream.on('data', d => logger.debug(d.toString()));
+      stream.once('end', () => resolve());
+    });
+  });
+
+// create exoframe network if needed
+const initNetwork = async () => {
+  const nets = await docker.listNetworks();
+  let exoNet = nets.find(n => n.Name === 'exoframe');
+  if (!exoNet) {
+    logger.info('Exoframe network does not exists, creating...');
+    exoNet = await docker.createNetwork({
+      Name: 'exoframe',
+      Driver: 'bridge',
+    });
+  } else {
+    exoNet = docker.getNetwork(exoNet.Id);
+  }
+
+  return exoNet;
+};
+exports.initNetwork = initNetwork;
+
 // export default function
-module.exports = async () => {
+exports.initDocker = async () => {
   logger.info('Initializing docker services...');
   // get all containers
   const allContainers = await docker.listContainers();
@@ -36,17 +68,7 @@ module.exports = async () => {
   }
 
   // create exoframe network if needed
-  const nets = await docker.listNetworks();
-  let exoNet = nets.find(n => n.Name === 'exoframe');
-  if (!exoNet) {
-    logger.info('Exoframe network does not exists, creating...');
-    exoNet = await docker.createNetwork({
-      Name: 'exoframe',
-      Driver: 'bridge',
-    });
-  } else {
-    exoNet = docker.getNetwork(exoNet.Id);
-  }
+  const exoNet = await initNetwork();
 
   // get config
   const config = getConfig();
@@ -56,6 +78,14 @@ module.exports = async () => {
     fs.statSync(acmePath);
   } catch (e) {
     mkdirp.sync(acmePath);
+  }
+
+  // pull image if needed
+  const allImages = await docker.listImages();
+  const traefikImage = allImages.find(img => img.RepoTags && img.RepoTags.includes('traefik:latest'));
+  if (!traefikImage) {
+    logger.info('No traefik image found, pulling..');
+    await pullImage('traefik:latest');
   }
 
   // debug flags

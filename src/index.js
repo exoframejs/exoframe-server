@@ -5,7 +5,7 @@ const Hapi = require('hapi');
 const logger = require('./logger');
 
 // init docker service
-const initDocker = require('./docker/init');
+const {initDocker} = require('./docker/init');
 
 // paths
 const setupAuth = require('./auth');

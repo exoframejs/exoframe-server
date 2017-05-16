@@ -3,13 +3,17 @@ services:
   - docker:dind
 
 variables:
-  DOCKER_HOST: tcp://localhost:2375
+  DOCKER_HOST: tcp://docker:2375
 
 cache:
   paths:
   - node_modules/
 
+before_script:
+  - yarn
+  - curl -L https://github.com/docker/compose/releases/download/1.13.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+  - chmod +x /usr/local/bin/docker-compose
+
 test:
   script:
-    - yarn
     - yarn test
