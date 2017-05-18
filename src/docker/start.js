@@ -21,11 +21,17 @@ module.exports = async ({image, username}) => {
 
   // construct restart policy
   const restartPolicy = config.restart || 'on-failure:2';
-  const restartCount = restartPolicy.split(':')[1] || 2;
   const RestartPolicy = {
     Name: restartPolicy,
   };
   if (restartPolicy.includes('on-failure')) {
+    let restartCount = 2;
+    try {
+      restartCount = parseInt(restartPolicy.split(':')[1], 10);
+    } catch (e) {
+      // error parsing restart count, using default value
+    }
+    RestartPolicy.Name = 'on-failure';
     RestartPolicy.MaximumRetryCount = restartCount;
   }
 
