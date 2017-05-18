@@ -1,4 +1,11 @@
 
+0.8.1 / 2017-05-18
+==================
+
+Fixes:
+  * Fix issue when removing/getting logs for nonexistent deployments
+  * Fix on-failure restart policy parsing
+
 0.8.0 / 2017-05-18
 ==================
 
