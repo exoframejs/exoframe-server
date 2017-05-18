@@ -19,7 +19,15 @@ module.exports = async ({image, username}) => {
   // generate env vars
   const Env = config.env ? Object.keys(config.env).map(key => `${key}=${config.env[key]}`) : [];
 
-  const restartPolicy = config.restart || 'always';
+  // construct restart policy
+  const restartPolicy = config.restart || 'on-failure:2';
+  const restartCount = restartPolicy.split(':')[1] || 2;
+  const RestartPolicy = {
+    Name: restartPolicy,
+  };
+  if (restartPolicy.includes('on-failure')) {
+    RestartPolicy.MaximumRetryCount = restartCount;
+  }
 
   // create container
   const container = await docker.createContainer({
@@ -33,9 +41,7 @@ module.exports = async ({image, username}) => {
       'traefik.frontend.rule': `Host:${host}`,
     },
     HostConfig: {
-      RestartPolicy: {
-        Name: restartPolicy,
-      },
+      RestartPolicy,
     },
   });
 

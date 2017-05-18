@@ -51,7 +51,7 @@ exports.updateCompose = ({username}) => {
     // update basic settings
     const ext = {
       container_name: name,
-      restart: 'always',
+      restart: 'on-failure:2',
       networks: ['exoframe', 'default'],
     };
     compose.services[svcKey] = Object.assign({}, ext, compose.services[svcKey]);

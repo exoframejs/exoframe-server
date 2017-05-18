@@ -124,7 +124,8 @@ exports.initDocker = async () => {
     },
     HostConfig: {
       RestartPolicy: {
-        Name: 'always',
+        Name: 'on-failure',
+        MaximumRetryCount: 2,
       },
       Binds: ['/var/run/docker.sock:/var/run/docker.sock', `${acmePath}:/var/acme`],
       PortBindings: {
