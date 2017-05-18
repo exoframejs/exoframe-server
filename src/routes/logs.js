@@ -18,6 +18,11 @@ module.exports = server => {
         c => c.Labels['exoframe.user'] === username && c.Names.find(n => n === `/${id}`)
       );
 
+      if (!containerInfo) {
+        reply({error: 'Container not found!'}).code(404);
+        return;
+      }
+
       const container = docker.getContainer(containerInfo.Id);
       const logStream = await container.logs({
         follow: false,

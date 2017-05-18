@@ -36,6 +36,24 @@ module.exports = (server, token, name) =>
       });
     });
 
+    tap.test('Should not get logs for nonexistent project', t => {
+      // options base
+      const options = {
+        method: 'GET',
+        url: `/logs/do-not-exist`,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      server.inject(options, async response => {
+        // check response
+        t.equal(response.statusCode, 404, 'Correct status code');
+        t.deepEqual(response.result, {error: 'Container not found!'}, 'Should have error');
+        t.end();
+      });
+    });
+
     tap.test('End', t => {
       resolve();
       t.end();

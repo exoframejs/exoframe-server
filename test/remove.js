@@ -29,6 +29,24 @@ module.exports = (server, token, name) =>
       });
     });
 
+    tap.test('Should return error when removing nonexistent project', t => {
+      // options base
+      const options = {
+        method: 'POST',
+        url: `/remove/do-not-exist`,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      server.inject(options, response => {
+        // check response
+        t.equal(response.statusCode, 404, 'Correct status code');
+        t.deepEqual(response.result, {error: 'Container not found!'}, 'Should have error');
+        t.end();
+      });
+    });
+
     tap.test('End', t => {
       resolve();
       t.end();
