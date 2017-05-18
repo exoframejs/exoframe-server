@@ -23,7 +23,7 @@ After running exoframe, the only thing you need to do is wait a few seconds unti
 1. Make sure you have Docker [installed and running](https://docs.docker.com/engine/installation/) on your host.
 2. Pull and run Exoframe server using docker:
 
-```
+```sh
 docker run -d \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /path/to/exoframe-folder:/root/.exoframe \
@@ -32,6 +32,23 @@ docker run -d \
   --label traefik.frontend.rule=Host:exoframe.your-host.com \
   --name exoframe-server \
   exoframe/server
+
+# Explanation for arguments:
+# this allows Exoframe to access your docker
+-v /var/run/docker.sock:/var/run/docker.sock
+
+# /path/to/exoframe-folder should be path on your server
+# to desired folder that'll hold Exoframe configs
+-v /path/to/exoframe-folder:/root/.exoframe
+
+# this is your private key used for JWT
+-e EXO_PRIVATE_KEY=your_private_key
+
+# this is used to tell traefik to which deployment current docker service belongs
+--label traefik.backend=exoframe-server
+
+# this is used to tell traefik on which domain should Exoframe server be listening
+--label traefik.frontend.rule=Host:exoframe.your-host.com
 ```
 
 3. Edit config file to fit your needs (see section below)
