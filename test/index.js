@@ -9,6 +9,7 @@ const {initNetwork} = require('../src/docker/init');
 const login = require('./login');
 const deploy = require('./deploy');
 const list = require('./list');
+const logs = require('./logs');
 const remove = require('./remove');
 const dockerInit = require('./docker-init');
 
@@ -30,6 +31,8 @@ const run = async () => {
   await deploy(server, token);
   // test listing
   const name = await list(server, token);
+  // test logs
+  await logs(server, token, name);
   // test removal
   await remove(server, token, name);
 

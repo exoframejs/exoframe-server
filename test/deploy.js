@@ -92,10 +92,8 @@ module.exports = (server, token) =>
         t.equal(container.Labels['traefik.frontend.rule'], 'Host:localhost', 'Should have correct frontend label');
         t.ok(container.NetworkSettings.Networks.exoframe, 'Should be in exoframe network');
 
-        // cleanup
-        const instance = docker.getContainer(container.Id);
-        await instance.stop();
-        await instance.remove();
+        // this deployment is not cleaned up
+        // it will be used in following list/remove tests
 
         t.end();
       });
@@ -131,8 +129,10 @@ module.exports = (server, token) =>
         t.equal(container.Labels['traefik.frontend.rule'], 'Host:localhost', 'Should have correct frontend label');
         t.ok(container.NetworkSettings.Networks.exoframe, 'Should be in exoframe network');
 
-        // this deployment is not cleaned up
-        // it will be used in following list/remove tests
+        // cleanup
+        const instance = docker.getContainer(container.Id);
+        await instance.stop();
+        await instance.remove();
 
         t.end();
       });

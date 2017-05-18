@@ -6,3 +6,6 @@ http
     res.end('Hello world!');
   })
   .listen(80);
+
+// log something for logging tests
+console.log('Listening on port 80');

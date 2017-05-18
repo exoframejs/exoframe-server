@@ -21,13 +21,13 @@ module.exports = (server, token) =>
         t.equal(result.length, 1, 'Should have one deployment');
         // check container info
         const container = result[0];
-        t.ok(container.Names[0].startsWith('/exo-admin-test-html-deploy-'), 'Should have correct name');
+        t.ok(container.Names[0].startsWith('/exo-admin-test-node-deploy-'), 'Should have correct name');
         t.ok(
-          container.Labels['exoframe.deployment'].startsWith('exo-admin-test-html-deploy-'),
+          container.Labels['exoframe.deployment'].startsWith('exo-admin-test-node-deploy-'),
           'Should have correct deployment label'
         );
         t.equal(container.Labels['exoframe.user'], 'admin', 'Should have correct user label');
-        t.equal(container.Labels['traefik.backend'], 'exo-admin-test-html-deploy', 'Should have correct backend label');
+        t.equal(container.Labels['traefik.backend'], 'exo-admin-test-node-deploy', 'Should have correct backend label');
         t.equal(container.Labels['traefik.frontend.rule'], 'Host:localhost', 'Should have correct frontend label');
 
         resolve(container.Names[0].replace('/', ''));
