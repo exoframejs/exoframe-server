@@ -2,6 +2,11 @@ image: node:latest
 services:
   - docker:dind
 
+stages:
+  - test
+  - build
+  - release
+
 variables:
   DOCKER_HOST: tcp://docker:2375
 
@@ -9,11 +14,33 @@ cache:
   paths:
   - node_modules/
 
-before_script:
-  - yarn
-  - curl -L https://github.com/docker/compose/releases/download/1.13.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-  - chmod +x /usr/local/bin/docker-compose
-
 test:
+  stage: test
+  before_script:
+    - yarn
+    - curl -L https://github.com/docker/compose/releases/download/1.13.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+    - chmod +x /usr/local/bin/docker-compose
   script:
     - yarn test
+
+build:
+  stage: build
+  script:
+    - yarn
+    - yarn build
+  artifacts:
+    paths:
+      - exoframe-server
+
+release:
+  stage: release
+  image: docker
+  dependencies:
+    - build
+  before_script:
+    - docker login -u $HUB_USER -p $HUB_PASS
+  script:
+    - docker build -t exoframe/server:$CI_BUILD_REF_NAME .
+    - docker push exoframe/server:$CI_BUILD_REF_NAME
+    - docker tag exoframe/server:$CI_BUILD_REF_NAME exoframe/server:latest
+    - docker push exoframe/server:latest
