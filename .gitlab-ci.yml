@@ -42,7 +42,14 @@ release:
   script:
     - docker build -t exoframe/server:$CI_BUILD_REF_NAME .
     - docker push exoframe/server:$CI_BUILD_REF_NAME
-    - docker tag exoframe/server:$CI_BUILD_REF_NAME exoframe/server:$CI_COMMIT_TAG
-    - docker push exoframe/server:$CI_COMMIT_TAG
+    # tag and push with commit-tag if present
+    - |
+      if [ -z $CI_COMMIT_TAG ];
+      then echo 'No tag set, skipping...';
+      else
+        docker tag exoframe/server:$CI_BUILD_REF_NAME exoframe/server:$CI_COMMIT_TAG &&
+        docker push exoframe/server:$CI_COMMIT_TAG;
+      fi;
+    # tag and push as latest
     - docker tag exoframe/server:$CI_BUILD_REF_NAME exoframe/server:latest
     - docker push exoframe/server:latest
