@@ -1,3 +1,20 @@
+
+0.8.0 / 2017-05-18
+==================
+
+Additions:
+  * Use on-failure restart policy instead of always one
+  * Add method to get logs and tests for it
+  * Use gitlab-ci to build slim pkg based docker images, closes #3
+
+Changes:
+  * Replace travis-ci with gitlab-ci
+  * Clarify deployment arguments in README
+  * Use node:alpine as base image
+
+Fixes:
+  * Only append non-empty messages to build log
+  
 0.7.0 / 2017-05-17
 ==================
 
