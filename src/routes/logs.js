@@ -13,7 +13,7 @@ module.exports = server => {
       const {username} = request.auth.credentials;
       const {id} = request.params;
 
-      const allContainers = await docker.listContainers();
+      const allContainers = await docker.listContainers({all: true});
       const containerInfo = allContainers.find(
         c => c.Labels['exoframe.user'] === username && c.Names.find(n => n === `/${id}`)
       );
