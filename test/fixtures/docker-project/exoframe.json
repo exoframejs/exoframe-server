@@ -1,4 +1,5 @@
 {
   "name": "test-docker-deploy",
+  "hostname": "test.host",
   "restart": "no"
 }

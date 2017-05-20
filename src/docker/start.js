@@ -35,8 +35,8 @@ module.exports = async ({image, username}) => {
     RestartPolicy.MaximumRetryCount = restartCount;
   }
 
-  // create container
-  const container = await docker.createContainer({
+  // create config
+  const containerConfig = {
     Image: image,
     name,
     Env,
@@ -49,7 +49,15 @@ module.exports = async ({image, username}) => {
     HostConfig: {
       RestartPolicy,
     },
-  });
+  };
+
+  // if config has hostname - add it to config
+  if (config.hostname && config.hostname.length) {
+    containerConfig.Hostname = config.hostname;
+  }
+
+  // create container
+  const container = await docker.createContainer(containerConfig);
 
   // connect container to exoframe network
   const nets = await docker.listNetworks();

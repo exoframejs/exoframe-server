@@ -53,6 +53,14 @@ module.exports = (server, token) =>
         t.equal(container.Labels['traefik.frontend.rule'], 'Host:localhost', 'Should have correct frontend label');
         t.ok(container.NetworkSettings.Networks.exoframe, 'Should be in exoframe network');
 
+        const fullContainerInfo = await docker.getContainer(container.Id).inspect();
+        t.equal(fullContainerInfo.Config.Hostname, 'test.host', 'Should have correct hostname');
+        t.deepEqual(
+          fullContainerInfo.HostConfig.RestartPolicy,
+          {Name: 'no', MaximumRetryCount: 0},
+          'Should have correct restart policy'
+        );
+
         // cleanup
         const instance = docker.getContainer(container.Id);
         await instance.stop();
