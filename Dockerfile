@@ -6,6 +6,9 @@ RUN apk update && apk add --no-cache libstdc++ libgcc
 # copy binary
 COPY exoframe-server /
 
+# set environment to production
+ENV NODE_ENV production
+
 # expose ports
 EXPOSE 8080
 
