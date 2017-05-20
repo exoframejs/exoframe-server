@@ -7,6 +7,7 @@ const generateDockerfile = require('../docker/dockerfile');
 const build = require('../docker/build');
 const start = require('../docker/start');
 const {cleanTemp, unpack} = require('../util');
+const docker = require('../docker/docker');
 
 module.exports = server => {
   server.route({
@@ -42,10 +43,17 @@ module.exports = server => {
         const {log} = await executeCompose();
         logger.debug('Compose executed:', log);
 
-        // get container names
-        const names = Object.keys(composeConfig.services).map(svc => composeConfig.services[svc].container_name);
+        // get container infos
+        const allContainers = await docker.listContainers({all: true});
+        const deployments = await Promise.all(
+          Object.keys(composeConfig.services)
+            .map(svc => composeConfig.services[svc].container_name)
+            .map(name => allContainers.find(c => c.Names.find(n => n === `/${name}`)))
+            .map(info => docker.getContainer(info.Id))
+            .map(container => container.inspect())
+        );
         // return them
-        reply({status: 'success', names});
+        reply({status: 'success', deployments});
         return;
       }
 
@@ -57,13 +65,15 @@ module.exports = server => {
       logger.debug('build result:', buildRes);
 
       // start image
-      const container = await start(Object.assign(buildRes, {username}));
-      logger.debug(container.Name);
+      const containerInfo = await start(Object.assign(buildRes, {username}));
+      logger.debug(containerInfo.Name);
 
       // clean temp folder
       await cleanTemp();
 
-      reply({status: 'success', names: [container.Name.substring(1)]});
+      const containerData = docker.getContainer(containerInfo.Id);
+      const container = await containerData.inspect();
+      reply({status: 'success', deployments: [container]});
     },
   });
 };

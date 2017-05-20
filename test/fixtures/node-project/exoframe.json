@@ -1,4 +1,5 @@
 {
   "name": "test-node-deploy",
+  "domain": "localhost",
   "restart": "no"
 }
