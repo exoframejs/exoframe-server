@@ -1,4 +1,20 @@
 
+0.9.0 / 2017-05-20
+==================
+
+Additions:
+  * Allow enabling autoconstructed domains for deployments
+  * Allow specifying internal hostnames for deployments
+
+Changes:
+  * Get all containers for all commands
+  * Change list output to include extended deployment info
+  * Return extended info for deployments
+  * Set NODE_ENV to production within docker
+
+Fixes:
+  * Only stop non-running containers during remove
+
 0.8.1 / 2017-05-18
 ==================
 
