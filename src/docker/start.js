@@ -4,17 +4,22 @@ const uuid = require('uuid');
 // our modules
 const docker = require('./docker');
 const {getProjectConfig} = require('../util');
+const {getConfig} = require('../config');
 
 module.exports = async ({image, username}) => {
   const baseName = image.split(':').shift();
   const uid = uuid.v1();
   const name = `${baseName}-${uid.split('-').shift()}`;
 
+  // get server config
+  const serverConfig = getConfig();
+
   // get project info
   const config = getProjectConfig();
 
   // generate host
-  const host = config.domain || 'localhost';
+  const defaultDomain = serverConfig.baseDomain ? `${name}${serverConfig.baseDomain}` : undefined;
+  const host = config.domain || defaultDomain;
 
   // generate env vars
   const Env = config.env ? Object.keys(config.env).map(key => `${key}=${config.env[key]}`) : [];
@@ -44,16 +49,25 @@ module.exports = async ({image, username}) => {
       'exoframe.deployment': name,
       'exoframe.user': username,
       'traefik.backend': baseName,
-      'traefik.frontend.rule': `Host:${host}`,
     },
     HostConfig: {
       RestartPolicy,
     },
   };
 
-  // if config has hostname - add it to config
   if (config.hostname && config.hostname.length) {
-    containerConfig.Hostname = config.hostname;
+    containerConfig.NetworkingConfig = {
+      EndpointsConfig: {
+        exoframe: {
+          Aliases: [config.hostname],
+        },
+      },
+    };
+  }
+
+  // if host is set - add it to config
+  if (host && host.length) {
+    containerConfig.Labels['traefik.frontend.rule'] = `Host:${host}`;
   }
 
   // create container

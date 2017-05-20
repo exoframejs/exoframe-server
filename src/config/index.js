@@ -24,6 +24,7 @@ const defaultConfig = {
   debug: false,
   letsencrypt: false,
   letsencryptEmail: 'admin@domain.com',
+  baseDomain: false,
   users: [
     {
       username: 'admin',
