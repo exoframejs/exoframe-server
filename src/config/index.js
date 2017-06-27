@@ -13,6 +13,9 @@ const baseFolder = process.env.NODE_ENV !== 'testing'
   ? path.join(os.homedir(), '.exoframe')
   : path.join(__dirname, '..', '..', 'test', 'fixtures');
 const configPath = path.join(baseFolder, 'server.config.yml');
+const publicKeysPath = process.env.NODE_ENV !== 'testing'
+  ? path.join(os.homedir(), '.ssh')
+  : path.join(__dirname, '..', '..', 'test', 'fixtures');
 
 // create base folder if doesn't exist
 try {
@@ -27,13 +30,7 @@ const defaultConfig = {
   letsencrypt: false,
   letsencryptEmail: 'admin@domain.com',
   baseDomain: false,
-  users: [
-    {
-      username: 'admin',
-      password: 'admin',
-      admin: true,
-    },
-  ],
+  publicKeysPath,
 };
 
 // default config
@@ -43,7 +40,7 @@ let userConfig = defaultConfig;
 const reloadUserConfig = async () => {
   // mon
   try {
-    userConfig = yaml.safeLoad(fs.readFileSync(configPath, 'utf8'));
+    userConfig = Object.assign(defaultConfig, yaml.safeLoad(fs.readFileSync(configPath, 'utf8')));
     logger.debug('loaded new config:', userConfig);
   } catch (e) {
     logger.error('error parsing user config:', e);
