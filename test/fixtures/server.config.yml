@@ -2,7 +2,3 @@ debug: true
 letsencrypt: false
 letsencryptEmail: test@gmail.com
 baseDomain: '.test'
-users:
-  - username: admin
-    password: admin
-    admin: true

@@ -32,7 +32,7 @@ build:
     paths:
       - exoframe-server
 
-release:
+release-branch:
   stage: release
   image: docker
   dependencies:
@@ -42,5 +42,15 @@ release:
   script:
     - docker build -t exoframe/server:$CI_BUILD_REF_NAME .
     - docker push exoframe/server:$CI_BUILD_REF_NAME
+
+release-latest:
+  stage: release
+  image: docker
+  only:
+    - master
+  before_script:
+    - docker login -u $HUB_USER -p $HUB_PASS
+  script:
+    - docker pull exoframe/server:$CI_BUILD_REF_NAME
     - docker tag exoframe/server:$CI_BUILD_REF_NAME exoframe/server:latest
     - docker push exoframe/server:latest
