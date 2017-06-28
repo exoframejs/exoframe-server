@@ -1,4 +1,13 @@
 
+0.10.0 / 2017-06-28
+==================
+
+Changes:
+  * Use private-public RSA key pairs instead of plain-text credentials for auth
+
+Fixes:
+  * Only use yarn for node projects if yarn.lock is present
+
 0.9.0 / 2017-05-20
 ==================
 
