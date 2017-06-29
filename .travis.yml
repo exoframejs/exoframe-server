@@ -15,12 +15,12 @@ before_install:
 
 after_success:
   - yarn coveralls
+  - yarn build
   - docker login -u $HUB_USER -p $HUB_PASS
-  - export REPO=exoframe/server
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
-  - docker build -t $REPO:$TAG .
-  - if [ -z "$TRAVIS_TAG" ]; then docker tag $REPO:$COMMIT $REPO:$TRAVIS_TAG; fi
-  - docker push $REPO
+  - docker build -t exoframe/server:$TAG .
+  - if [ -z "$TRAVIS_TAG" ]; then docker tag exoframe/server:$TAG exoframe/server:$TRAVIS_TAG; fi
+  - docker push exoframe/server
 
 env:
   global:
