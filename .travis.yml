@@ -1,4 +1,5 @@
-sudo: true
+sudo: required
+
 language: node_js
 
 services:
@@ -9,8 +10,8 @@ node_js: node
 cache: yarn
 
 before_install:
-  - curl -L https://github.com/docker/compose/releases/download/1.13.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-  - chmod +x /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/1.13.0/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
 
 after_success:
   - yarn coveralls
