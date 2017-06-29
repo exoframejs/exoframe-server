@@ -30,7 +30,22 @@ module.exports = (server, token, name) =>
             const parts = line.split(/\dZ\s/);
             return parts[1].replace(/\sv\d.+/, ''); // strip any versions
           });
-        t.deepEqual(lines, ['yarn start', '$ node index.js ', 'Listening on port 80'], 'Should have log');
+        t.equal(lines[0], 'npm info it worked if it ends with ok');
+        t.ok(lines[1].startsWith('npm info using npm@'));
+        t.ok(lines[2].startsWith('npm info using node@'));
+        t.deepEqual(
+          lines.slice(3),
+          [
+            'npm info lifecycle node-project@1.0.0~prestart: node-project@1.0.0',
+            'npm info lifecycle node-project@1.0.0~start: node-project@1.0.0',
+            '',
+            '> node-project@1.0.0 start /usr/src/app',
+            '> node index.js',
+            '',
+            'Listening on port 80',
+          ],
+          'Should have correct log'
+        );
 
         t.end();
       });

@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "NODE_ENV=testing tap --timeout=300 --cov --coverage-report=text-summary --reporter=spec ./test/index.js",
-    "cover": "NODE_ENV=testing tap --timeout=300 --cov --coverage-report=lcov ./test/index.js",
+    "test": "NODE_ENV=testing tap --timeout=300 --cov --coverage-report=lcov --reporter=spec ./test/index.js",
+    "coveralls": "cat ./coverage/lcov.info | coveralls",
     "build": "pkg -t latest-alpine -o exoframe-server index.js"
   },
   "repository": "git@github.com:exoframejs/exoframe-server.git",
@@ -29,6 +29,7 @@
     "winston": "^2.3.1"
   },
   "devDependencies": {
+    "coveralls": "^2.13.1",
     "pkg": "^4.1.1",
     "tap": "^10.3.2"
   }
