@@ -19,7 +19,7 @@ after_success:
   - docker login -u $HUB_USER -p $HUB_PASS
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
   - docker build -t exoframe/server:$TAG .
-  - if [ -z "$TRAVIS_TAG" ]; then docker tag exoframe/server:$TAG exoframe/server:$TRAVIS_TAG; fi
+  - if [ -z "$TRAVIS_TAG" ]; then echo "No tag, skipping"; else docker tag exoframe/server:$TAG exoframe/server:$TRAVIS_TAG; fi
   - docker push exoframe/server
 
 env:
