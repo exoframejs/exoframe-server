@@ -1,4 +1,13 @@
 
+0.10.1 / 2017-06-29
+==================
+
+Changes:
+  * Replace gitlab-ci with travis
+
+Fixes:
+  * Fix node dockerfile and use npm to start app
+
 0.10.0 / 2017-06-28
 ==================
 
