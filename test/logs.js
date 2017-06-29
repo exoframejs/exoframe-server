@@ -30,12 +30,12 @@ module.exports = (server, token, name) =>
             const parts = line.split(/\dZ\s/);
             return parts[1].replace(/\sv\d.+/, ''); // strip any versions
           });
+        t.equal(lines[0], 'npm info it worked if it ends with ok');
+        t.ok(lines[1].startsWith('npm info using npm@'));
+        t.ok(lines[2].startsWith('npm info using node@'));
         t.deepEqual(
-          lines,
+          lines.slice(3),
           [
-            'npm info it worked if it ends with ok',
-            'npm info using npm@4.2.0',
-            'npm info using node@v7.10.0',
             'npm info lifecycle node-project@1.0.0~prestart: node-project@1.0.0',
             'npm info lifecycle node-project@1.0.0~start: node-project@1.0.0',
             '',
