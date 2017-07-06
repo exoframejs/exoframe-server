@@ -1,4 +1,13 @@
 
+0.10.4 / 2017-07-06
+==================
+
+Additions:
+  * Add home route that links to github
+
+Fixes:
+  * Fix HTTPS traefik deployment
+
 0.10.3 / 2017-07-06
 ==================
 

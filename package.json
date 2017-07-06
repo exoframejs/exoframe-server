@@ -1,6 +1,6 @@
 {
   "name": "exoframe-server",
-  "version": "0.10.3",
+  "version": "0.10.4",
   "description": "Exoframe server",
   "main": "index.js",
   "scripts": {
