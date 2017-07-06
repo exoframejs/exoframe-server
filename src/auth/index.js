@@ -109,6 +109,7 @@ module.exports = server =>
             }
           } catch (e) {
             reply({error: `Could not read public keys file! ${e.toString()}`}).code(503);
+            return;
           }
 
           // generate auth token
