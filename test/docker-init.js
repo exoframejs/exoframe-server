@@ -40,9 +40,11 @@ module.exports = () =>
         t.equal(container.Labels['exoframe.deployment'], 'exo-traefik', 'Should have correct deployment label');
         t.equal(container.Labels['exoframe.user'], 'admin', 'Should have correct user label');
         t.ok(container.NetworkSettings.Networks.exoframe, 'Should be in exoframe network');
-        t.equal(container.Ports.length, 1, 'Should have one port binding');
-        t.equal(container.Ports[0].PrivatePort, 80, 'Should have correct private port binding');
-        t.equal(container.Ports[0].PublicPort, 80, 'Should have correct public port binding');
+        t.equal(container.Ports.length, 2, 'Should have two port bindings');
+        t.ok(container.Ports.find(p => p.PrivatePort === 443), 'Should have correct private port 443 binding');
+        t.ok(container.Ports.find(p => p.PublicPort === 443), 'Should have correct public port 443 binding');
+        t.ok(container.Ports.find(p => p.PrivatePort === 80), 'Should have correct private port 80 binding');
+        t.ok(container.Ports.find(p => p.PublicPort === 80), 'Should have correct public port 80 binding');
         t.ok(container.Mounts.find(m => m.Destination === '/var/run/docker.sock'), 'Should have correct first mount');
         t.ok(container.Mounts.find(m => m.Destination === '/var/acme'), 'Should have correct second mount');
 
