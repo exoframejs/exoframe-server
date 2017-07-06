@@ -107,8 +107,8 @@ exports.initDocker = async () => {
 
   // construct command
   const Cmd = [
-    'traefik',
-    '-c /dev/null',
+    '-c',
+    '/dev/null',
     '--docker',
     ...(config.letsencrypt ? letsencrypt : []),
     ...(config.debug ? debug : []),
@@ -123,6 +123,10 @@ exports.initDocker = async () => {
       'exoframe.deployment': 'exo-traefik',
       'exoframe.user': 'admin',
     },
+    ExposedPorts: {
+      '80/tcp': {},
+      '443/tcp': {},
+    },
     HostConfig: {
       RestartPolicy: {
         Name: 'on-failure',
@@ -131,7 +135,7 @@ exports.initDocker = async () => {
       Binds: ['/var/run/docker.sock:/var/run/docker.sock', `${acmePath}:/var/acme`],
       PortBindings: {
         '80/tcp': [{HostPort: '80'}],
-        '443/tcp': [{HostPost: '443'}],
+        '443/tcp': [{HostPort: '443'}],
       },
     },
   });
