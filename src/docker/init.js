@@ -107,8 +107,8 @@ exports.initDocker = async () => {
 
   // construct command
   const Cmd = [
-    'traefik',
-    '-c /dev/null',
+    '-c',
+    '/dev/null',
     '--docker',
     ...(config.letsencrypt ? letsencrypt : []),
     ...(config.debug ? debug : []),
