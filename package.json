@@ -3,11 +3,15 @@
   "version": "0.10.4",
   "description": "Exoframe server",
   "main": "index.js",
+  "bin": "index.js",
   "scripts": {
     "start": "node index.js",
     "test": "NODE_ENV=testing tap --timeout=300 --cov --coverage-report=lcov --reporter=spec ./test/index.js",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "build": "pkg -t latest-alpine -o exoframe-server index.js"
+    "build": "pkg -t latest-alpine -o exoframe-server ."
+  },
+  "pkg": {
+    "assets": "src/templates/*.html"
   },
   "repository": "git@github.com:exoframejs/exoframe-server.git",
   "author": "Tim Ermilov <yamalight@gmail.com>",
