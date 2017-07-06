@@ -1,4 +1,11 @@
 
+0.10.3 / 2017-07-06
+==================
+
+Changes:
+  * Autoredirect http to https in Traefik
+  * Add default entry points configs for Traefik
+
 0.10.2 / 2017-07-06
 ==================
 
