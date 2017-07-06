@@ -33,9 +33,9 @@ const validate = (request, decodedToken, callback) => {
 };
 
 const verifyWithKey = async ({key, token, phrase}) => {
-  const pk = sshpk.parseKey(key);
-  const pubKey = pk.toString('pem');
   try {
+    const pk = sshpk.parseKey(key);
+    const pubKey = pk.toString('pem');
     const decoded = await jwtVerify(token, pubKey, {algorithms: ['RS256']});
     return decoded === phrase;
   } catch (e) {
