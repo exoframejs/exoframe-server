@@ -101,7 +101,8 @@ exports.initDocker = async () => {
     '--acme.onhostrule=true',
     '--accesslogsfile=/var/acme/access.log',
     '--entryPoints=Name:https Address::443 TLS',
-    '--defaultEntryPoints=https',
+    '--entryPoints=Name:http Address::80',
+    '--defaultEntryPoints=http,https',
   ];
 
   // construct command
