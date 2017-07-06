@@ -131,7 +131,7 @@ exports.initDocker = async () => {
       Binds: ['/var/run/docker.sock:/var/run/docker.sock', `${acmePath}:/var/acme`],
       PortBindings: {
         '80/tcp': [{HostPort: '80'}],
-        '443/tcp': [{HostPost: '443'}],
+        '443/tcp': [{HostPort: '443'}],
       },
     },
   });
