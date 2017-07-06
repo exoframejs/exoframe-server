@@ -100,8 +100,8 @@ exports.initDocker = async () => {
     '--acme.ondemand=true',
     '--acme.onhostrule=true',
     '--accesslogsfile=/var/acme/access.log',
-    "--entryPoints='Name:https Address::443 TLS'",
-    "--entryPoints='Name:http Address::80 Redirect.EntryPoint:https'",
+    '--entryPoints=Name:https Address::443 TLS',
+    '--entryPoints=Name:http Address::80 Redirect.EntryPoint:https',
     '--defaultEntryPoints=http,https',
   ];
 
@@ -122,6 +122,10 @@ exports.initDocker = async () => {
     Labels: {
       'exoframe.deployment': 'exo-traefik',
       'exoframe.user': 'admin',
+    },
+    ExposedPorts: {
+      '80/tcp': {},
+      '443/tcp': {},
     },
     HostConfig: {
       RestartPolicy: {
