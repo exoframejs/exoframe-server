@@ -1,7 +1,7 @@
 FROM alpine
 
 # install required libs
-RUN apk update && apk add --no-cache libstdc++ libgcc
+RUN apk update && apk add --no-cache libstdc++ libgcc py-pip && pip install docker-compose
 
 # copy binary
 COPY exoframe-server /
