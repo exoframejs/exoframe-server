@@ -1,3 +1,8 @@
+0.11.1 / 2017-07-17
+==================
+
+Fixes:
+  * Bundle docker-compose into dockerfile to fix standalone compose deployments
 
 0.11.0 / 2017-07-17
 ==================
