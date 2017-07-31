@@ -224,14 +224,6 @@ module.exports = (server, token) =>
         t.ok(containerOne.NetworkSettings.Networks.exoframe, 'Should be in exoframe network');
         t.ok(containerTwo.NetworkSettings.Networks.exoframe, 'Should be in exoframe network');
 
-        // cleanup
-        const instanceOne = docker.getContainer(containerOne.Id);
-        await instanceOne.stop();
-        await instanceOne.remove();
-        const instanceTwo = docker.getContainer(containerTwo.Id);
-        await instanceTwo.stop();
-        await instanceTwo.remove();
-
         t.end();
       });
     });
