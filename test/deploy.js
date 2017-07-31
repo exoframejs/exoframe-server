@@ -47,6 +47,11 @@ module.exports = (server, token) =>
         t.equal(containerInfo.Labels['exoframe.deployment'], name, 'Should have correct deployment label');
         t.equal(containerInfo.Labels['exoframe.user'], 'admin', 'Should have correct user label');
         t.equal(
+          containerInfo.Labels['exoframe.project'],
+          name.replace(`-${deployId}`, ''),
+          'Should have correct project label'
+        );
+        t.equal(
           containerInfo.Labels['traefik.backend'],
           name.replace(`-${deployId}`, ''),
           'Should have correct backend label'
@@ -101,6 +106,11 @@ module.exports = (server, token) =>
         t.equal(container.Labels['exoframe.deployment'], name, 'Should have correct deployment label');
         t.equal(container.Labels['exoframe.user'], 'admin', 'Should have correct user label');
         t.equal(
+          container.Labels['exoframe.project'],
+          name.replace(`-${deployId}`, ''),
+          'Should have correct project label'
+        );
+        t.equal(
           container.Labels['traefik.backend'],
           name.replace(`-${deployId}`, ''),
           'Should have correct backend label'
@@ -138,6 +148,11 @@ module.exports = (server, token) =>
         t.ok(container, 'Docker has container');
         t.equal(container.Labels['exoframe.deployment'], name, 'Should have correct deployment label');
         t.equal(container.Labels['exoframe.user'], 'admin', 'Should have correct user label');
+        t.equal(
+          container.Labels['exoframe.project'],
+          name.replace(`-${deployId}`, ''),
+          'Should have correct project label'
+        );
         t.equal(
           container.Labels['traefik.backend'],
           name.replace(`-${deployId}`, ''),
@@ -185,6 +200,16 @@ module.exports = (server, token) =>
         t.equal(containerTwo.Labels['exoframe.deployment'], nameTwo, 'Should have correct deployment label');
         t.equal(containerOne.Labels['exoframe.user'], 'admin', 'Should have correct user label');
         t.equal(containerTwo.Labels['exoframe.user'], 'admin', 'Should have correct user label');
+        t.equal(
+          containerOne.Labels['exoframe.project'],
+          nameOne.replace(`-web-${deployIdOne}`, ''),
+          'Should have correct project label'
+        );
+        t.equal(
+          containerTwo.Labels['exoframe.project'],
+          nameTwo.replace(`-redis-${deployIdTwo}`, ''),
+          'Should have correct project label'
+        );
         t.equal(
           containerOne.Labels['traefik.backend'],
           nameOne.replace(`-${deployIdOne}`, ''),

@@ -48,6 +48,7 @@ module.exports = async ({image, username}) => {
     Labels: {
       'exoframe.deployment': name,
       'exoframe.user': username,
+      'exoframe.project': baseName,
       'traefik.backend': baseName,
     },
     HostConfig: {
