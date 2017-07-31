@@ -60,6 +60,7 @@ exports.updateCompose = ({username}) => {
     const extLabels = {
       'exoframe.deployment': name,
       'exoframe.user': username,
+      'exoframe.project': baseName,
       'traefik.backend': backend,
     };
     compose.services[svcKey].labels = Object.assign({}, extLabels, compose.services[svcKey].labels);

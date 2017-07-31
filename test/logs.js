@@ -1,13 +1,13 @@
 // npm packages
 const tap = require('tap');
 
-module.exports = (server, token, name) =>
+module.exports = (server, token, data) =>
   new Promise(resolve => {
     tap.test('Should get logs for current project', t => {
       // options base
       const options = {
         method: 'GET',
-        url: `/logs/${encodeURIComponent(name)}`,
+        url: `/logs/${encodeURIComponent(data.deployment)}`,
         headers: {
           Authorization: `Bearer ${token}`,
         },

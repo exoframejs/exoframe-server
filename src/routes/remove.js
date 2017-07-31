@@ -18,16 +18,36 @@ module.exports = server => {
         c => c.Labels['exoframe.user'] === username && c.Names.find(n => n === `/${id}`)
       );
 
-      if (!containerInfo) {
+      // if container found by name - remove
+      if (containerInfo) {
+        const service = docker.getContainer(containerInfo.Id);
+        if (containerInfo.State === 'running') {
+          await service.stop();
+        }
+        await service.remove();
+
+        reply('removed').code(204);
+        return;
+      }
+
+      // if not found by name - try to find by project
+      const containers = allContainers.filter(
+        c => c.Labels['exoframe.user'] === username && c.Labels['exoframe.project'] === id
+      );
+      if (!containers.length) {
         reply({error: 'Container not found!'}).code(404);
         return;
       }
 
-      const service = docker.getContainer(containerInfo.Id);
-      if (containerInfo.State === 'running') {
-        await service.stop();
-      }
-      await service.remove();
+      await Promise.all(
+        containers.map(async cInfo => {
+          const service = docker.getContainer(cInfo.Id);
+          if (cInfo.State === 'running') {
+            await service.stop();
+          }
+          await service.remove();
+        })
+      );
 
       reply('removed').code(204);
     },
