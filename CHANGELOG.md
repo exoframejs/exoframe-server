@@ -1,3 +1,11 @@
+
+0.12.0 / 2017-07-31
+==================
+
+Additions:
+  * Add exoframe.project labels to deployments to allow grouping them
+  * Allow removing whole projects
+
 0.11.1 / 2017-07-17
 ==================
 
