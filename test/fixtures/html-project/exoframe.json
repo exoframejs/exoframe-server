@@ -1,5 +1,5 @@
 {
   "name": "test-html-deploy",
-  "domain": "localhost",
+  "domain": false,
   "restart": "no"
 }

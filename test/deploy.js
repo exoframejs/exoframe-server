@@ -46,11 +46,7 @@ module.exports = (server, token) =>
         t.ok(containerInfo, 'Docker has container');
         t.equal(containerInfo.Labels['exoframe.deployment'], name, 'Should have correct deployment label');
         t.equal(containerInfo.Labels['exoframe.user'], 'admin', 'Should have correct user label');
-        t.equal(
-          containerInfo.Labels['exoframe.project'],
-          name.replace(`-${deployId}`, ''),
-          'Should have correct project label'
-        );
+        t.equal(containerInfo.Labels['exoframe.project'], 'test-project', 'Should have correct project label');
         t.equal(
           containerInfo.Labels['traefik.backend'],
           name.replace(`-${deployId}`, ''),
@@ -158,7 +154,7 @@ module.exports = (server, token) =>
           name.replace(`-${deployId}`, ''),
           'Should have correct backend label'
         );
-        t.equal(container.Labels['traefik.frontend.rule'], 'Host:localhost', 'Should have correct frontend label');
+        t.notOk(container.Labels['traefik.frontend.rule'], 'Should not have frontend label');
         t.ok(container.NetworkSettings.Networks.exoframe, 'Should be in exoframe network');
 
         // cleanup
