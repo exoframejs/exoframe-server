@@ -1,4 +1,12 @@
 
+0.13.0 / 2017-08-02
+==================
+
+Additions:
+  * Allow disabling domain with false value in config
+  * Allow specifying project name using config file
+  * Allow getting logs for whole projects, not just single deployments
+
 0.12.0 / 2017-07-31
 ==================
 
