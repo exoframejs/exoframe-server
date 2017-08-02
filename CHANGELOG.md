@@ -1,4 +1,10 @@
 
+0.13.1 / 2017-08-02
+==================
+
+Fixes:
+  * Use node8-alpine during pkg build since latest-alpine might fail
+
 0.13.0 / 2017-08-02
 ==================
 
