@@ -19,9 +19,10 @@
   "dependencies": {
     "chokidar": "^1.7.0",
     "dockerode": "^2.4.3",
-    "hapi": "^16.1.1",
+    "hapi": "^16.5.0",
     "hapi-auth-jwt": "^4.0.0",
-    "js-yaml": "^3.8.4",
+    "highland": "^2.11.1",
+    "js-yaml": "^3.9.1",
     "jsonwebtoken": "^7.4.0",
     "lodash": "^4.17.4",
     "lokijs": "^1.5.0",
@@ -34,7 +35,7 @@
   },
   "devDependencies": {
     "coveralls": "^2.13.1",
-    "pkg": "^4.1.1",
-    "tap": "^10.3.2"
+    "pkg": "^4.1.4",
+    "tap": "^10.7.1"
   }
 }
