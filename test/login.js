@@ -55,14 +55,37 @@ module.exports = server =>
         t.ok(result.token, 'Has token');
 
         const decodedUser = jwt.verify(result.token, authConfig.privateKey);
-        delete decodedUser.iat;
-        delete decodedUser.exp;
 
         t.equal(decodedUser.user.username, 'admin', 'Login matches request');
         t.ok(decodedUser.loggedIn, 'Is logged in');
 
         // save token for return
         token = result.token;
+
+        t.end();
+      });
+    });
+
+    tap.test('Should generate valid deploy token', t => {
+      const options = {
+        method: 'GET',
+        url: '/deployToken',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      server.inject(options, response => {
+        const result = response.result;
+
+        t.equal(response.statusCode, 200, 'Correct status code');
+        t.ok(result.token, 'Has token');
+
+        const decodedUser = jwt.verify(result.token, authConfig.privateKey);
+
+        t.equal(decodedUser.user.username, 'admin', 'Login matches request');
+        t.ok(decodedUser.loggedIn, 'Is logged in');
+        t.ok(decodedUser.deploy, 'Is logged in');
 
         t.end();
       });
