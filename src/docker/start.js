@@ -19,7 +19,7 @@ module.exports = async ({image, username}) => {
 
   // generate host
   const defaultDomain = serverConfig.baseDomain ? `${name}${serverConfig.baseDomain}` : undefined;
-  const host = config.domain || defaultDomain;
+  const host = config.domain === undefined ? defaultDomain : config.domain;
 
   // generate env vars
   const Env = config.env ? Object.keys(config.env).map(key => `${key}=${config.env[key]}`) : [];

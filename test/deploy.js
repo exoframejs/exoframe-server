@@ -154,7 +154,7 @@ module.exports = (server, token) =>
           name.replace(`-${deployId}`, ''),
           'Should have correct backend label'
         );
-        t.equal(container.Labels['traefik.frontend.rule'], 'Host:localhost', 'Should have correct frontend label');
+        t.notOk(container.Labels['traefik.frontend.rule'], 'Should not have frontend label');
         t.ok(container.NetworkSettings.Networks.exoframe, 'Should be in exoframe network');
 
         // cleanup
