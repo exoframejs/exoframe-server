@@ -59,9 +59,23 @@ module.exports = server =>
         handler(request, reply) {
           const replyObj = {
             message: 'Token is valid',
-            credentials: _.omit(request.auth.credentials, ['password']),
+            credentials: request.auth.credentials,
           };
           reply(replyObj);
+        },
+      });
+
+      server.route({
+        method: 'GET',
+        path: '/deployToken',
+        config: {auth: 'token'},
+        handler(request, reply) {
+          // generate new deploy token
+          const user = request.auth.credentials;
+          const token = jwt.sign({loggedIn: true, user, deploy: true}, auth.privateKey, {
+            algorithm: 'HS256',
+          });
+          reply({token});
         },
       });
 
