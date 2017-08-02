@@ -24,6 +24,9 @@ module.exports = async ({image, username}) => {
   // generate env vars
   const Env = config.env ? Object.keys(config.env).map(key => `${key}=${config.env[key]}`) : [];
 
+  // generate project name
+  const project = config.project || baseName;
+
   // construct restart policy
   const restartPolicy = config.restart || 'on-failure:2';
   const RestartPolicy = {
@@ -48,7 +51,7 @@ module.exports = async ({image, username}) => {
     Labels: {
       'exoframe.deployment': name,
       'exoframe.user': username,
-      'exoframe.project': baseName,
+      'exoframe.project': project,
       'traefik.backend': baseName,
     },
     HostConfig: {
