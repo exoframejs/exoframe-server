@@ -1,4 +1,10 @@
 
+0.14.0 / 2017-08-02
+==================
+
+Additions:
+  * Add simple way to generate deploy tokens
+
 0.13.1 / 2017-08-02
 ==================
 
