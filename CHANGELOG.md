@@ -1,4 +1,10 @@
 
+0.15.0 / 2017-08-03
+==================
+
+Additions:
+  * Implement basic deployment update functionality
+
 0.14.0 / 2017-08-02
 ==================
 
