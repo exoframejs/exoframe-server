@@ -1,5 +1,4 @@
 // npm packages
-const _ = require('lodash');
 const fs = require('fs');
 const {join} = require('path');
 const {promisify} = require('util');

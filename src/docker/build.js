@@ -1,11 +1,10 @@
 // npm modules
-const _ = require('lodash');
 const tar = require('tar-fs');
 
 // our modules
 const logger = require('../logger');
 const docker = require('./docker');
-const {tempDockerDir, getProjectConfig} = require('../util');
+const {tempDockerDir, getProjectConfig, tagFromConfig} = require('../util');
 
 module.exports = ({username}) =>
   new Promise(async (resolve, reject) => {
@@ -16,7 +15,7 @@ module.exports = ({username}) =>
     const config = getProjectConfig();
 
     // construct image tag
-    const tag = `exo-${_.kebabCase(username)}-${_.kebabCase(config.name)}:latest`;
+    const tag = tagFromConfig({username, config});
     logger.debug('building with tag:', tag);
 
     // deploy as docker

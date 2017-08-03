@@ -9,8 +9,6 @@ const logsConfig = {
   timestamps: true,
 };
 
-const cleanLogs = text => text.replace(/^\u0001.+?\d/, '').replace(/\n+$/, '');
-
 module.exports = server => {
   server.route({
     method: 'GET',

@@ -1,15 +1,11 @@
-// npm modules
-const uuid = require('uuid');
-
 // our modules
 const docker = require('./docker');
-const {getProjectConfig} = require('../util');
+const {getProjectConfig, baseNameFromImage, nameFromImage, projectFromConfig} = require('../util');
 const {getConfig} = require('../config');
 
 module.exports = async ({image, username}) => {
-  const baseName = image.split(':').shift();
-  const uid = uuid.v1();
-  const name = `${baseName}-${uid.split('-').shift()}`;
+  const baseName = baseNameFromImage(image);
+  const name = nameFromImage(image);
 
   // get server config
   const serverConfig = getConfig();
@@ -25,7 +21,7 @@ module.exports = async ({image, username}) => {
   const Env = config.env ? Object.keys(config.env).map(key => `${key}=${config.env[key]}`) : [];
 
   // generate project name
-  const project = config.project || baseName;
+  const project = projectFromConfig({username, config});
 
   // construct restart policy
   const restartPolicy = config.restart || 'on-failure:2';
