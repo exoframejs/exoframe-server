@@ -1,5 +1,6 @@
 // our modules
 const docker = require('../docker/docker');
+const {removeContainer} = require('../docker/util');
 
 module.exports = server => {
   server.route({
@@ -20,12 +21,7 @@ module.exports = server => {
 
       // if container found by name - remove
       if (containerInfo) {
-        const service = docker.getContainer(containerInfo.Id);
-        if (containerInfo.State === 'running') {
-          await service.stop();
-        }
-        await service.remove();
-
+        await removeContainer(containerInfo);
         reply('removed').code(204);
         return;
       }
@@ -38,17 +34,9 @@ module.exports = server => {
         reply({error: 'Container not found!'}).code(404);
         return;
       }
-
-      await Promise.all(
-        containers.map(async cInfo => {
-          const service = docker.getContainer(cInfo.Id);
-          if (cInfo.State === 'running') {
-            await service.stop();
-          }
-          await service.remove();
-        })
-      );
-
+      // remove all
+      await Promise.all(containers.map(removeContainer));
+      // reply
       reply('removed').code(204);
     },
   });

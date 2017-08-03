@@ -9,13 +9,15 @@ const chokidar = require('chokidar');
 const logger = require('../logger');
 
 // construct paths
-const baseFolder = process.env.NODE_ENV !== 'testing'
-  ? path.join(os.homedir(), '.exoframe')
-  : path.join(__dirname, '..', '..', 'test', 'fixtures');
+const baseFolder =
+  process.env.NODE_ENV !== 'testing'
+    ? path.join(os.homedir(), '.exoframe')
+    : path.join(__dirname, '..', '..', 'test', 'fixtures');
 const configPath = path.join(baseFolder, 'server.config.yml');
-const publicKeysPath = process.env.NODE_ENV !== 'testing'
-  ? path.join(os.homedir(), '.ssh')
-  : path.join(__dirname, '..', '..', 'test', 'fixtures');
+const publicKeysPath =
+  process.env.NODE_ENV !== 'testing'
+    ? path.join(os.homedir(), '.ssh')
+    : path.join(__dirname, '..', '..', 'test', 'fixtures');
 
 // create base folder if doesn't exist
 try {

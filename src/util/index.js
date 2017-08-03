@@ -1,9 +1,11 @@
 // npm modules
+const _ = require('lodash');
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const tar = require('tar-fs');
 const rimraf = require('rimraf');
+const uuid = require('uuid');
 
 // dir for temporary files used to build docker images
 // construct paths
@@ -29,3 +31,21 @@ exports.getProjectConfig = () => {
 
   return config;
 };
+
+exports.tagFromConfig = ({username, config}) => `exo-${_.kebabCase(username)}-${_.kebabCase(config.name)}:latest`;
+
+exports.baseNameFromImage = image => image.split(':').shift();
+
+exports.nameFromImage = image => {
+  const baseName = exports.baseNameFromImage(image);
+  const uid = uuid.v1();
+  return `${baseName}-${uid.split('-').shift()}`;
+};
+
+exports.projectFromConfig = ({username, config}) => {
+  const tag = exports.tagFromConfig({username, config});
+  const baseName = tag.split(':').shift();
+  return config.project || baseName;
+};
+
+exports.sleep = time => new Promise(r => setTimeout(r, time));
