@@ -1,4 +1,10 @@
 
+0.16.0 / 2017-08-28
+==================
+
+Additions:
+  * Return build log on image build failures during deployment
+
 0.15.0 / 2017-08-03
 ==================
 
