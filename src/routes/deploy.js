@@ -38,26 +38,37 @@ const deploy = async ({username}) => {
         .map(container => container.inspect())
     );
     // return them
-    return deployments;
+    return [{status: 'success', deployments}, 200];
   }
 
   // generate dockerfile
   generateDockerfile();
 
   // build docker image
-  const buildRes = await build({username});
-  logger.debug('build result:', buildRes);
+  try {
+    const buildRes = await build({username});
+    logger.debug('build result:', buildRes);
 
-  // start image
-  const containerInfo = await start(Object.assign(buildRes, {username}));
-  logger.debug(containerInfo.Name);
+    // check for errors in build log
+    if (buildRes.log.map(it => it.toLowerCase()).some(it => it.includes('error') || it.includes('failed'))) {
+      logger.debug('build log conains error!');
+      return [{status: 'error', result: buildRes}, 400];
+    }
 
-  // clean temp folder
-  await cleanTemp();
+    // start image
+    const containerInfo = await start(Object.assign(buildRes, {username}));
+    logger.debug(containerInfo.Name);
 
-  const containerData = docker.getContainer(containerInfo.Id);
-  const container = await containerData.inspect();
-  return [container];
+    // clean temp folder
+    await cleanTemp();
+
+    const containerData = docker.getContainer(containerInfo.Id);
+    const container = await containerData.inspect();
+    return [{status: 'success', deployments: [container]}, 200];
+  } catch (e) {
+    logger.debug('build failed!', e);
+    return [{status: 'error', result: e}, 400];
+  }
 };
 
 module.exports = server => {
@@ -79,9 +90,9 @@ module.exports = server => {
       // unpack to temp folder
       await unpack(request.payload.path);
       // run deploy
-      const deployments = await deploy({username});
+      const [response, code] = await deploy({username});
       // respond
-      reply({status: 'success', deployments});
+      reply(response).code(code);
     },
   });
 
@@ -116,7 +127,7 @@ module.exports = server => {
 
       // deploy new versions
       // run deploy
-      const deployments = await deploy({username, payload: request.payload});
+      const [response, code] = await deploy({username, payload: request.payload});
       // wait a bit for it to start
       await sleep(WAIT_TIME);
 
@@ -131,7 +142,7 @@ module.exports = server => {
       }
 
       // respond
-      reply({status: 'success', deployments});
+      reply(response).code(code);
     },
   });
 };
