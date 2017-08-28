@@ -20,6 +20,9 @@ module.exports = ({username}) =>
 
     // deploy as docker
     const log = [];
+    // track errors
+    let hasErrors = false;
+    // send build command
     const output = await docker.buildImage(tarStream, {t: tag});
     output.on('data', d => {
       const str = d.toString();
@@ -27,8 +30,16 @@ module.exports = ({username}) =>
       parts.filter(s => s.length > 0).forEach(s => {
         try {
           const data = JSON.parse(s);
+          // process log data
           if (data.stream && data.stream.length) {
             log.push(data.stream);
+          } else if (data.error && data.error.length) {
+            // process error data
+            log.push(data.error);
+            hasErrors = true;
+          } else {
+            // push everything else as-is
+            log.push(s);
           }
         } catch (e) {
           if (s && s.length) {
@@ -37,6 +48,11 @@ module.exports = ({username}) =>
         }
       });
     });
-    output.on('error', e => reject(e));
-    output.on('end', () => resolve({log, image: tag}));
+    output.on('end', () => {
+      if (hasErrors) {
+        reject({error: 'Build failed! See build log for details.', log, image: tag});
+        return;
+      }
+      resolve({log, image: tag});
+    });
   });

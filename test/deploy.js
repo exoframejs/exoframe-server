@@ -15,6 +15,8 @@ module.exports = (server, token) =>
     const streamHtmlUpdate = tar.pack(path.join(__dirname, 'fixtures', 'html-project'));
     const streamCompose = tar.pack(path.join(__dirname, 'fixtures', 'compose-project'));
     const streamComposeUpdate = tar.pack(path.join(__dirname, 'fixtures', 'compose-project'));
+    const streamBrokenDocker = tar.pack(path.join(__dirname, 'fixtures', 'broken-docker-project'));
+    const streamBrokenNode = tar.pack(path.join(__dirname, 'fixtures', 'broken-node-project'));
 
     // options base
     const optionsBase = {
@@ -347,6 +349,64 @@ module.exports = (server, token) =>
         } catch (e) {
           t.ok(e.toString().includes('no such container'), 'Old container two should not exist');
         }
+
+        t.end();
+      });
+    });
+
+    tap.test('Should display error log for broken docker project', t => {
+      const options = Object.assign(optionsBase, {
+        payload: streamBrokenDocker,
+      });
+
+      server.inject(options, async response => {
+        const result = response.result;
+
+        // check response
+        t.equal(response.statusCode, 400, 'Correct status code');
+        t.equal(result.status, 'error', 'Has success status');
+        t.equal(result.result.error, 'Build failed! See build log for details.', 'Has correct message');
+        t.equal(result.result.log[0], 'Step 1/3 : FROM busybox\n', 'Has correct build log line 1');
+        t.equal(result.result.log[2], 'Step 2/3 : RUN exit 1\n', 'Has correct build log line 2');
+        t.equal(
+          result.result.log[4],
+          "The command '/bin/sh -c exit 1' returned a non-zero code: 1",
+          'Has correct build log line 4'
+        );
+
+        // clean all exited containers
+        const allContainers = await docker.listContainers({all: true});
+        const exitedWithError = allContainers.filter(c => c.Status.includes('Exited (1)'));
+        await Promise.all(exitedWithError.map(c => docker.getContainer(c.Id)).map(c => c.remove()));
+
+        t.end();
+      });
+    });
+
+    tap.test('Should display error log for broken Node.js project', t => {
+      const options = Object.assign(optionsBase, {
+        payload: streamBrokenNode,
+      });
+
+      server.inject(options, async response => {
+        const result = response.result;
+
+        // check response
+        t.equal(response.statusCode, 400, 'Correct status code');
+        t.equal(result.status, 'error', 'Has success status');
+        t.equal(result.result.error, 'Build failed! See build log for details.', 'Has correct message');
+        t.equal(result.result.log[0], 'Step 1/8 : FROM node:alpine\n', 'Has correct first log line');
+        t.equal(result.result.log[2], 'Step 2/8 : RUN mkdir -p /usr/src/app\n', 'Has correct second log line');
+        t.equal(
+          result.result.log[result.result.log.length - 1],
+          "The command '/bin/sh -c npm install --silent' returned a non-zero code: 1",
+          'Has correct last log line'
+        );
+
+        // clean all exited containers
+        const allContainers = await docker.listContainers({all: true});
+        const exitedWithError = allContainers.filter(c => c.Status.includes('Exited (1)'));
+        await Promise.all(exitedWithError.map(c => docker.getContainer(c.Id)).map(c => c.remove()));
 
         t.end();
       });
