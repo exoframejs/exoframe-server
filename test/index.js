@@ -11,6 +11,7 @@ const deploy = require('./deploy');
 const list = require('./list');
 const logs = require('./logs');
 const remove = require('./remove');
+const update = require('./update');
 const dockerInit = require('./docker-init');
 
 const run = async () => {
@@ -35,6 +36,8 @@ const run = async () => {
   await logs(server, token, name);
   // test removal
   await remove(server, token, name);
+  // test update
+  await update(server, token);
 
   // stop server
   await server.stop();
