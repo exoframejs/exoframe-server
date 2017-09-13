@@ -1,4 +1,10 @@
 
+0.17.0 / 2017-09-13
+==================
+
+Additions:
+  * Add update endpoint that can update traefik and self
+
 0.16.0 / 2017-08-28
 ==================
 
