@@ -57,7 +57,7 @@ exports.initDocker = async () => {
   // get all containers
   const allContainers = await docker.listContainers();
   // try to find traefik instance
-  const traefik = allContainers.find(c => c.Image === 'traefik:latest' && c.Names.find(n => n === `/${traefikName}`));
+  const traefik = allContainers.find(c => c.Names.find(n => n === `/${traefikName}`));
 
   // if traefik exists and running - just return
   if (traefik && !traefik.Status.includes('Exited')) {

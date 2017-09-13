@@ -12,9 +12,7 @@ module.exports = () =>
         // remove any existing containers first
         const initialContainers = await docker.listContainers({all: true});
         // try to find traefik instance
-        const traefik = initialContainers.find(
-          c => c.Image === 'traefik:latest' && c.Names.find(n => n === '/exoframe-traefik')
-        );
+        const traefik = initialContainers.find(c => c.Names.find(n => n === '/exoframe-traefik'));
         // if found - stop/remove
         if (traefik) {
           const traefikContainer = docker.getContainer(traefik.Id);
@@ -27,13 +25,9 @@ module.exports = () =>
         // call init
         await initDocker();
 
-        console.log('init done');
-
         // check docker services
         const allContainers = await docker.listContainers();
-        const container = allContainers.find(
-          c => c.Image === 'traefik:latest' && c.Names.find(n => n === '/exoframe-traefik')
-        );
+        const container = allContainers.find(c => c.Names.find(n => n === '/exoframe-traefik'));
 
         t.ok(container, 'Docker has container');
         t.equal(container.Names[0], '/exoframe-traefik', 'Should have correct name');
