@@ -40,7 +40,7 @@ module.exports = server => {
             await traefikContainer.remove();
           }
           // re-init traefik
-          await initDocker({restart: true});
+          initDocker({restart: true});
           // reply
           reply({updated: true}).code(200);
           return;
