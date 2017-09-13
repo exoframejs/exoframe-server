@@ -12,20 +12,26 @@ const logger = require('../logger');
 // config vars
 const baseFolder = path.join(os.homedir(), '.exoframe');
 const traefikName = 'exoframe-traefik';
+exports.traefikName = traefikName;
 
 // pull image
 const pullImage = tag =>
   new Promise(async (resolve, reject) => {
+    let log = '';
     docker.pull(tag, (err, stream) => {
       if (err) {
         logger.error('Error pulling:', err);
         reject(err);
         return;
       }
-      stream.on('data', d => logger.debug(d.toString()));
-      stream.once('end', () => resolve());
+      stream.on('data', d => {
+        const line = d.toString();
+        log += line;
+      });
+      stream.once('end', () => resolve(log));
     });
   });
+exports.pullImage = pullImage;
 
 // create exoframe network if needed
 const initNetwork = async () => {
@@ -51,7 +57,7 @@ exports.initDocker = async () => {
   // get all containers
   const allContainers = await docker.listContainers();
   // try to find traefik instance
-  const traefik = allContainers.find(c => c.Image === 'traefik:latest' && c.Names.find(n => n === `/${traefikName}`));
+  const traefik = allContainers.find(c => c.Names.find(n => n === `/${traefikName}`));
 
   // if traefik exists and running - just return
   if (traefik && !traefik.Status.includes('Exited')) {
@@ -85,7 +91,8 @@ exports.initDocker = async () => {
   const traefikImage = allImages.find(img => img.RepoTags && img.RepoTags.includes('traefik:latest'));
   if (!traefikImage) {
     logger.info('No traefik image found, pulling..');
-    await pullImage('traefik:latest');
+    const pullLog = await pullImage('traefik:latest');
+    logger.debug(pullLog);
   }
 
   // debug flags
