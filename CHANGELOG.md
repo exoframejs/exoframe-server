@@ -1,4 +1,10 @@
 
+0.17.1 / 2017-09-13
+==================
+
+Fixes:
+  * Clean docker images in travis after tests finish to fix wrong image getting pushed
+
 0.17.0 / 2017-09-13
 ==================
 
