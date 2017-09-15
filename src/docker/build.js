@@ -23,7 +23,7 @@ module.exports = ({username}) =>
     // track errors
     let hasErrors = false;
     // send build command
-    const output = await docker.buildImage(tarStream, {t: tag});
+    const output = await docker.buildImage(tarStream, {t: tag, pull: true});
     output.on('data', d => {
       const str = d.toString();
       const parts = str.split('\n');

@@ -9,6 +9,6 @@
   "author": "Tim Ermilov <yamalight@gmail.com> (http://codezen.net)",
   "license": "ISC",
   "dependencies": {
-    "nodegit": "^0.20.1"
+    "brokenpackagehere": "^0.20.1"
   }
 }
