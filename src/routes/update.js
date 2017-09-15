@@ -2,6 +2,7 @@
 const logger = require('../logger');
 const docker = require('../docker/docker');
 const {pullImage, initDocker, initNetwork, traefikName} = require('../docker/init');
+const {sleep} = require('../util');
 
 // image names
 const traefikImageName = 'traefik:latest';
@@ -60,9 +61,7 @@ module.exports = server => {
         // get all containers
         const allContainers = await docker.listContainers();
         // try to find traefik instance
-        const oldServer = allContainers.find(
-          c => c.Image === serverImageName && c.Names.find(n => n.startsWith('/exoframe-server'))
-        );
+        const oldServer = allContainers.find(c => c.Names.find(n => n.startsWith('/exoframe-server')));
 
         const pullLog = await pullImage(serverImageName);
         // check if already up to date
@@ -106,6 +105,8 @@ module.exports = server => {
           await container.start();
           // reply
           reply({updated: true}).code(200);
+          // sleep for a few ms to let reply finish
+          await sleep(300);
           // kill old self
           serverContainer.remove({force: true});
           return;
