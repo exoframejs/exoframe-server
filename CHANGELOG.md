@@ -1,4 +1,13 @@
 
+0.18.0 / 2017-09-15
+==================
+
+Additions:
+  * Always pull base image during build
+
+Changes:
+  * Use node:latest base image for node.js projects
+
 0.17.1 / 2017-09-13
 ==================
 
