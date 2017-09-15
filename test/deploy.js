@@ -391,11 +391,11 @@ module.exports = (server, token) =>
         t.equal(result.status, 'error', 'Has success status');
         t.equal(result.result.error, 'Build failed! See build log for details.', 'Has correct message');
         t.equal(result.result.log[0], 'Step 1/3 : FROM busybox\n', 'Has correct build log line 1');
-        t.equal(result.result.log[2], 'Step 2/3 : RUN exit 1\n', 'Has correct build log line 2');
+        t.ok(result.result.log.find(l => l === 'Step 2/3 : RUN exit 1\n'), 'Has correct exit build log line');
         t.equal(
-          result.result.log[4],
+          result.result.log[result.result.log.length - 1],
           "The command '/bin/sh -c exit 1' returned a non-zero code: 1",
-          'Has correct build log line 4'
+          'Has correct build log last line'
         );
 
         // clean all exited containers
@@ -420,7 +420,7 @@ module.exports = (server, token) =>
         t.equal(result.status, 'error', 'Has success status');
         t.equal(result.result.error, 'Build failed! See build log for details.', 'Has correct message');
         t.equal(result.result.log[0], 'Step 1/8 : FROM node:latest\n', 'Has correct first log line');
-        t.equal(result.result.log[2], 'Step 2/8 : RUN mkdir -p /usr/src/app\n', 'Has correct second log line');
+        t.ok(result.result.log.find(l => l === 'Step 2/8 : RUN mkdir -p /usr/src/app\n'), 'Has correct mkdir log line');
         t.equal(
           result.result.log[result.result.log.length - 1],
           "The command '/bin/sh -c npm install --silent' returned a non-zero code: 1",
