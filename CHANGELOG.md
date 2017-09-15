@@ -1,4 +1,10 @@
 
+0.18.1 / 2017-09-15
+==================
+
+Fixes:
+  * Fix server self update, add slight delay upon sending response to make time for it to finish
+
 0.18.0 / 2017-09-15
 ==================
 
