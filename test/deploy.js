@@ -49,7 +49,10 @@ module.exports = (server, token) =>
         // check docker services
         const allContainers = await docker.listContainers();
         const containerInfo = allContainers.find(c => c.Names.includes(result.deployments[0].Name));
-        const deployId = result.deployments[0].Name.split('-').slice(-1).shift();
+        const deployId = result.deployments[0].Name
+          .split('-')
+          .slice(-1)
+          .shift();
         const name = result.deployments[0].Name.slice(1);
 
         t.ok(containerInfo, 'Docker has container');
@@ -105,7 +108,10 @@ module.exports = (server, token) =>
         const allContainers = await docker.listContainers();
         const container = allContainers.find(c => c.Names.includes(result.deployments[0].Name));
         const name = result.deployments[0].Name.slice(1);
-        const deployId = name.split('-').slice(-1).shift();
+        const deployId = name
+          .split('-')
+          .slice(-1)
+          .shift();
 
         t.ok(container, 'Docker has container');
         t.equal(container.Labels['exoframe.deployment'], name, 'Should have correct deployment label');
@@ -148,7 +154,10 @@ module.exports = (server, token) =>
         // check docker services
         const allContainers = await docker.listContainers();
         const container = allContainers.find(c => c.Names.includes(`/${name}`));
-        const deployId = name.split('-').slice(-1).shift();
+        const deployId = name
+          .split('-')
+          .slice(-1)
+          .shift();
 
         t.ok(container, 'Docker has container');
         t.equal(container.Labels['exoframe.deployment'], name, 'Should have correct deployment label');
@@ -188,7 +197,10 @@ module.exports = (server, token) =>
         // check docker services
         const allContainers = await docker.listContainers();
         const container = allContainers.find(c => c.Names.includes(`/${name}`));
-        const deployId = name.split('-').slice(-1).shift();
+        const deployId = name
+          .split('-')
+          .slice(-1)
+          .shift();
 
         t.ok(container, 'Docker has container');
         t.equal(container.Labels['exoframe.deployment'], name, 'Should have correct deployment label');
@@ -240,8 +252,14 @@ module.exports = (server, token) =>
         const containerTwo = allContainers.find(c => c.Names.includes(result.deployments[1].Name));
         const nameOne = result.deployments[0].Name.slice(1);
         const nameTwo = result.deployments[1].Name.slice(1);
-        const deployIdOne = nameOne.split('-').slice(-1).shift();
-        const deployIdTwo = nameTwo.split('-').slice(-1).shift();
+        const deployIdOne = nameOne
+          .split('-')
+          .slice(-1)
+          .shift();
+        const deployIdTwo = nameTwo
+          .split('-')
+          .slice(-1)
+          .shift();
 
         t.ok(containerOne, 'Docker has container one');
         t.ok(containerTwo, 'Docker has container two');
@@ -303,8 +321,14 @@ module.exports = (server, token) =>
         const containerTwo = allContainers.find(c => c.Names.includes(result.deployments[1].Name));
         const nameOne = result.deployments[0].Name.slice(1);
         const nameTwo = result.deployments[1].Name.slice(1);
-        const deployIdOne = nameOne.split('-').slice(-1).shift();
-        const deployIdTwo = nameTwo.split('-').slice(-1).shift();
+        const deployIdOne = nameOne
+          .split('-')
+          .slice(-1)
+          .shift();
+        const deployIdTwo = nameTwo
+          .split('-')
+          .slice(-1)
+          .shift();
 
         t.ok(containerOne, 'Docker has container one');
         t.ok(containerTwo, 'Docker has container two');
@@ -395,7 +419,7 @@ module.exports = (server, token) =>
         t.equal(response.statusCode, 400, 'Correct status code');
         t.equal(result.status, 'error', 'Has success status');
         t.equal(result.result.error, 'Build failed! See build log for details.', 'Has correct message');
-        t.equal(result.result.log[0], 'Step 1/8 : FROM node:alpine\n', 'Has correct first log line');
+        t.equal(result.result.log[0], 'Step 1/8 : FROM node:latest\n', 'Has correct first log line');
         t.equal(result.result.log[2], 'Step 2/8 : RUN mkdir -p /usr/src/app\n', 'Has correct second log line');
         t.equal(
           result.result.log[result.result.log.length - 1],

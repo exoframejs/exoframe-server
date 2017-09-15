@@ -14,12 +14,12 @@ module.exports = (server, token) =>
     // get all images
     const oldImages = await docker.listImages();
     // remove current :latest images
-    const latestTraefik = oldImages.find(img => img.RepoTags.includes('traefik:latest'));
+    const latestTraefik = oldImages.find(img => img.RepoTags && img.RepoTags.includes('traefik:latest'));
     if (latestTraefik) {
       const limg = docker.getImage(latestTraefik.Id);
       await limg.remove();
     }
-    const latestServer = oldImages.find(img => img.RepoTags.includes('exoframe/server:latest'));
+    const latestServer = oldImages.find(img => img.RepoTags && img.RepoTags.includes('exoframe/server:latest'));
     if (latestServer) {
       const lsimg = docker.getImage(latestServer.Id);
       await lsimg.remove();
@@ -30,10 +30,10 @@ module.exports = (server, token) =>
     // get all images
     const images = await docker.listImages();
     // get old one and tag it as latest
-    const oldTraefik = images.find(img => img.RepoTags.includes(traefikTag));
+    const oldTraefik = images.find(img => img.RepoTags && img.RepoTags.includes(traefikTag));
     const timg = docker.getImage(oldTraefik.Id);
     await timg.tag({repo: 'traefik', tag: 'latest'});
-    const oldServer = images.find(img => img.RepoTags.includes(serverTag));
+    const oldServer = images.find(img => img.RepoTags && img.RepoTags.includes(serverTag));
     const simg = docker.getImage(oldServer.Id);
     await simg.tag({repo: 'exoframe/server', tag: 'latest'});
 
@@ -68,7 +68,7 @@ module.exports = (server, token) =>
 
         // check docker services
         const allImages = await docker.listImages();
-        const newTraefik = allImages.find(it => it.RepoTags.includes('traefik:latest'));
+        const newTraefik = allImages.find(it => it.RepoTags && it.RepoTags.includes('traefik:latest'));
         t.notEqual(newTraefik.Id, oldTraefik.Id, 'Should have updated traefik image');
 
         t.end();
@@ -92,7 +92,7 @@ module.exports = (server, token) =>
 
         // check docker services
         const allImages = await docker.listImages();
-        const newServer = allImages.find(it => it.RepoTags.includes('exoframe/server:latest'));
+        const newServer = allImages.find(it => it.RepoTags && it.RepoTags.includes('exoframe/server:latest'));
         t.notEqual(newServer.Id, oldServer.Id, 'Should have updated exoframe/server image');
 
         // cleanup
