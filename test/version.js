@@ -7,6 +7,9 @@ module.exports = (server, token) => {
     const options = {
       method: 'GET',
       url: '/version',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     };
 
     server.inject(options, async response => {

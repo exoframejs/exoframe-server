@@ -39,7 +39,7 @@ module.exports = server => {
         traefik: traefikVersion,
         latestTraefik: lastTraefikTag,
         traefikUpdate: cmp(lastTraefikTag, traefikVersion) > 0,
-      }).code(204);
+      }).code(200);
     },
   });
 };
