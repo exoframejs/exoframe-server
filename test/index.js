@@ -13,6 +13,7 @@ const logs = require('./logs');
 const remove = require('./remove');
 const update = require('./update');
 const dockerInit = require('./docker-init');
+const version = require('./version');
 
 const run = async () => {
   // wait for config
@@ -38,6 +39,8 @@ const run = async () => {
   await remove(server, token, name);
   // test update
   await update(server, token);
+  // test version
+  await version(server, token);
 
   // stop server
   await server.stop();
