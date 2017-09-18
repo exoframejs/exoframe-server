@@ -1,4 +1,10 @@
 
+0.19.0 / 2017-09-18
+==================
+
+Additions:
+  * Add route that gets and displays current and latest versions of server and traefik
+
 0.18.1 / 2017-09-15
 ==================
 
