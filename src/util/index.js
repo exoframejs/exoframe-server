@@ -49,3 +49,5 @@ exports.projectFromConfig = ({username, config}) => {
 };
 
 exports.sleep = time => new Promise(r => setTimeout(r, time));
+
+exports.writeStatus = (stream, data) => stream.write(`${JSON.stringify(data)}\n`);

@@ -4,9 +4,9 @@ const tar = require('tar-fs');
 // our modules
 const logger = require('../logger');
 const docker = require('./docker');
-const {tempDockerDir, getProjectConfig, tagFromConfig} = require('../util');
+const {tempDockerDir, getProjectConfig, tagFromConfig, writeStatus} = require('../util');
 
-module.exports = ({username}) =>
+module.exports = ({username, resultStream}) =>
   new Promise(async (resolve, reject) => {
     // get packed stream
     const tarStream = tar.pack(tempDockerDir);
@@ -17,6 +17,7 @@ module.exports = ({username}) =>
     // construct image tag
     const tag = tagFromConfig({username, config});
     logger.debug('building with tag:', tag);
+    writeStatus(resultStream, {message: `Building image with tag: ${tag}`, level: 'verbose'});
 
     // deploy as docker
     const log = [];
@@ -33,17 +34,21 @@ module.exports = ({username}) =>
           // process log data
           if (data.stream && data.stream.length) {
             log.push(data.stream);
+            writeStatus(resultStream, {message: data.stream, level: 'verbose'});
           } else if (data.error && data.error.length) {
             // process error data
             log.push(data.error);
+            writeStatus(resultStream, {message: data.error, level: 'error'});
             hasErrors = true;
           } else {
             // push everything else as-is
             log.push(s);
+            writeStatus(resultStream, {message: s, level: 'verbose'});
           }
         } catch (e) {
           if (s && s.length) {
             log.push(s);
+            writeStatus(resultStream, {message: s, level: 'verbose'});
           }
         }
       });

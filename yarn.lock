@@ -621,8 +621,8 @@ docker-modem@^1.0.0:
     split-ca "^1.0.0"
 
 dockerode@^2.4.3:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/dockerode/-/dockerode-2.5.0.tgz#3fb1ff0e14b6901d92abff75a8a5440569f0538b"
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/dockerode/-/dockerode-2.5.1.tgz#c0df942c48bf0c0be8353e348d45e1acb4c036e5"
   dependencies:
     concat-stream "~1.5.1"
     docker-modem "^1.0.0"
@@ -950,8 +950,8 @@ hapi-auth-jwt@^4.0.0:
     jsonwebtoken "5.x.x"
 
 hapi@^16.5.0:
-  version "16.5.2"
-  resolved "https://registry.yarnpkg.com/hapi/-/hapi-16.5.2.tgz#d1dadf33721c6ac3aaa905ce086d9c7ffb883092"
+  version "16.6.0"
+  resolved "https://registry.yarnpkg.com/hapi/-/hapi-16.6.0.tgz#c97cc7119a04314553883868651862fee34318ee"
   dependencies:
     accept "^2.1.4"
     ammo "^2.0.4"
@@ -1317,9 +1317,16 @@ js-yaml@3.6.1:
     argparse "^1.0.7"
     esprima "^2.6.0"
 
-js-yaml@^3.2.7, js-yaml@^3.3.1, js-yaml@^3.9.1:
+js-yaml@^3.2.7, js-yaml@^3.3.1:
   version "3.9.1"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.9.1.tgz#08775cebdfdd359209f0d2acd383c8f86a6904a0"
+  dependencies:
+    argparse "^1.0.7"
+    esprima "^4.0.0"
+
+js-yaml@^3.9.1:
+  version "3.10.0"
+  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.10.0.tgz#2e78441646bd4682e963f22b6e92823c309c62dc"
   dependencies:
     argparse "^1.0.7"
     esprima "^4.0.0"
@@ -2171,9 +2178,15 @@ right-align@^0.1.1:
   dependencies:
     align-text "^0.1.1"
 
-rimraf@2, rimraf@^2.3.3, rimraf@^2.5.1, rimraf@^2.5.4, rimraf@^2.6.1:
+rimraf@2, rimraf@^2.3.3, rimraf@^2.5.1, rimraf@^2.5.4:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.6.1.tgz#c2338ec643df7a1b7fe5c54fa86f57428a55f33d"
+  dependencies:
+    glob "^7.0.5"
+
+rimraf@^2.6.1:
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.6.2.tgz#2ed8150d24a16ea8651e6d6ef0f47c4158ce7a36"
   dependencies:
     glob "^7.0.5"
 

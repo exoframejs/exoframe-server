@@ -38,22 +38,28 @@ module.exports = (server, token) =>
       });
 
       server.inject(options, async response => {
-        const result = response.result;
+        // parse result into lines
+        const result = response.result
+          .split('\n')
+          .filter(l => l && l.length)
+          .map(line => JSON.parse(line));
+
+        // find deployments
+        const deployments = result.find(it => it.deployments && it.deployments.length).deployments;
 
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');
-        t.equal(result.status, 'success', 'Has success status');
-        t.equal(result.deployments.length, 1, 'Should have one deployment');
-        t.ok(result.deployments[0].Name.startsWith('/exo-admin-test-docker-deploy-'), 'Correct name');
+        t.equal(deployments.length, 1, 'Should have one deployment');
+        t.ok(deployments[0].Name.startsWith('/exo-admin-test-docker-deploy-'), 'Correct name');
 
         // check docker services
         const allContainers = await docker.listContainers();
-        const containerInfo = allContainers.find(c => c.Names.includes(result.deployments[0].Name));
-        const deployId = result.deployments[0].Name
+        const containerInfo = allContainers.find(c => c.Names.includes(deployments[0].Name));
+        const deployId = deployments[0].Name
           .split('-')
           .slice(-1)
           .shift();
-        const name = result.deployments[0].Name.slice(1);
+        const name = deployments[0].Name.slice(1);
 
         t.ok(containerInfo, 'Docker has container');
         t.equal(containerInfo.Labels['exoframe.deployment'], name, 'Should have correct deployment label');
@@ -96,18 +102,24 @@ module.exports = (server, token) =>
       });
 
       server.inject(options, async response => {
-        const result = response.result;
+        // parse result into lines
+        const result = response.result
+          .split('\n')
+          .filter(l => l && l.length)
+          .map(line => JSON.parse(line));
+
+        // find deployments
+        const deployments = result.find(it => it.deployments && it.deployments.length).deployments;
 
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');
-        t.equal(result.status, 'success', 'Has success status');
-        t.equal(result.deployments.length, 1, 'Should have one deployment');
-        t.ok(result.deployments[0].Name.startsWith('/exo-admin-test-node-deploy-'), 'Correct name');
+        t.equal(deployments.length, 1, 'Should have one deployment');
+        t.ok(deployments[0].Name.startsWith('/exo-admin-test-node-deploy-'), 'Correct name');
 
         // check docker services
         const allContainers = await docker.listContainers();
-        const container = allContainers.find(c => c.Names.includes(result.deployments[0].Name));
-        const name = result.deployments[0].Name.slice(1);
+        const container = allContainers.find(c => c.Names.includes(deployments[0].Name));
+        const name = deployments[0].Name.slice(1);
         const deployId = name
           .split('-')
           .slice(-1)
@@ -142,13 +154,19 @@ module.exports = (server, token) =>
       });
 
       server.inject(options, async response => {
-        const result = response.result;
+        // parse result into lines
+        const result = response.result
+          .split('\n')
+          .filter(l => l && l.length)
+          .map(line => JSON.parse(line));
+
+        // find deployments
+        const deployments = result.find(it => it.deployments && it.deployments.length).deployments;
 
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');
-        t.equal(result.status, 'success', 'Has success status');
-        t.equal(result.deployments.length, 1, 'Should have one deployment');
-        const name = result.deployments[0].Name.slice(1);
+        t.equal(deployments.length, 1, 'Should have one deployment');
+        const name = deployments[0].Name.slice(1);
         t.ok(name.startsWith('exo-admin-test-html-deploy-'), 'Correct name');
 
         // check docker services
@@ -185,13 +203,19 @@ module.exports = (server, token) =>
       });
 
       server.inject(options, async response => {
-        const result = response.result;
+        // parse result into lines
+        const result = response.result
+          .split('\n')
+          .filter(l => l && l.length)
+          .map(line => JSON.parse(line));
+
+        // find deployments
+        const deployments = result.find(it => it.deployments && it.deployments.length).deployments;
 
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');
-        t.equal(result.status, 'success', 'Has success status');
-        t.equal(result.deployments.length, 1, 'Should have one deployment');
-        const name = result.deployments[0].Name.slice(1);
+        t.equal(deployments.length, 1, 'Should have one deployment');
+        const name = deployments[0].Name.slice(1);
         t.ok(name.startsWith('exo-admin-test-html-deploy-'), 'Correct name');
 
         // check docker services
@@ -237,21 +261,27 @@ module.exports = (server, token) =>
       });
 
       server.inject(options, async response => {
-        const result = response.result;
+        // parse result into lines
+        const result = response.result
+          .split('\n')
+          .filter(l => l && l.length)
+          .map(line => JSON.parse(line));
+
+        // find deployments
+        const deployments = result.find(it => it.deployments && it.deployments.length).deployments;
 
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');
-        t.equal(result.status, 'success', 'Has success status');
-        t.equal(result.deployments.length, 2, 'Should have two deployments');
-        t.ok(result.deployments[0].Name.startsWith('/exo-admin-test-compose-deploy-web-'), 'Correct first name');
-        t.ok(result.deployments[1].Name.startsWith('/exo-admin-test-compose-deploy-redis-'), 'Correct second name');
+        t.equal(deployments.length, 2, 'Should have two deployments');
+        t.ok(deployments[0].Name.startsWith('/exo-admin-test-compose-deploy-web-'), 'Correct first name');
+        t.ok(deployments[1].Name.startsWith('/exo-admin-test-compose-deploy-redis-'), 'Correct second name');
 
         // check docker services
         const allContainers = await docker.listContainers();
-        const containerOne = allContainers.find(c => c.Names.includes(result.deployments[0].Name));
-        const containerTwo = allContainers.find(c => c.Names.includes(result.deployments[1].Name));
-        const nameOne = result.deployments[0].Name.slice(1);
-        const nameTwo = result.deployments[1].Name.slice(1);
+        const containerOne = allContainers.find(c => c.Names.includes(deployments[0].Name));
+        const containerTwo = allContainers.find(c => c.Names.includes(deployments[1].Name));
+        const nameOne = deployments[0].Name.slice(1);
+        const nameTwo = deployments[1].Name.slice(1);
         const deployIdOne = nameOne
           .split('-')
           .slice(-1)
@@ -306,21 +336,27 @@ module.exports = (server, token) =>
       });
 
       server.inject(options, async response => {
-        const result = response.result;
+        // parse result into lines
+        const result = response.result
+          .split('\n')
+          .filter(l => l && l.length)
+          .map(line => JSON.parse(line));
+
+        // find deployments
+        const deployments = result.find(it => it.deployments && it.deployments.length).deployments;
 
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');
-        t.equal(result.status, 'success', 'Has success status');
-        t.equal(result.deployments.length, 2, 'Should have two deployments');
-        t.ok(result.deployments[0].Name.startsWith('/exo-admin-test-compose-deploy-web-'), 'Correct first name');
-        t.ok(result.deployments[1].Name.startsWith('/exo-admin-test-compose-deploy-redis-'), 'Correct second name');
+        t.equal(deployments.length, 2, 'Should have two deployments');
+        t.ok(deployments[0].Name.startsWith('/exo-admin-test-compose-deploy-web-'), 'Correct first name');
+        t.ok(deployments[1].Name.startsWith('/exo-admin-test-compose-deploy-redis-'), 'Correct second name');
 
         // check docker services
         const allContainers = await docker.listContainers();
-        const containerOne = allContainers.find(c => c.Names.includes(result.deployments[0].Name));
-        const containerTwo = allContainers.find(c => c.Names.includes(result.deployments[1].Name));
-        const nameOne = result.deployments[0].Name.slice(1);
-        const nameTwo = result.deployments[1].Name.slice(1);
+        const containerOne = allContainers.find(c => c.Names.includes(deployments[0].Name));
+        const containerTwo = allContainers.find(c => c.Names.includes(deployments[1].Name));
+        const nameOne = deployments[0].Name.slice(1);
+        const nameTwo = deployments[1].Name.slice(1);
         const deployIdOne = nameOne
           .split('-')
           .slice(-1)
@@ -384,16 +420,22 @@ module.exports = (server, token) =>
       });
 
       server.inject(options, async response => {
-        const result = response.result;
+        // parse result into lines
+        const result = response.result
+          .split('\n')
+          .filter(l => l && l.length)
+          .map(line => JSON.parse(line));
+
+        // get last error
+        const error = result.pop();
 
         // check response
-        t.equal(response.statusCode, 400, 'Correct status code');
-        t.equal(result.status, 'error', 'Has success status');
-        t.equal(result.result.error, 'Build failed! See build log for details.', 'Has correct message');
-        t.equal(result.result.log[0], 'Step 1/3 : FROM busybox\n', 'Has correct build log line 1');
-        t.ok(result.result.log.find(l => l === 'Step 2/3 : RUN exit 1\n'), 'Has correct exit build log line');
+        t.equal(response.statusCode, 200, 'Correct status code');
+        t.equal(error.message, 'Build failed! See build log for details.', 'Has correct message');
+        t.equal(error.log[0], 'Step 1/3 : FROM busybox\n', 'Has correct build log line 1');
+        t.ok(error.log.find(l => l === 'Step 2/3 : RUN exit 1\n'), 'Has correct exit build log line');
         t.equal(
-          result.result.log[result.result.log.length - 1],
+          error.log[error.log.length - 1],
           "The command '/bin/sh -c exit 1' returned a non-zero code: 1",
           'Has correct build log last line'
         );
@@ -413,16 +455,22 @@ module.exports = (server, token) =>
       });
 
       server.inject(options, async response => {
-        const result = response.result;
+        // parse result into lines
+        const result = response.result
+          .split('\n')
+          .filter(l => l && l.length)
+          .map(line => JSON.parse(line));
+
+        // get last error
+        const error = result.pop();
 
         // check response
-        t.equal(response.statusCode, 400, 'Correct status code');
-        t.equal(result.status, 'error', 'Has success status');
-        t.equal(result.result.error, 'Build failed! See build log for details.', 'Has correct message');
-        t.equal(result.result.log[0], 'Step 1/8 : FROM node:latest\n', 'Has correct first log line');
-        t.ok(result.result.log.find(l => l === 'Step 2/8 : RUN mkdir -p /usr/src/app\n'), 'Has correct mkdir log line');
+        t.equal(response.statusCode, 200, 'Correct status code');
+        t.equal(error.message, 'Build failed! See build log for details.', 'Has correct message');
+        t.equal(error.log[0], 'Step 1/8 : FROM node:latest\n', 'Has correct first log line');
+        t.ok(error.log.find(l => l === 'Step 2/8 : RUN mkdir -p /usr/src/app\n'), 'Has correct mkdir log line');
         t.equal(
-          result.result.log[result.result.log.length - 1],
+          error.log[error.log.length - 1],
           "The command '/bin/sh -c npm install --silent' returned a non-zero code: 1",
           'Has correct last log line'
         );

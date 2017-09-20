@@ -4,10 +4,10 @@ const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 const uuid = require('uuid');
-const {exec} = require('child_process');
+const {spawn} = require('child_process');
 
 // our packages
-const {tempDockerDir, getProjectConfig} = require('../../util');
+const {tempDockerDir, getProjectConfig, writeStatus} = require('../../util');
 
 // compose file path
 const composePath = path.join(tempDockerDir, 'docker-compose.yml');
@@ -15,7 +15,7 @@ const composePath = path.join(tempDockerDir, 'docker-compose.yml');
 exports.hasCompose = () => {
   // if project already has docker-compose - just exit
   try {
-    fs.readFileSync(path.join(tempDockerDir, 'docker-compose.yml'));
+    fs.readFileSync(composePath);
     return true;
   } catch (e) {
     return false;
@@ -72,20 +72,22 @@ exports.updateCompose = ({username}) => {
   return compose;
 };
 
-exports.executeCompose = () =>
-  new Promise((resolve, reject) => {
-    exec(
-      'docker-compose up -d',
-      {
-        cwd: tempDockerDir,
-      },
-      (err, stdout, stderr) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+exports.executeCompose = resultStream =>
+  new Promise(resolve => {
+    const dc = spawn('docker-compose', ['up', '-d'], {cwd: tempDockerDir});
 
-        resolve({log: `${stdout.toString()}\n${stderr.toString()}`});
-      }
-    );
+    dc.stdout.on('data', data => {
+      const message = data.toString().replace(/\n$/, '');
+      const hasError = message.toLowerCase().includes('error');
+      writeStatus(resultStream, {message, level: hasError ? 'error' : 'info'});
+    });
+    dc.stderr.on('data', data => {
+      const message = data.toString().replace(/\n$/, '');
+      const hasError = message.toLowerCase().includes('error');
+      writeStatus(resultStream, {message, level: hasError ? 'error' : 'info'});
+    });
+    dc.on('exit', code => {
+      writeStatus(resultStream, {message: `Docker-compose exited with code ${code.toString()}`, level: 'info'});
+      resolve(code.toString());
+    });
   });

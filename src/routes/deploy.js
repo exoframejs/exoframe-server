@@ -1,4 +1,6 @@
 // npm modules
+const _ = require('highland');
+const {Readable} = require('stream');
 
 // our modules
 const logger = require('../logger');
@@ -6,7 +8,7 @@ const {hasCompose, updateCompose, executeCompose} = require('../docker/dockercom
 const generateDockerfile = require('../docker/dockerfile');
 const build = require('../docker/build');
 const start = require('../docker/start');
-const {sleep, cleanTemp, unpack, getProjectConfig, projectFromConfig} = require('../util');
+const {sleep, cleanTemp, unpack, getProjectConfig, projectFromConfig, writeStatus} = require('../util');
 const docker = require('../docker/docker');
 const {removeContainer} = require('../docker/util');
 
@@ -14,19 +16,21 @@ const {removeContainer} = require('../docker/util');
 const WAIT_TIME = 5000;
 
 // deployment from unpacked files
-const deploy = async ({username}) => {
+const deploy = async ({username, resultStream}) => {
   // check if it's a docker-compose project
   if (hasCompose()) {
     // if it does - run compose workflow
     logger.debug('Docker-compose file found, executing compose workflow..');
+    writeStatus(resultStream, {message: 'Deploying docker-compose project..', level: 'info'});
 
     // update compose file with project params
     const composeConfig = updateCompose({username});
     logger.debug('Compose modified:', composeConfig);
+    writeStatus(resultStream, {message: 'Compose file modified', data: composeConfig, level: 'verbose'});
 
     // execute compose
-    const {log} = await executeCompose();
-    logger.debug('Compose executed:', log);
+    const exitCode = await executeCompose(resultStream);
+    logger.debug('Compose executed, exit code:', exitCode);
 
     // get container infos
     const allContainers = await docker.listContainers({all: true});
@@ -38,25 +42,29 @@ const deploy = async ({username}) => {
         .map(container => container.inspect())
     );
     // return them
-    return [{status: 'success', deployments}, 200];
+    writeStatus(resultStream, {message: 'Deployment success!', deployments, level: 'info'});
+    resultStream.end('');
+    return;
   }
 
   // generate dockerfile
-  generateDockerfile();
+  generateDockerfile(resultStream);
 
   // build docker image
   try {
-    const buildRes = await build({username});
-    logger.debug('build result:', buildRes);
+    const buildRes = await build({username, resultStream});
+    logger.debug('Build result:', buildRes);
 
     // check for errors in build log
     if (buildRes.log.map(it => it.toLowerCase()).some(it => it.includes('error') || it.includes('failed'))) {
-      logger.debug('build log conains error!');
-      return [{status: 'error', result: buildRes}, 400];
+      logger.debug('Build log conains error!');
+      writeStatus(resultStream, {message: 'Build log contains errors!', level: 'error'});
+      resultStream.end('');
+      return;
     }
 
     // start image
-    const containerInfo = await start(Object.assign(buildRes, {username}));
+    const containerInfo = await start(Object.assign({}, buildRes, {username, resultStream}));
     logger.debug(containerInfo.Name);
 
     // clean temp folder
@@ -64,10 +72,13 @@ const deploy = async ({username}) => {
 
     const containerData = docker.getContainer(containerInfo.Id);
     const container = await containerData.inspect();
-    return [{status: 'success', deployments: [container]}, 200];
+    // return new deployments
+    writeStatus(resultStream, {message: 'Deployment success!', deployments: [container], level: 'info'});
+    resultStream.end('');
   } catch (e) {
     logger.debug('build failed!', e);
-    return [{status: 'error', result: e}, 400];
+    writeStatus(resultStream, {message: e.error, error: e.error, log: e.log, level: 'error'});
+    resultStream.end('');
   }
 };
 
@@ -89,10 +100,12 @@ module.exports = server => {
       await cleanTemp();
       // unpack to temp folder
       await unpack(request.payload.path);
+      // create new highland stream for results
+      const resultStream = _();
       // run deploy
-      const [response, code] = await deploy({username});
-      // respond
-      reply(response).code(code);
+      deploy({username, resultStream});
+      // reply with deploy stream
+      reply(new Readable().wrap(resultStream)).code(200);
     },
   });
 
@@ -125,9 +138,12 @@ module.exports = server => {
         c => c.Labels['exoframe.user'] === username && c.Labels['exoframe.project'] === project
       );
 
+      // create new highland stream for results
+      const resultStream = _();
       // deploy new versions
-      // run deploy
-      const [response, code] = await deploy({username, payload: request.payload});
+      deploy({username, payload: request.payload, resultStream});
+      // reply with deploy stream
+      reply(new Readable().wrap(resultStream)).code(200);
       // wait a bit for it to start
       await sleep(WAIT_TIME);
 
@@ -140,9 +156,6 @@ module.exports = server => {
           logger.error('Error removing old deployment:', e);
         }
       }
-
-      // respond
-      reply(response).code(code);
     },
   });
 };
