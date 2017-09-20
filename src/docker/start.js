@@ -1,9 +1,9 @@
 // our modules
 const docker = require('./docker');
-const {getProjectConfig, baseNameFromImage, nameFromImage, projectFromConfig} = require('../util');
+const {getProjectConfig, baseNameFromImage, nameFromImage, projectFromConfig, writeStatus} = require('../util');
 const {getConfig} = require('../config');
 
-module.exports = async ({image, username}) => {
+module.exports = async ({image, username, resultStream}) => {
   const baseName = baseNameFromImage(image);
   const name = nameFromImage(image);
 
@@ -70,6 +70,8 @@ module.exports = async ({image, username}) => {
     containerConfig.Labels['traefik.frontend.rule'] = `Host:${host}`;
   }
 
+  writeStatus(resultStream, {message: 'Starting container with following config:', containerConfig, level: 'verbose'});
+
   // create container
   const container = await docker.createContainer(containerConfig);
 
@@ -83,6 +85,8 @@ module.exports = async ({image, username}) => {
 
   // start container
   await container.start();
+
+  writeStatus(resultStream, {message: 'Container successfully started!', level: 'verbose'});
 
   return container.inspect();
 };
