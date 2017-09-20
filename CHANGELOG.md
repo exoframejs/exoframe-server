@@ -1,4 +1,10 @@
 
+0.20.0 / 2017-09-20
+==================
+
+Changes:
+  * Use stream for deploy route response to provide more info for client
+
 0.19.0 / 2017-09-18
 ==================
 
