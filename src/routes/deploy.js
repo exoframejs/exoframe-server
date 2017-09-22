@@ -56,7 +56,11 @@ const deploy = async ({username, resultStream}) => {
     logger.debug('Build result:', buildRes);
 
     // check for errors in build log
-    if (buildRes.log.map(it => it.toLowerCase()).some(it => it.includes('error') || it.includes('failed'))) {
+    if (
+      buildRes.log
+        .map(it => it.toLowerCase())
+        .some(it => it.includes('error') || (it.includes('failed') && !it.includes('optional')))
+    ) {
       logger.debug('Build log conains error!');
       writeStatus(resultStream, {message: 'Build log contains errors!', level: 'error'});
       resultStream.end('');
