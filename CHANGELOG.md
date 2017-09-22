@@ -1,4 +1,10 @@
 
+0.20.1 / 2017-09-22
+==================
+
+Fixes:
+  * Fix for node.js reporting optional deps install as failures
+
 0.20.0 / 2017-09-20
 ==================
 
