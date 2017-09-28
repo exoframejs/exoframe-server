@@ -69,6 +69,7 @@ Currently it contains list of users for basic auth, debug and letsencrypt settin
 debug: false # whether debug mode is enabled, default "false"
 letsencrypt: false # whether to enable letsencrypt, default "false"
 letsencryptEmail: your@email.com # email used for letsencrypt
+compress: true # whether to apply gzip compression, default "true"
 baseDomain: false # base domain to use for deployments without domains specified, default "false"
 publicKeysPath: '/path/to/your/public/keys' # path to folder with authorized_keys, default "~/.ssh"
 ```
