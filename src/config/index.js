@@ -31,6 +31,7 @@ const defaultConfig = {
   debug: false,
   letsencrypt: false,
   letsencryptEmail: 'admin@domain.com',
+  compress: true,
   baseDomain: false,
   publicKeysPath,
 };

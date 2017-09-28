@@ -104,12 +104,17 @@ exports.initDocker = async () => {
     `--acme.email=${config.letsencryptEmail}`,
     '--acme.storage=/var/acme/acme.json',
     '--acme.entrypoint=https',
-    '--acme.ondemand=true',
     '--acme.onhostrule=true',
     '--accesslogsfile=/var/acme/access.log',
-    '--entryPoints=Name:https Address::443 TLS',
-    '--entryPoints=Name:http Address::80 Redirect.EntryPoint:https',
-    '--defaultEntryPoints=http,https',
+    `--entryPoints=Name:https Address::443 TLS ${config.compress ? 'Compress:on' : 'Compress:off'}`,
+    `--entryPoints=Name:http Address::80 Redirect.EntryPoint:https ${config.compress ? 'Compress:on' : 'Compress:off'}`,
+    '--defaultEntryPoints=https,http',
+  ];
+
+  // entrypoints without letsencrypt
+  const entrypoints = [
+    `--entryPoints=Name:http Address::80 ${config.compress ? 'Compress:on' : 'Compress:off'}`,
+    '--defaultEntryPoints=http',
   ];
 
   // construct command
@@ -117,7 +122,7 @@ exports.initDocker = async () => {
     '-c',
     '/dev/null',
     '--docker',
-    ...(config.letsencrypt ? letsencrypt : []),
+    ...(config.letsencrypt ? letsencrypt : entrypoints),
     ...(config.debug ? debug : []),
   ];
 
