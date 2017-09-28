@@ -1,4 +1,10 @@
 
+0.21.0 / 2017-09-28
+==================
+
+Additions:
+  * Add way to enable/disable gzip compression in traefik
+
 0.20.1 / 2017-09-22
 ==================
 
