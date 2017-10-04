@@ -1,4 +1,10 @@
 
+0.22.0 / 2017-10-04
+==================
+
+Additions:
+  * Add basic deployment token management
+
 0.21.0 / 2017-09-28
 ==================
 
