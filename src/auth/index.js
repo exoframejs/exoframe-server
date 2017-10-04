@@ -10,7 +10,7 @@ const uuid = require('uuid');
 // our packages
 const {auth} = require('../../config');
 const {getConfig} = require('../config');
-const {reqCollection} = require('../db');
+const {reqCollection, getTokenCollection} = require('../db');
 
 // promisify readfile
 const readFile = promisify(fs.readFile);
@@ -22,7 +22,15 @@ const publicKeysPath = join(keysFolder, 'authorized_keys');
 
 // validation function
 const validate = (request, decodedToken, callback) => {
-  const {user, loggedIn} = decodedToken;
+  const {user, loggedIn, deploy, tokenName} = decodedToken;
+
+  // if it's a deployment token - check if it's still in db
+  if (deploy) {
+    const existingToken = getTokenCollection().findOne({tokenName, user: user.username});
+    if (!existingToken) {
+      return callback(null, false, user);
+    }
+  }
 
   if (!user || !loggedIn) {
     return callback(null, false, user);
@@ -65,16 +73,55 @@ module.exports = server =>
       });
 
       server.route({
+        method: 'POST',
+        path: '/deployToken',
+        config: {auth: 'token'},
+        handler(request, reply) {
+          // generate new deploy token
+          const tokenName = request.payload.tokenName;
+          const user = request.auth.credentials;
+          // generate new private key
+          const token = jwt.sign({loggedIn: true, user, tokenName, deploy: true}, auth.privateKey, {
+            algorithm: 'HS256',
+          });
+          // save token name to config
+          getTokenCollection().insert({tokenName, user: user.username});
+          // send back to user
+          reply({token});
+        },
+      });
+
+      server.route({
         method: 'GET',
         path: '/deployToken',
         config: {auth: 'token'},
         handler(request, reply) {
           // generate new deploy token
           const user = request.auth.credentials;
-          const token = jwt.sign({loggedIn: true, user, deploy: true}, auth.privateKey, {
-            algorithm: 'HS256',
-          });
-          reply({token});
+          // save token name to config
+          const tokens = getTokenCollection().find({user: user.username});
+          // send back to user
+          reply({tokens});
+        },
+      });
+
+      server.route({
+        method: 'DELETE',
+        path: '/deployToken',
+        config: {auth: 'token'},
+        handler(request, reply) {
+          // generate new deploy token
+          const tokenName = request.payload.tokenName;
+          const user = request.auth.credentials;
+          const existingToken = getTokenCollection().findOne({user: user.username, tokenName});
+          if (!existingToken) {
+            reply({removed: false, reason: 'Token does not exist'}).code(200);
+            return;
+          }
+          // remove token from collection
+          getTokenCollection().remove(existingToken);
+          // send back to user
+          reply().code(204);
         },
       });
 
@@ -114,7 +161,10 @@ module.exports = server =>
 
           try {
             const publicKeysFile = await readFile(publicKeysPath);
-            const publicKeys = publicKeysFile.toString().split('\n').filter(k => k && k.length > 0);
+            const publicKeys = publicKeysFile
+              .toString()
+              .split('\n')
+              .filter(k => k && k.length > 0);
             const res = await Promise.all(publicKeys.map(key => verifyWithKey({key, token, phrase: loginReq.phrase})));
             if (!res.some(r => r === true)) {
               reply({error: 'Not authorized!'}).code(401);
