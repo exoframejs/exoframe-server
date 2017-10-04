@@ -19,6 +19,9 @@ const publicKeysPath =
     ? path.join(os.homedir(), '.ssh')
     : path.join(__dirname, '..', '..', 'test', 'fixtures');
 
+// export paths for others
+exports.baseFolder = baseFolder;
+
 // create base folder if doesn't exist
 try {
   fs.statSync(baseFolder);
