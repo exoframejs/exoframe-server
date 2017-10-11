@@ -1,4 +1,11 @@
 
+0.22.1 / 2017-10-11
+==================
+
+Changes:
+  * Use Node v8.6.0 for build in pkg
+  * Update dependencies
+
 0.22.0 / 2017-10-04
 ==================
 
