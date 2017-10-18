@@ -50,12 +50,12 @@ docker run -d \
 
 3. Edit config file to fit your needs (see section below)
 
-Then grab [Exoframe CLI](https://github.com/exoframejs/exoframe), point it to your new Exoframe server and use it.
+Then install [Exoframe CLI](https://github.com/exoframejs/exoframe), point it to your new Exoframe server and use it.
 
 ## Configuration
 
 Exoframe stores its config in `~/.exoframe/server.config.yml`.  
-Currently it contains list of users for basic auth, debug and letsencrypt settings:
+Currently it contains the following settings:
 
 ```yaml
 debug: false # whether debug mode is enabled, default "false"
