@@ -1,6 +1,6 @@
-# Exoframe Server (beta)
+# Exoframe Server
 
-> Power armor for docker containers
+> Simple Docker deployment tool
 
 [![Build Status](https://travis-ci.org/exoframejs/exoframe-server.svg?branch=master)](https://travis-ci.org/exoframejs/exoframe-server)
 [![Coverage Status](https://coveralls.io/repos/github/exoframejs/exoframe-server/badge.svg?branch=master)](https://coveralls.io/github/exoframejs/exoframe-server?branch=master)
@@ -8,15 +8,7 @@
 [![Docker image size](https://images.microbadger.com/badges/image/exoframe/server.svg)](https://microbadger.com/images/exoframe/server)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
-## How it works
-
-Exoframe intends to do all the heavy lifting required to build and deploy web services for you.  
-To run it you need two parts - [Exoframe CLI](https://github.com/exoframejs/exoframe) and Exoframe server.
-
-Exoframe automatically detects your project type, builds and deploys it to the server using [Docker](https://www.docker.com/) and [Traefik](https://github.com/containous/traefik).  
-After running exoframe, the only thing you need to do is wait a few seconds until your files have been built or deployed!
-
-[Read more about Exoframe and how it works in the main repo](https://github.com/exoframejs/exoframe).
+Exoframe is a self-hosted tool that allows simple one-command deployments using Docker.
 
 ## Installation and Usage
 
@@ -76,14 +68,9 @@ publicKeysPath: '/path/to/your/public/keys' # path to folder with authorized_key
 
 *Warning:* Most changes to config are applied immediately. With exception of Letsencrypt config. If you are enabling letsencrypt after Traefik instance has been started, you'll need to remove Traefik and then restart Exoframe server for changes to take effect.
 
-## Contribute
+## Docs
 
-1. Fork this repository to your own GitHub account and then clone it to your local device.
-2. Install dependencies: `yarn`
-3. Execute tests to make sure everything's working: `yarn test`
-4. Start the server: `yarn start`
-
-Now can point your Exoframe CLI to `http://localhost:8080` and use it.
+[Read more about Exoframe and how it works in the main repo](https://github.com/exoframejs/exoframe).
 
 ## License
 
