@@ -1,4 +1,13 @@
 
+1.0.0 / 2017-10-19
+==================
+
+First "production ready" release!
+
+Changes:
+  * Adjust working in readme
+  * Simplify readme since most docs are now in exoframe cli repo
+
 0.22.1 / 2017-10-11
 ==================
 
