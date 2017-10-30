@@ -1,4 +1,11 @@
 
+1.0.1 / 2017-10-30
+==================
+
+Changes:
+  * Add Greenkeeper to keep dependencies updated
+  * Update dependencies
+
 1.0.0 / 2017-10-19
 ==================
 
