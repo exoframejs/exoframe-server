@@ -16,13 +16,10 @@ const getLatestVersion = async url => {
   return latestRelease.tag_name;
 };
 
-module.exports = server => {
-  server.route({
+module.exports = fastify => {
+  fastify.route({
     method: 'GET',
     path: '/version',
-    config: {
-      auth: 'token',
-    },
     async handler(request, reply) {
       // get version of traefik
       const allImages = await docker.listImages();
@@ -32,14 +29,14 @@ module.exports = server => {
       const lastServerTag = await getLatestVersion(exoServerUrl);
       const lastTraefikTag = await getLatestVersion(traefikUrl);
       // reply
-      reply({
+      reply.code(200).send({
         server: pkg.version,
         latestServer: lastServerTag,
         serverUpdate: cmp(lastServerTag, pkg.version) > 0,
         traefik: traefikVersion,
         latestTraefik: lastTraefikTag,
         traefikUpdate: cmp(lastTraefikTag, traefikVersion) > 0,
-      }).code(200);
+      });
     },
   });
 };

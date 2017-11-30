@@ -38,18 +38,19 @@ module.exports = async ({image, username, resultStream}) => {
     RestartPolicy.Name = 'on-failure';
     RestartPolicy.MaximumRetryCount = restartCount;
   }
+  const additionalLabels = config.labels || {};
 
   // create config
   const containerConfig = {
     Image: image,
     name,
     Env,
-    Labels: {
+    Labels: Object.assign({}, additionalLabels, {
       'exoframe.deployment': name,
       'exoframe.user': username,
       'exoframe.project': project,
       'traefik.backend': baseName,
-    },
+    }),
     HostConfig: {
       RestartPolicy,
     },

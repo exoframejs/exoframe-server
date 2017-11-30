@@ -6,7 +6,7 @@ const tar = require('tar-fs');
 // our packages
 const docker = require('../src/docker/docker');
 
-module.exports = (server, token) =>
+module.exports = (fastify, token) =>
   new Promise(async resolve => {
     // create tar streams
     const streamDocker = tar.pack(path.join(__dirname, 'fixtures', 'docker-project'));
@@ -17,6 +17,7 @@ module.exports = (server, token) =>
     const streamComposeUpdate = tar.pack(path.join(__dirname, 'fixtures', 'compose-project'));
     const streamBrokenDocker = tar.pack(path.join(__dirname, 'fixtures', 'broken-docker-project'));
     const streamBrokenNode = tar.pack(path.join(__dirname, 'fixtures', 'broken-node-project'));
+    const streamAdditionalLabels = tar.pack(path.join(__dirname, 'fixtures', 'additional-labels'));
 
     // options base
     const optionsBase = {
@@ -24,6 +25,7 @@ module.exports = (server, token) =>
       url: '/deploy',
       headers: {
         Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/octet-stream',
       },
     };
 
@@ -37,9 +39,9 @@ module.exports = (server, token) =>
         payload: streamDocker,
       });
 
-      server.inject(options, async response => {
+      fastify.inject(options, async response => {
         // parse result into lines
-        const result = response.result
+        const result = response.payload
           .split('\n')
           .filter(l => l && l.length)
           .map(line => JSON.parse(line));
@@ -55,8 +57,7 @@ module.exports = (server, token) =>
         // check docker services
         const allContainers = await docker.listContainers();
         const containerInfo = allContainers.find(c => c.Names.includes(deployments[0].Name));
-        const deployId = deployments[0].Name
-          .split('-')
+        const deployId = deployments[0].Name.split('-')
           .slice(-1)
           .shift();
         const name = deployments[0].Name.slice(1);
@@ -101,15 +102,15 @@ module.exports = (server, token) =>
         payload: streamNode,
       });
 
-      server.inject(options, async response => {
+      fastify.inject(options, async response => {
         // parse result into lines
-        const result = response.result
+        const result = response.payload
           .split('\n')
           .filter(l => l && l.length)
           .map(line => JSON.parse(line));
 
         // find deployments
-        const deployments = result.find(it => it.deployments && it.deployments.length).deployments;
+        const {deployments} = result.find(it => it.deployments && it.deployments.length);
 
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');
@@ -153,15 +154,15 @@ module.exports = (server, token) =>
         payload: streamHtml,
       });
 
-      server.inject(options, async response => {
+      fastify.inject(options, async response => {
         // parse result into lines
-        const result = response.result
+        const result = response.payload
           .split('\n')
           .filter(l => l && l.length)
           .map(line => JSON.parse(line));
 
         // find deployments
-        const deployments = result.find(it => it.deployments && it.deployments.length).deployments;
+        const {deployments} = result.find(it => it.deployments && it.deployments.length);
 
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');
@@ -202,15 +203,15 @@ module.exports = (server, token) =>
         payload: streamHtmlUpdate,
       });
 
-      server.inject(options, async response => {
+      fastify.inject(options, async response => {
         // parse result into lines
-        const result = response.result
+        const result = response.payload
           .split('\n')
           .filter(l => l && l.length)
           .map(line => JSON.parse(line));
 
         // find deployments
-        const deployments = result.find(it => it.deployments && it.deployments.length).deployments;
+        const {deployments} = result.find(it => it.deployments && it.deployments.length);
 
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');
@@ -260,15 +261,15 @@ module.exports = (server, token) =>
         payload: streamCompose,
       });
 
-      server.inject(options, async response => {
+      fastify.inject(options, async response => {
         // parse result into lines
-        const result = response.result
+        const result = response.payload
           .split('\n')
           .filter(l => l && l.length)
           .map(line => JSON.parse(line));
 
         // find deployments
-        const deployments = result.find(it => it.deployments && it.deployments.length).deployments;
+        const {deployments} = result.find(it => it.deployments && it.deployments.length);
 
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');
@@ -335,15 +336,15 @@ module.exports = (server, token) =>
         payload: streamComposeUpdate,
       });
 
-      server.inject(options, async response => {
+      fastify.inject(options, async response => {
         // parse result into lines
-        const result = response.result
+        const result = response.payload
           .split('\n')
           .filter(l => l && l.length)
           .map(line => JSON.parse(line));
 
         // find deployments
-        const deployments = result.find(it => it.deployments && it.deployments.length).deployments;
+        const {deployments} = result.find(it => it.deployments && it.deployments.length);
 
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');
@@ -419,9 +420,9 @@ module.exports = (server, token) =>
         payload: streamBrokenDocker,
       });
 
-      server.inject(options, async response => {
+      fastify.inject(options, async response => {
         // parse result into lines
-        const result = response.result
+        const result = response.payload
           .split('\n')
           .filter(l => l && l.length)
           .map(line => JSON.parse(line));
@@ -454,9 +455,9 @@ module.exports = (server, token) =>
         payload: streamBrokenNode,
       });
 
-      server.inject(options, async response => {
+      fastify.inject(options, async response => {
         // parse result into lines
-        const result = response.result
+        const result = response.payload
           .split('\n')
           .filter(l => l && l.length)
           .map(line => JSON.parse(line));
@@ -479,6 +480,43 @@ module.exports = (server, token) =>
         const allContainers = await docker.listContainers({all: true});
         const exitedWithError = allContainers.filter(c => c.Status.includes('Exited (1)'));
         await Promise.all(exitedWithError.map(c => docker.getContainer(c.Id)).map(c => c.remove()));
+
+        t.end();
+      });
+    });
+
+    tap.test('Should have additional labels', t => {
+      const options = Object.assign(optionsBase, {
+        payload: streamAdditionalLabels,
+      });
+
+      fastify.inject(options, async response => {
+        // parse result into lines
+        const result = response.payload
+          .split('\n')
+          .filter(l => l && l.length)
+          .map(line => JSON.parse(line));
+
+        // find deployments
+        const deployments = result.find(it => it.deployments && it.deployments.length).deployments;
+
+        // check response
+        t.equal(response.statusCode, 200, 'Correct status code');
+
+        // check docker services
+        const allContainers = await docker.listContainers();
+        const containerInfo = allContainers.find(c => c.Names.includes(deployments[0].Name));
+        t.ok(containerInfo, 'Docker has container');
+        t.equal(
+          containerInfo.Labels['custom.label'],
+          'additional-label',
+          'Should have label `custom.label=additional-label`'
+        );
+
+        // cleanup
+        const instance = docker.getContainer(containerInfo.Id);
+        await instance.stop();
+        await instance.remove();
 
         t.end();
       });

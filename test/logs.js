@@ -17,8 +17,7 @@ module.exports = (server, token, data) =>
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');
 
-        const {result} = response;
-        const lines = result
+        const lines = response.payload
           // split by lines
           .split('\n')
           // remove unicode chars
@@ -53,8 +52,7 @@ module.exports = (server, token, data) =>
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');
 
-        const {result} = response;
-        const text = result
+        const text = response.payload
           // split by lines
           .split('\n')
           // remove unicode chars
@@ -95,9 +93,10 @@ module.exports = (server, token, data) =>
       };
 
       server.inject(options, response => {
+        const result = JSON.parse(response.payload);
         // check response
         t.equal(response.statusCode, 404, 'Correct status code');
-        t.deepEqual(response.result, {error: 'Container not found!'}, 'Should have error');
+        t.deepEqual(result, {error: 'Container not found!'}, 'Should have error');
         t.end();
       });
     });

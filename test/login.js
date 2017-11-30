@@ -22,7 +22,7 @@ module.exports = server =>
       };
 
       server.inject(options, response => {
-        const result = response.result;
+        const result = JSON.parse(response.payload);
 
         t.equal(response.statusCode, 200, 'Correct status code');
         t.ok(result.phrase, 'Has login phrase');
@@ -51,7 +51,7 @@ module.exports = server =>
       };
 
       server.inject(options, response => {
-        const result = response.result;
+        const result = JSON.parse(response.payload);
 
         t.equal(response.statusCode, 200, 'Correct status code');
         t.ok(result.token, 'Has token');
@@ -81,7 +81,7 @@ module.exports = server =>
       };
 
       server.inject(options, response => {
-        const result = response.result;
+        const result = JSON.parse(response.payload);
 
         t.equal(response.statusCode, 200, 'Correct status code');
         t.ok(result.token, 'Has token');
@@ -110,7 +110,7 @@ module.exports = server =>
       };
 
       server.inject(options, response => {
-        const result = response.result;
+        const result = JSON.parse(response.payload);
 
         t.equal(response.statusCode, 200, 'Correct status code');
         t.ok(result.credentials, 'Has token');
@@ -132,7 +132,7 @@ module.exports = server =>
       };
 
       server.inject(options, response => {
-        const result = response.result;
+        const result = JSON.parse(response.payload);
 
         t.equal(response.statusCode, 200, 'Correct status code');
         t.ok(result.tokens, 'Has token');
@@ -177,7 +177,7 @@ module.exports = server =>
       };
 
       server.inject(options, response => {
-        const result = response.result;
+        const result = JSON.parse(response.payload);
 
         t.equal(response.statusCode, 401, 'Correct status code');
         t.equal(result.error, 'Unauthorized', 'Correct error message');
@@ -196,7 +196,7 @@ module.exports = server =>
       };
 
       server.inject(options, response => {
-        const result = response.result;
+        const result = JSON.parse(response.payload);
 
         t.equal(response.statusCode, 401, 'Correct status code');
         t.equal(result.error, 'No token given!', 'Correct error message');
@@ -217,7 +217,7 @@ module.exports = server =>
       };
 
       server.inject(options, response => {
-        const result = response.result;
+        const result = JSON.parse(response.payload);
 
         t.equal(response.statusCode, 401, 'Correct status code');
         t.equal(result.error, 'Login request not found!', 'Correct error message');

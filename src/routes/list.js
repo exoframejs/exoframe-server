@@ -1,16 +1,13 @@
 // our modules
 const docker = require('../docker/docker');
 
-module.exports = server => {
-  server.route({
+module.exports = fastify => {
+  fastify.route({
     method: 'GET',
     path: '/list',
-    config: {
-      auth: 'token',
-    },
     async handler(request, reply) {
       // get username
-      const {username} = request.auth.credentials;
+      const {username} = request.user;
 
       const allContainers = await docker.listContainers({all: true});
       const userContainers = await Promise.all(
@@ -21,7 +18,7 @@ module.exports = server => {
           .map(c => c.inspect())
       );
 
-      reply(userContainers);
+      reply.send(userContainers);
     },
   });
 };

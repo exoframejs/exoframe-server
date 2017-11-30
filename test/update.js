@@ -9,7 +9,7 @@ module.exports = (server, token) =>
   new Promise(async resolve => {
     // pull older traefik image
     const traefikTag = 'traefik:1.3-alpine';
-    const serverTag = 'exoframe/server:develop';
+    const serverTag = 'exoframe/server:1.0.0';
     // remove current images
     // get all images
     const oldImages = await docker.listImages();
@@ -17,12 +17,12 @@ module.exports = (server, token) =>
     const latestTraefik = oldImages.find(img => img.RepoTags && img.RepoTags.includes('traefik:latest'));
     if (latestTraefik) {
       const limg = docker.getImage(latestTraefik.Id);
-      await limg.remove();
+      await limg.remove({force: true});
     }
     const latestServer = oldImages.find(img => img.RepoTags && img.RepoTags.includes('exoframe/server:latest'));
     if (latestServer) {
       const lsimg = docker.getImage(latestServer.Id);
-      await lsimg.remove();
+      await lsimg.remove({force: true});
     }
     // pull older images
     await pullImage(traefikTag);
@@ -60,6 +60,7 @@ module.exports = (server, token) =>
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        payload: {},
       };
 
       server.inject(options, async response => {
@@ -84,6 +85,7 @@ module.exports = (server, token) =>
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        payload: {},
       };
 
       server.inject(options, async response => {
