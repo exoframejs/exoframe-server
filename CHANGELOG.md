@@ -1,4 +1,12 @@
 
+1.1.1 / 2017-12-11
+==================
+
+Fixes:
+  * Use after_script in travis so that it fails on build failures
+  * Use node 8 in travis
+  * Fix build issue with using spread, update to node 8.9.0 for pkg
+
 1.1.0 / 2017-12-11
 ==================
 
