@@ -1,0 +1,9 @@
+{
+  "name": "test-additional-labels",
+  "domain": false,
+  "project": "simple-html",
+  "restart": "no",
+  "labels": {
+    "custom.label" : "additional-label"
+  }
+}
