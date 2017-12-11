@@ -1,4 +1,13 @@
 
+1.1.0 / 2017-12-11
+==================
+
+Additions:
+  * Allow specifying custom labels via project config (thanks FWeinb)
+
+Changes:
+  * Update dependency versions
+
 1.0.1 / 2017-10-30
 ==================
 
