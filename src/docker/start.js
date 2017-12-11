@@ -38,6 +38,7 @@ module.exports = async ({image, username, resultStream}) => {
     RestartPolicy.Name = 'on-failure';
     RestartPolicy.MaximumRetryCount = restartCount;
   }
+  const additionalLabels = config.labels || {};
 
   // create config
   const containerConfig = {
@@ -45,6 +46,7 @@ module.exports = async ({image, username, resultStream}) => {
     name,
     Env,
     Labels: {
+      ...additionalLabels,
       'exoframe.deployment': name,
       'exoframe.user': username,
       'exoframe.project': project,

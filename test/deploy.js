@@ -17,6 +17,7 @@ module.exports = (server, token) =>
     const streamComposeUpdate = tar.pack(path.join(__dirname, 'fixtures', 'compose-project'));
     const streamBrokenDocker = tar.pack(path.join(__dirname, 'fixtures', 'broken-docker-project'));
     const streamBrokenNode = tar.pack(path.join(__dirname, 'fixtures', 'broken-node-project'));
+    const streamAdditionalLabels = tar.pack(path.join(__dirname, 'fixtures', 'additional-labels'));
 
     // options base
     const optionsBase = {
@@ -480,6 +481,36 @@ module.exports = (server, token) =>
         const exitedWithError = allContainers.filter(c => c.Status.includes('Exited (1)'));
         await Promise.all(exitedWithError.map(c => docker.getContainer(c.Id)).map(c => c.remove()));
 
+        t.end();
+      });
+    });
+
+    tap.test('Should have additional labels', t => {
+      const options = Object.assign(optionsBase, {
+        payload: streamAdditionalLabels,
+      });
+
+      server.inject(options, async response => {
+        // parse result into lines
+        const result = response.result
+          .split('\n')
+          .filter(l => l && l.length)
+          .map(line => JSON.parse(line));
+
+        // find deployments
+        const deployments = result.find(it => it.deployments && it.deployments.length).deployments;
+
+        // check response
+        t.equal(response.statusCode, 200, 'Correct status code');
+
+
+
+        // check docker services
+        const allContainers = await docker.listContainers();
+        const containerInfo = allContainers.find(c => c.Names.includes(deployments[0].Name));
+        t.ok(containerInfo, 'Docker has container');
+        t.equal(containerInfo.Labels['custom.label'], "additional-label", 'Should have label `custom.label=additional-label`');
+        
         t.end();
       });
     });
