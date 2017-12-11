@@ -503,13 +503,16 @@ module.exports = (server, token) =>
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');
 
-
-
         // check docker services
         const allContainers = await docker.listContainers();
         const containerInfo = allContainers.find(c => c.Names.includes(deployments[0].Name));
         t.ok(containerInfo, 'Docker has container');
         t.equal(containerInfo.Labels['custom.label'], "additional-label", 'Should have label `custom.label=additional-label`');
+
+        // cleanup
+        const instance = docker.getContainer(containerInfo.Id);
+        await instance.stop();
+        await instance.remove();
         
         t.end();
       });
