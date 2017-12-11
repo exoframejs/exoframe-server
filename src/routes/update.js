@@ -8,13 +8,10 @@ const {sleep} = require('../util');
 const traefikImageName = 'traefik:latest';
 const serverImageName = 'exoframe/server:latest';
 
-module.exports = server => {
-  server.route({
+module.exports = fastify => {
+  fastify.route({
     method: 'POST',
-    path: '/update/{target}',
-    config: {
-      auth: 'token',
-    },
+    path: '/update/:target',
     async handler(request, reply) {
       // get username
       const {target} = request.params;
@@ -32,7 +29,7 @@ module.exports = server => {
         // check if already up to date
         if (pullLog.includes('Image is up to date')) {
           logger.debug('Traefik is already up to date!');
-          reply({updated: false}).code(200);
+          reply.code(200).send({updated: false});
           return;
         }
         // check if new image was pulled
@@ -47,12 +44,12 @@ module.exports = server => {
           // re-init traefik
           initDocker({restart: true});
           // reply
-          reply({updated: true}).code(200);
+          reply.code(200).send({updated: true});
           return;
         }
 
         // otherwise report error with current log
-        reply({updated: false, error: 'Error updating image', log: pullLog}).code(500);
+        reply.code(500).send({updated: false, error: 'Error updating image', log: pullLog});
         return;
       }
 
@@ -67,7 +64,7 @@ module.exports = server => {
         // check if already up to date
         if (pullLog.includes('Image is up to date')) {
           logger.debug('Exoframe server is already up to date!');
-          reply({updated: false}).code(200);
+          reply.code(200).send({updated: false});
           return;
         }
         // check if new image was pulled
@@ -79,8 +76,7 @@ module.exports = server => {
           // get image and its hash
           const allImages = await docker.listImages();
           const serverImage = allImages.find(img => img.RepoTags && img.RepoTags.includes(serverImageName));
-          const hash = serverImage.Id
-            .split(':')
+          const hash = serverImage.Id.split(':')
             .pop()
             .substr(0, 12);
           // init config
@@ -104,7 +100,7 @@ module.exports = server => {
           // start container
           await container.start();
           // reply
-          reply({updated: true}).code(200);
+          reply.code(200).send({updated: true});
           // sleep for a few ms to let reply finish
           await sleep(300);
           // kill old self
@@ -113,12 +109,12 @@ module.exports = server => {
         }
 
         // otherwise report error with current log
-        reply({updated: false, error: 'Error updating image', log: pullLog}).code(500);
+        reply.code(500).send({updated: false, error: 'Error updating image', log: pullLog});
         return;
       }
 
       // default reply
-      reply({updated: false, error: 'Wat'}).code(204);
+      reply.code(204).send({updated: false, error: 'Wat'});
     },
   });
 };

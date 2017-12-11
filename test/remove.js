@@ -14,6 +14,7 @@ module.exports = (server, token, data) =>
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        payload: {},
       };
 
       server.inject(options, async response => {
@@ -37,6 +38,7 @@ module.exports = (server, token, data) =>
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        payload: {},
       };
 
       server.inject(options, async response => {
@@ -59,12 +61,14 @@ module.exports = (server, token, data) =>
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        payload: {},
       };
 
       server.inject(options, response => {
+        const result = JSON.parse(response.payload);
         // check response
         t.equal(response.statusCode, 404, 'Correct status code');
-        t.deepEqual(response.result, {error: 'Container not found!'}, 'Should have error');
+        t.deepEqual(result, {error: 'Container not found!'}, 'Should have error');
         t.end();
       });
     });

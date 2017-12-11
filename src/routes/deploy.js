@@ -86,51 +86,40 @@ const deploy = async ({username, resultStream}) => {
   }
 };
 
-module.exports = server => {
-  server.route({
+module.exports = fastify => {
+  fastify.route({
     method: 'POST',
     path: '/deploy',
-    config: {
-      auth: 'token',
-      payload: {
-        output: 'file',
-        parse: true,
-      },
-    },
     async handler(request, reply) {
       // get username
-      const {username} = request.auth.credentials;
+      const {username} = request.user;
       // clean temp folder
       await cleanTemp();
+      // get stream
+      const tarStream = request.req;
       // unpack to temp folder
-      await unpack(request.payload.path);
+      await unpack(tarStream);
       // create new highland stream for results
       const resultStream = _();
       // run deploy
       deploy({username, resultStream});
       // reply with deploy stream
-      reply(new Readable().wrap(resultStream)).code(200);
+      reply.code(200).send(new Readable().wrap(resultStream));
     },
   });
 
-  server.route({
+  fastify.route({
     method: 'POST',
     path: '/update',
-    config: {
-      auth: 'token',
-      payload: {
-        output: 'file',
-        parse: true,
-      },
-    },
     async handler(request, reply) {
       // get username
-      const {username} = request.auth.credentials;
+      const {username} = request.user;
       // clean temp folder
       await cleanTemp();
+      // get stream
+      const tarStream = request.req;
       // unpack to temp folder
-      await unpack(request.payload.path);
-
+      await unpack(tarStream);
       // get old project containers if present
       // get project config and name
       const config = getProjectConfig();
@@ -147,7 +136,7 @@ module.exports = server => {
       // deploy new versions
       deploy({username, payload: request.payload, resultStream});
       // reply with deploy stream
-      reply(new Readable().wrap(resultStream)).code(200);
+      reply.code(200).send(new Readable().wrap(resultStream));
       // wait a bit for it to start
       await sleep(WAIT_TIME);
 

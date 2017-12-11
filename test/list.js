@@ -14,7 +14,7 @@ module.exports = (server, token) =>
       };
 
       server.inject(options, async response => {
-        const result = response.result;
+        const result = JSON.parse(response.payload);
 
         // check response
         t.equal(response.statusCode, 200, 'Correct status code');

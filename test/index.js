@@ -2,7 +2,7 @@
 // config
 const {waitForConfig} = require('../src/config');
 // server setup
-const {setupServer} = require('../src');
+const {startServer} = require('../src');
 const {initNetwork} = require('../src/docker/init');
 
 // tests
@@ -25,24 +25,24 @@ const run = async () => {
   await dockerInit();
 
   // create new server
-  const server = await setupServer();
+  const fastify = await startServer();
 
   // test login and get token
-  const token = await login(server);
+  const token = await login(fastify);
   // test deployment
-  await deploy(server, token);
+  await deploy(fastify, token);
   // test listing
-  const name = await list(server, token);
+  const name = await list(fastify, token);
   // test logs
-  await logs(server, token, name);
+  await logs(fastify, token, name);
   // test removal
-  await remove(server, token, name);
+  await remove(fastify, token, name);
   // test update
-  await update(server, token);
+  await update(fastify, token);
   // test version
-  await version(server, token);
+  await version(fastify, token);
 
   // stop server
-  await server.stop();
+  fastify.close();
 };
 run();

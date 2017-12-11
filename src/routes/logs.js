@@ -1,5 +1,6 @@
 // our modules
 const _ = require('highland');
+const {Readable} = require('stream');
 const docker = require('../docker/docker');
 
 const logsConfig = {
@@ -9,16 +10,13 @@ const logsConfig = {
   timestamps: true,
 };
 
-module.exports = server => {
-  server.route({
+module.exports = fastify => {
+  fastify.route({
     method: 'GET',
-    path: '/logs/{id}',
-    config: {
-      auth: 'token',
-    },
+    path: '/logs/:id',
     async handler(request, reply) {
       // get username
-      const {username} = request.auth.credentials;
+      const {username} = request.user;
       const {id} = request.params;
 
       const allContainers = await docker.listContainers({all: true});
@@ -29,7 +27,7 @@ module.exports = server => {
       if (containerInfo) {
         const container = docker.getContainer(containerInfo.Id);
         const logStream = await container.logs(logsConfig);
-        reply(null, logStream);
+        reply.send(logStream);
         return;
       }
 
@@ -38,7 +36,7 @@ module.exports = server => {
         c => c.Labels['exoframe.user'] === username && c.Labels['exoframe.project'] === id
       );
       if (!containers.length) {
-        reply({error: 'Container not found!'}).code(404);
+        reply.code(404).send({error: 'Container not found!'});
         return;
       }
 
@@ -54,9 +52,8 @@ module.exports = server => {
       );
       // flatten results
       const allLogsStream = _(logRequests).flatten();
-      // get raw response from request to work around hapi issues with highland streams
-      const response = request.raw.res;
-      allLogsStream.pipe(response);
+      // send wrapped highland stream as response
+      reply.send(new Readable().wrap(allLogsStream));
     },
   });
 };

@@ -2,16 +2,13 @@
 const docker = require('../docker/docker');
 const {removeContainer} = require('../docker/util');
 
-module.exports = server => {
-  server.route({
+module.exports = fastify => {
+  fastify.route({
     method: 'POST',
-    path: '/remove/{id}',
-    config: {
-      auth: 'token',
-    },
+    path: '/remove/:id',
     async handler(request, reply) {
       // get username
-      const {username} = request.auth.credentials;
+      const {username} = request.user;
       const {id} = request.params;
 
       const allContainers = await docker.listContainers({all: true});
@@ -22,7 +19,7 @@ module.exports = server => {
       // if container found by name - remove
       if (containerInfo) {
         await removeContainer(containerInfo);
-        reply('removed').code(204);
+        reply.code(204).send('removed');
         return;
       }
 
@@ -31,13 +28,13 @@ module.exports = server => {
         c => c.Labels['exoframe.user'] === username && c.Labels['exoframe.project'] === id
       );
       if (!containers.length) {
-        reply({error: 'Container not found!'}).code(404);
+        reply.code(404).send({error: 'Container not found!'});
         return;
       }
       // remove all
       await Promise.all(containers.map(removeContainer));
       // reply
-      reply('removed').code(204);
+      reply.code(204).send('removed');
     },
   });
 };

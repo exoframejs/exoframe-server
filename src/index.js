@@ -1,5 +1,7 @@
 // npm packages
-const Hapi = require('hapi');
+const util = require('util');
+const initFastify = require('fastify');
+const fastifyAuth = require('fastify-auth');
 
 // our packages
 const logger = require('./logger');
@@ -9,35 +11,31 @@ const {initDocker} = require('./docker/init');
 
 // paths
 const setupAuth = require('./auth');
-const setupRoutes = require('./routes');
+const routes = require('./routes');
 
-// create server
-const server = new Hapi.Server();
+exports.startServer = async () => {
+  // create server
+  const fastify = initFastify().register(fastifyAuth);
 
-// setup connection
-server.connection({port: 8080, host: '0.0.0.0'});
+  // add custom parser that just passes stream on
+  fastify.addContentTypeParser('*', (req, done) => done());
 
-const setupServer = async () => {
-  // setup auth
-  const authServer = await setupAuth(server);
-  // setup routes with auth
-  setupRoutes(authServer);
+  // register plugins
+  setupAuth(fastify).register(routes);
 
-  return server;
+  // start server
+  const fastifyListen = util.promisify(fastify.listen);
+  await fastifyListen(8080);
+  logger.info(`Server running at: ${fastify.server.address().port}`);
+
+  return fastify;
 };
-
-// export server for testing
-exports.setupServer = setupServer;
 
 // export start function
 exports.start = async () => {
   // init required docker service
   await initDocker();
 
-  // setup server
-  await setupServer();
-
-  // start server
-  await server.start();
-  logger.info(`Server running at: ${server.info.uri}`);
+  // init and return server
+  return exports.startServer();
 };
