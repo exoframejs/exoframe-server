@@ -45,13 +45,12 @@ module.exports = async ({image, username, resultStream}) => {
     Image: image,
     name,
     Env,
-    Labels: {
-      ...additionalLabels,
+    Labels: Object.assign({}, additionalLabels, {
       'exoframe.deployment': name,
       'exoframe.user': username,
       'exoframe.project': project,
       'traefik.backend': baseName,
-    },
+    }),
     HostConfig: {
       RestartPolicy,
     },
