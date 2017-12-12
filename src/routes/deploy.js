@@ -141,14 +141,7 @@ module.exports = fastify => {
       await sleep(WAIT_TIME);
 
       // remove old containers
-      try {
-        await Promise.all(existingContainers.map(removeContainer));
-      } catch (e) {
-        // ignore not found errors
-        if (!e.toString().includes('no such container')) {
-          logger.error('Error removing old deployment:', e);
-        }
-      }
+      await Promise.all(existingContainers.map(removeContainer));
     },
   });
 };

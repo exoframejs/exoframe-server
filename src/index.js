@@ -13,7 +13,7 @@ const {initDocker} = require('./docker/init');
 const setupAuth = require('./auth');
 const routes = require('./routes');
 
-exports.startServer = async () => {
+exports.startServer = async (port = 8080) => {
   // create server
   const fastify = initFastify().register(fastifyAuth);
 
@@ -25,7 +25,7 @@ exports.startServer = async () => {
 
   // start server
   const fastifyListen = util.promisify(fastify.listen);
-  await fastifyListen(8080);
+  await fastifyListen(port);
   logger.info(`Server running at: ${fastify.server.address().port}`);
 
   return fastify;
