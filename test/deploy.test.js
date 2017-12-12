@@ -60,20 +60,20 @@ test('Should deploy simple docker project', done => {
       .map(line => JSON.parse(line));
 
     // find deployments
-    const {deployments} = result.find(it => it.deployments && it.deployments.length);
+    const completeDeployments = result.find(it => it.deployments && it.deployments.length).deployments;
 
     // check response
     expect(response.statusCode).toEqual(200);
-    expect(deployments.length).toEqual(1);
-    expect(deployments[0].Name.startsWith('/exo-admin-test-docker-deploy-')).toBeTruthy();
+    expect(completeDeployments.length).toEqual(1);
+    expect(completeDeployments[0].Name.startsWith('/exo-admin-test-docker-deploy-')).toBeTruthy();
 
     // check docker services
     const allContainers = await docker.listContainers();
-    const containerInfo = allContainers.find(c => c.Names.includes(deployments[0].Name));
-    const deployId = deployments[0].Name.split('-')
+    const containerInfo = allContainers.find(c => c.Names.includes(completeDeployments[0].Name));
+    const deployId = completeDeployments[0].Name.split('-')
       .slice(-1)
       .shift();
-    const name = deployments[0].Name.slice(1);
+    const name = completeDeployments[0].Name.slice(1);
 
     expect(containerInfo).toBeDefined();
     expect(containerInfo.Labels['exoframe.deployment']).toEqual(name);
@@ -109,17 +109,17 @@ test('Should deploy simple node project', done => {
       .map(line => JSON.parse(line));
 
     // find deployments
-    const {deployments} = result.find(it => it.deployments && it.deployments.length);
+    const completeDeployments = result.find(it => it.deployments && it.deployments.length).deployments;
 
     // check response
     expect(response.statusCode).toEqual(200);
-    expect(deployments.length).toEqual(1);
-    expect(deployments[0].Name.startsWith('/exo-admin-test-node-deploy-')).toBeTruthy();
+    expect(completeDeployments.length).toEqual(1);
+    expect(completeDeployments[0].Name.startsWith('/exo-admin-test-node-deploy-')).toBeTruthy();
 
     // check docker services
     const allContainers = await docker.listContainers();
-    const container = allContainers.find(c => c.Names.includes(deployments[0].Name));
-    const name = deployments[0].Name.slice(1);
+    const container = allContainers.find(c => c.Names.includes(completeDeployments[0].Name));
+    const name = completeDeployments[0].Name.slice(1);
     const deployId = name
       .split('-')
       .slice(-1)
@@ -154,12 +154,12 @@ test('Should deploy simple HTML project', done => {
       .map(line => JSON.parse(line));
 
     // find deployments
-    const {deployments} = result.find(it => it.deployments && it.deployments.length);
+    const completeDeployments = result.find(it => it.deployments && it.deployments.length).deployments;
 
     // check response
     expect(response.statusCode).toEqual(200);
-    expect(deployments.length).toEqual(1);
-    const name = deployments[0].Name.slice(1);
+    expect(completeDeployments.length).toEqual(1);
+    const name = completeDeployments[0].Name.slice(1);
     expect(name.startsWith('exo-admin-test-html-deploy-')).toBeTruthy();
 
     // check docker services
@@ -199,12 +199,12 @@ test('Should update simple HTML project', done => {
       .map(line => JSON.parse(line));
 
     // find deployments
-    const {deployments} = result.find(it => it.deployments && it.deployments.length);
+    const completeDeployments = result.find(it => it.deployments && it.deployments.length).deployments;
 
     // check response
     expect(response.statusCode).toEqual(200);
-    expect(deployments.length).toEqual(1);
-    const name = deployments[0].Name.slice(1);
+    expect(completeDeployments.length).toEqual(1);
+    const name = completeDeployments[0].Name.slice(1);
     expect(name.startsWith('exo-admin-test-html-deploy-')).toBeTruthy();
 
     // check docker services
@@ -252,20 +252,20 @@ test('Should deploy simple compose project', done => {
       .map(line => JSON.parse(line));
 
     // find deployments
-    const {deployments} = result.find(it => it.deployments && it.deployments.length);
+    const completeDeployments = result.find(it => it.deployments && it.deployments.length).deployments;
 
     // check response
     expect(response.statusCode).toEqual(200);
-    expect(deployments.length).toEqual(2);
-    expect(deployments[0].Name.startsWith('/exo-admin-test-compose-deploy-web-')).toBeTruthy();
-    expect(deployments[1].Name.startsWith('/exo-admin-test-compose-deploy-redis-')).toBeTruthy();
+    expect(completeDeployments.length).toEqual(2);
+    expect(completeDeployments[0].Name.startsWith('/exo-admin-test-compose-deploy-web-')).toBeTruthy();
+    expect(completeDeployments[1].Name.startsWith('/exo-admin-test-compose-deploy-redis-')).toBeTruthy();
 
     // check docker services
     const allContainers = await docker.listContainers();
-    const containerOne = allContainers.find(c => c.Names.includes(deployments[0].Name));
-    const containerTwo = allContainers.find(c => c.Names.includes(deployments[1].Name));
-    const nameOne = deployments[0].Name.slice(1);
-    const nameTwo = deployments[1].Name.slice(1);
+    const containerOne = allContainers.find(c => c.Names.includes(completeDeployments[0].Name));
+    const containerTwo = allContainers.find(c => c.Names.includes(completeDeployments[1].Name));
+    const nameOne = completeDeployments[0].Name.slice(1);
+    const nameTwo = completeDeployments[1].Name.slice(1);
     const deployIdOne = nameOne
       .split('-')
       .slice(-1)
@@ -311,20 +311,20 @@ test('Should update simple compose project', done => {
       .map(line => JSON.parse(line));
 
     // find deployments
-    const {deployments} = result.find(it => it.deployments && it.deployments.length);
+    const completeDeployments = result.find(it => it.deployments && it.deployments.length).deployments;
 
     // check response
     expect(response.statusCode).toEqual(200);
-    expect(deployments.length).toEqual(2);
-    expect(deployments[0].Name.startsWith('/exo-admin-test-compose-deploy-web-')).toBeTruthy();
-    expect(deployments[1].Name.startsWith('/exo-admin-test-compose-deploy-redis-')).toBeTruthy();
+    expect(completeDeployments.length).toEqual(2);
+    expect(completeDeployments[0].Name.startsWith('/exo-admin-test-compose-deploy-web-')).toBeTruthy();
+    expect(completeDeployments[1].Name.startsWith('/exo-admin-test-compose-deploy-redis-')).toBeTruthy();
 
     // check docker services
     const allContainers = await docker.listContainers();
-    const containerOne = allContainers.find(c => c.Names.includes(deployments[0].Name));
-    const containerTwo = allContainers.find(c => c.Names.includes(deployments[1].Name));
-    const nameOne = deployments[0].Name.slice(1);
-    const nameTwo = deployments[1].Name.slice(1);
+    const containerOne = allContainers.find(c => c.Names.includes(completeDeployments[0].Name));
+    const containerTwo = allContainers.find(c => c.Names.includes(completeDeployments[1].Name));
+    const nameOne = completeDeployments[0].Name.slice(1);
+    const nameTwo = completeDeployments[1].Name.slice(1);
     const deployIdOne = nameOne
       .split('-')
       .slice(-1)
@@ -449,14 +449,14 @@ test('Should have additional labels', done => {
       .map(line => JSON.parse(line));
 
     // find deployments
-    const {deployments} = result.find(it => it.deployments && it.deployments.length);
+    const completeDeployments = result.find(it => it.deployments && it.deployments.length).deployments;
 
     // check response
     expect(response.statusCode).toEqual(200);
 
     // check docker services
     const allContainers = await docker.listContainers();
-    const containerInfo = allContainers.find(c => c.Names.includes(deployments[0].Name));
+    const containerInfo = allContainers.find(c => c.Names.includes(completeDeployments[0].Name));
     expect(containerInfo).toBeDefined();
     expect(containerInfo.Labels['custom.label']).toEqual('additional-label');
 
