@@ -8,6 +8,7 @@ const getPort = require('get-port');
 const authToken = require('./fixtures/authToken');
 const {startServer} = require('../src');
 const docker = require('../src/docker/docker');
+const {initNetwork} = require('../src/docker/init');
 
 // create tar streams
 const streamDocker = tar.pack(path.join(__dirname, 'fixtures', 'docker-project'));
@@ -40,8 +41,11 @@ let composeDeployTwo = '';
 jest.setTimeout(60000);
 
 beforeAll(async () => {
+  // start new instance of fastify
   const port = await getPort();
   fastify = await startServer(port);
+  // init docker network
+  await initNetwork();
   return fastify;
 });
 
