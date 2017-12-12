@@ -13,7 +13,7 @@ before_install:
   - curl -L https://github.com/docker/compose/releases/download/1.13.0/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
 
-after_script:
+after_success:
   - docker rmi $(docker images -q)
   - yarn coveralls
   - yarn build
