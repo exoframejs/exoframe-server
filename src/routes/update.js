@@ -101,10 +101,10 @@ module.exports = fastify => {
           await container.start();
           // reply
           reply.code(200).send({updated: true});
-          // sleep for a few ms to let reply finish
-          await sleep(300);
-          // kill old self
-          serverContainer.remove({force: true});
+          // sleep for a second to let reply finish
+          await sleep(1000);
+          // kill old self on next tick
+          process.nextTick(() => serverContainer.remove({force: true}));
           return;
         }
 
