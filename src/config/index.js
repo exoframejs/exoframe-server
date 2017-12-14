@@ -36,6 +36,7 @@ const defaultConfig = {
   letsencryptEmail: 'admin@domain.com',
   compress: true,
   baseDomain: false,
+  cors: false,
   publicKeysPath,
 };
 

@@ -37,6 +37,7 @@ test('Should get login id and login phrase', done => {
     const result = JSON.parse(response.payload);
 
     expect(response.statusCode).toBe(200);
+    expect(response.headers['access-control-allow-origin']).toEqual('http://test.com');
     expect(result.phrase).toBeTruthy();
     expect(result.uid).toBeTruthy();
 
