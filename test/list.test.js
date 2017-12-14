@@ -50,16 +50,17 @@ beforeAll(async () => {
     project: 'listtest1',
     baseName: 'exo-admin-listtest1',
   });
-  container1 = await docker.createContainer(containerConfig1);
-  await container1.start();
   containerConfig2 = generateContainerConfig({
     name: 'listtest2',
     username: 'admin',
     project: 'listtest2',
     baseName: 'exo-admin-listtest2',
   });
-  container2 = await docker.createContainer(containerConfig2);
-  await container2.start();
+  [container1, container2] = await Promise.all([
+    docker.createContainer(containerConfig1),
+    docker.createContainer(containerConfig2),
+  ]);
+  await Promise.all([container1.start(), container2.start()]);
 
   return fastify;
 });

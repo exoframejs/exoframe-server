@@ -7,6 +7,7 @@ const authToken = require('./fixtures/authToken');
 const {startServer} = require('../src');
 const docker = require('../src/docker/docker');
 const {pullImage, initDocker} = require('../src/docker/init');
+const {sleep} = require('../src/util');
 
 // old traefik and server images
 const traefikTag = 'traefik:1.3-alpine';
@@ -143,7 +144,7 @@ test('Should update traefik', done => {
 });
 
 // run update test
-test('Should update server', done => {
+test.only('Should update server', done => {
   // options base
   const options = Object.assign({}, baseOptions, {
     url: '/update/server',
@@ -158,16 +159,29 @@ test('Should update server', done => {
     const newServer = allImages.find(it => it.RepoTags && it.RepoTags.includes('exoframe/server:latest'));
     expect(newServer.Id).not.toBe(oldServer.Id);
 
+    // wait for removal of old server
+    await sleep(1500);
+    try {
+      const oldServerContainer = docker.getContainer(oldServer.Id);
+      await oldServerContainer.inspect();
+    } catch (e) {
+      expect(e.message).toContain('no such container');
+    }
+
     // cleanup
-    const allContainers = await docker.listContainers();
-    const containerTraefik = allContainers.find(c => c.Names.find(n => n === '/exoframe-traefik'));
+    const allContainers = await docker.listContainers({all: true});
+    const containerTraefik = allContainers.find(c => c.Names.find(n => n.startsWith('/exoframe-traefik')));
     const containerServer = allContainers.find(
       c => c.Image === 'exoframe/server:latest' && c.Names.find(n => n.startsWith('/exoframe-server'))
     );
+    // remove new server instance
     const srvInst = docker.getContainer(containerServer.Id);
     await srvInst.remove({force: true});
-    const trInst = docker.getContainer(containerTraefik.Id);
-    await trInst.remove({force: true});
+    // if traefik hasn't been removed yet - remove it
+    if (containerTraefik) {
+      const trInst = docker.getContainer(containerTraefik.Id);
+      await trInst.remove({force: true});
+    }
 
     done();
   });

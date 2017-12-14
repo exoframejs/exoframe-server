@@ -21,7 +21,8 @@ exports.startServer = async (port = 8080) => {
   fastify.addContentTypeParser('*', (req, done) => done());
 
   // register plugins
-  setupAuth(fastify).register(routes);
+  const after = util.promisify(setupAuth(fastify).register(routes).after);
+  await after();
 
   // start server
   const fastifyListen = util.promisify(fastify.listen);
