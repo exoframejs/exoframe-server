@@ -64,10 +64,11 @@ letsencrypt: false # whether to enable letsencrypt, default "false"
 letsencryptEmail: your@email.com # email used for letsencrypt
 compress: true # whether to apply gzip compression, default "true"
 baseDomain: false # base domain to use for deployments without domains specified, default "false"
+cors: false # CORS support; can be "true" ("*" header) or object with "origin" property, default "false"
 publicKeysPath: '/path/to/your/public/keys' # path to folder with authorized_keys, default "~/.ssh"
 ```
 
-*Warning:* Most changes to config are applied immediately. With exception of Letsencrypt config. If you are enabling letsencrypt after Traefik instance has been started, you'll need to remove Traefik and then restart Exoframe server for changes to take effect.
+_Warning:_ Most changes to config are applied immediately. With exception of Letsencrypt config. If you are enabling letsencrypt after Traefik instance has been started, you'll need to remove Traefik and then restart Exoframe server for changes to take effect.
 
 ## Docs
 
