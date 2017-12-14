@@ -55,7 +55,7 @@ exports.initNetwork = initNetwork;
 exports.initDocker = async () => {
   logger.info('Initializing docker services...');
   // get all containers
-  const allContainers = await docker.listContainers();
+  const allContainers = await docker.listContainers({all: true});
   // try to find traefik instance
   const traefik = allContainers.find(c => c.Names.find(n => n === `/${traefikName}`));
 
@@ -122,6 +122,7 @@ exports.initDocker = async () => {
     '-c',
     '/dev/null',
     '--docker',
+    '--sendAnonymousUsage=false',
     ...(config.letsencrypt ? letsencrypt : entrypoints),
     ...(config.debug ? debug : []),
   ];
