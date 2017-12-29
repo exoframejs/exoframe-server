@@ -96,7 +96,7 @@ module.exports = (server, token) =>
         t.notEqual(newServer.Id, oldServer.Id, 'Should have updated exoframe/server image');
 
         // cleanup
-        const allContainers = await docker.listContainers();
+        const allContainers = await docker.listContainers({all: true});
         const containerTraefik = allContainers.find(c => c.Names.find(n => n === '/exoframe-traefik'));
         const containerServer = allContainers.find(
           c => c.Image === 'exoframe/server:latest' && c.Names.find(n => n.startsWith('/exoframe-server'))
