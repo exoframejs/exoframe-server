@@ -1,4 +1,10 @@
 
+1.1.2 / 2017-12-29
+==================
+
+Fixes:
+  * Fix server update test, correctly remove traefik when it is stopped
+
 1.1.1 / 2017-12-11
 ==================
 
