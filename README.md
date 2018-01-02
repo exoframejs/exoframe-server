@@ -4,7 +4,6 @@
 
 [![Build Status](https://travis-ci.org/exoframejs/exoframe-server.svg?branch=master)](https://travis-ci.org/exoframejs/exoframe-server)
 [![Coverage Status](https://coveralls.io/repos/github/exoframejs/exoframe-server/badge.svg?branch=master)](https://coveralls.io/github/exoframejs/exoframe-server?branch=master)
-[![Greenkeeper badge](https://badges.greenkeeper.io/exoframejs/exoframe-server.svg)](https://greenkeeper.io/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/exoframe/server.svg)](https://hub.docker.com/r/exoframe/server/)
 [![Docker image size](https://images.microbadger.com/badges/image/exoframe/server.svg)](https://microbadger.com/images/exoframe/server)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
