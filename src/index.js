@@ -1,5 +1,4 @@
 // npm packages
-const util = require('util');
 const initFastify = require('fastify');
 const fastifyAuth = require('fastify-auth');
 const cors = require('cors');
@@ -39,12 +38,12 @@ exports.startServer = async (port = 8080) => {
   fastify.addContentTypeParser('*', (req, done) => done());
 
   // register plugins
-  const after = util.promisify(setupAuth(fastify).register(routes).after);
-  await after();
+  await setupAuth(fastify)
+    .register(routes)
+    .ready();
 
   // start server
-  const fastifyListen = util.promisify(fastify.listen);
-  await fastifyListen(port);
+  await fastify.listen(port);
   logger.info(`Server running at: ${fastify.server.address().port}`);
 
   return fastify;

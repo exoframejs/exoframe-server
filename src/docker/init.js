@@ -122,7 +122,6 @@ exports.initDocker = async () => {
     '-c',
     '/dev/null',
     '--docker',
-    '--sendAnonymousUsage=false',
     ...(config.letsencrypt ? letsencrypt : entrypoints),
     ...(config.debug ? debug : []),
   ];
