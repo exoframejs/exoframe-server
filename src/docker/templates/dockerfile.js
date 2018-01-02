@@ -9,13 +9,14 @@ const build = require('../build');
 const start = require('../start');
 const {tempDockerDir, writeStatus, cleanTemp} = require('../../util');
 
+// template name
+exports.name = 'dockerfile';
+
 // function to check if the template fits this recipe
-exports.checkTemplate = async ({resultStream}) => {
+exports.checkTemplate = async () => {
   // if project already has dockerfile - just exit
   try {
     fs.readFileSync(path.join(tempDockerDir, 'Dockerfile'));
-    logger.debug('Project already has dockerfile!');
-    writeStatus(resultStream, {message: 'Deploying Dockerfile project..', level: 'info'});
     return true;
   } catch (e) {
     return false;
@@ -26,6 +27,8 @@ exports.checkTemplate = async ({resultStream}) => {
 exports.executeTemplate = async ({username, resultStream}) => {
   // build docker image
   try {
+    writeStatus(resultStream, {message: 'Deploying Dockerfile project..', level: 'info'});
+
     const buildRes = await build({username, resultStream});
     logger.debug('Build result:', buildRes);
 

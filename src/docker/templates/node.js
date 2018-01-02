@@ -34,16 +34,15 @@ EXPOSE 80
 CMD ["npm", "start"]
 `;
 
+// template name
+exports.name = 'node';
+
 // function to check if the template fits this recipe
-exports.checkTemplate = async ({resultStream}) => {
+exports.checkTemplate = async () => {
   // if project already has dockerfile - just exit
   try {
     const filesList = fs.readdirSync(tempDockerDir);
     if (filesList.includes('package.json')) {
-      const dockerfile = nodeDockerfile({hasYarn: filesList.includes('yarn.lock')});
-      const dfPath = path.join(tempDockerDir, 'Dockerfile');
-      fs.writeFileSync(dfPath, dockerfile, 'utf-8');
-      writeStatus(resultStream, {message: 'Deploying Node.js project..', level: 'info'});
       return true;
     }
     return false;
@@ -54,8 +53,15 @@ exports.checkTemplate = async ({resultStream}) => {
 
 // function to execute current template
 exports.executeTemplate = async ({username, resultStream}) => {
-  // build docker image
   try {
+    // generate dockerfile
+    const filesList = fs.readdirSync(tempDockerDir);
+    const dockerfile = nodeDockerfile({hasYarn: filesList.includes('yarn.lock')});
+    const dfPath = path.join(tempDockerDir, 'Dockerfile');
+    fs.writeFileSync(dfPath, dockerfile, 'utf-8');
+    writeStatus(resultStream, {message: 'Deploying Node.js project..', level: 'info'});
+
+    // build docker image
     const buildRes = await build({username, resultStream});
     logger.debug('Build result:', buildRes);
 

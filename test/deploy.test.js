@@ -20,6 +20,7 @@ const streamComposeUpdate = tar.pack(path.join(__dirname, 'fixtures', 'compose-p
 const streamBrokenDocker = tar.pack(path.join(__dirname, 'fixtures', 'broken-docker-project'));
 const streamBrokenNode = tar.pack(path.join(__dirname, 'fixtures', 'broken-node-project'));
 const streamAdditionalLabels = tar.pack(path.join(__dirname, 'fixtures', 'additional-labels'));
+const streamTemplate = tar.pack(path.join(__dirname, 'fixtures', 'template-project'));
 
 // options base
 const optionsBase = {
@@ -466,6 +467,52 @@ test('Should have additional labels', done => {
 
     // cleanup
     const instance = docker.getContainer(containerInfo.Id);
+    await instance.remove({force: true});
+
+    done();
+  });
+});
+
+test('Should deploy project with configured template', done => {
+  const options = Object.assign(optionsBase, {
+    payload: streamTemplate,
+  });
+
+  fastify.inject(options, async response => {
+    // parse result into lines
+    const result = response.payload
+      .split('\n')
+      .filter(l => l && l.length)
+      .map(line => JSON.parse(line));
+
+    // find deployments
+    const completeDeployments = result.find(it => it.deployments && it.deployments.length).deployments;
+
+    // check response
+    expect(response.statusCode).toEqual(200);
+    expect(completeDeployments.length).toEqual(1);
+    expect(result[0]).toEqual({message: 'Deploying Static HTML project..', level: 'info'});
+
+    // check docker services
+    const allContainers = await docker.listContainers();
+    const container = allContainers.find(c => c.Names.includes(completeDeployments[0].Name));
+    const name = completeDeployments[0].Name.slice(1);
+    expect(name.startsWith('exo-admin-test-static-deploy-')).toBeTruthy();
+    const deployId = name
+      .split('-')
+      .slice(-1)
+      .shift();
+
+    expect(container).toBeDefined();
+    expect(container.Labels['exoframe.deployment']).toEqual(name);
+    expect(container.Labels['exoframe.user']).toEqual('admin');
+    expect(container.Labels['exoframe.project']).toEqual(name.replace(`-${deployId}`, ''));
+    expect(container.Labels['traefik.backend']).toEqual(name.replace(`-${deployId}`, ''));
+    expect(container.Labels['traefik.frontend.rule']).toEqual('Host:localhost');
+    expect(container.NetworkSettings.Networks.exoframe).toBeDefined();
+
+    // cleanup
+    const instance = docker.getContainer(container.Id);
     await instance.remove({force: true});
 
     done();

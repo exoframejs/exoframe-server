@@ -1,8 +1,10 @@
+/* eslint no-await-in-loop: off */
 // npm modules
 const _ = require('highland');
 const {Readable} = require('stream');
 
 // our modules
+const logger = require('../logger');
 const {sleep, cleanTemp, unpack, getProjectConfig, projectFromConfig} = require('../util');
 const docker = require('../docker/docker');
 const {removeContainer} = require('../docker/util');
@@ -14,14 +16,24 @@ const WAIT_TIME = 5000;
 // deployment from unpacked files
 const deploy = async ({username, resultStream}) => {
   let template;
-  for (let i = 0; i < templates.length; i++) {
-    const t = templates[i];
-    const isRightTemplate = await t.checkTemplate({username, resultStream});
-    if (isRightTemplate) {
-      template = t;
-      break;
+  // try getting template from config
+  const config = getProjectConfig();
+  if (config.template && config.template.length > 0) {
+    logger.debug('Looking up template from config:', config.template);
+    template = templates.find(t => t.name === config.template);
+  } else {
+    // find template using check logic
+    for (let i = 0; i < templates.length; i++) {
+      const t = templates[i];
+      const isRightTemplate = await t.checkTemplate({username, resultStream});
+      if (isRightTemplate) {
+        template = t;
+        break;
+      }
     }
   }
+  logger.debug('Using template:', template);
+  // execute fitting template
   await template.executeTemplate({username, resultStream});
 };
 

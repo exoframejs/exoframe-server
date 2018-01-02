@@ -86,6 +86,9 @@ const executeCompose = resultStream =>
     });
   });
 
+// template name
+exports.name = 'docker-compose';
+
 // function to check if the template fits this recipe
 exports.checkTemplate = async () => {
   // if project already has docker-compose - just exit

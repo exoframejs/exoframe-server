@@ -14,16 +14,15 @@ COPY . /usr/share/nginx/html
 RUN chmod -R 755 /usr/share/nginx/html
 `;
 
+// template name
+exports.name = 'static';
+
 // function to check if the template fits this recipe
-exports.checkTemplate = async ({resultStream}) => {
+exports.checkTemplate = async () => {
   // if project already has dockerfile - just exit
   try {
     const filesList = fs.readdirSync(tempDockerDir);
     if (filesList.includes('index.html')) {
-      const dockerfile = nginxDockerfile;
-      const dfPath = path.join(tempDockerDir, 'Dockerfile');
-      fs.writeFileSync(dfPath, dockerfile, 'utf-8');
-      writeStatus(resultStream, {message: 'Deploying Static HTML project..', level: 'info'});
       return true;
     }
     return false;
@@ -34,8 +33,14 @@ exports.checkTemplate = async ({resultStream}) => {
 
 // function to execute current template
 exports.executeTemplate = async ({username, resultStream}) => {
-  // build docker image
   try {
+    // generate dockerfile
+    const dockerfile = nginxDockerfile;
+    const dfPath = path.join(tempDockerDir, 'Dockerfile');
+    fs.writeFileSync(dfPath, dockerfile, 'utf-8');
+    writeStatus(resultStream, {message: 'Deploying Static HTML project..', level: 'info'});
+
+    // build docker image
     const buildRes = await build({username, resultStream});
     logger.debug('Build result:', buildRes);
 
