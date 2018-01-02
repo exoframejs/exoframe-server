@@ -37,13 +37,10 @@ exports.startServer = async (port = 8080) => {
   // add custom parser that just passes stream on
   fastify.addContentTypeParser('*', (req, done) => done());
 
-  // register plugins
+  // register plugins and start server
   await setupAuth(fastify)
     .register(routes)
-    .ready();
-
-  // start server
-  await fastify.listen(port);
+    .listen(port);
   logger.info(`Server running at: ${fastify.server.address().port}`);
 
   return fastify;

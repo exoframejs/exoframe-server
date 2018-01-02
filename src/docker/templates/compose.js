@@ -7,22 +7,15 @@ const uuid = require('uuid');
 const {spawn} = require('child_process');
 
 // our packages
+const logger = require('../../logger');
 const {tempDockerDir, getProjectConfig, writeStatus} = require('../../util');
+const docker = require('../../docker/docker');
 
 // compose file path
 const composePath = path.join(tempDockerDir, 'docker-compose.yml');
 
-exports.hasCompose = () => {
-  // if project already has docker-compose - just exit
-  try {
-    fs.readFileSync(composePath);
-    return true;
-  } catch (e) {
-    return false;
-  }
-};
-
-exports.updateCompose = ({username}) => {
+// function to update compose file with required vars
+const updateCompose = ({username}) => {
   // get project info
   const config = getProjectConfig();
 
@@ -72,7 +65,8 @@ exports.updateCompose = ({username}) => {
   return compose;
 };
 
-exports.executeCompose = resultStream =>
+// function to execute docker-compose file and return the output
+const executeCompose = resultStream =>
   new Promise(resolve => {
     const dc = spawn('docker-compose', ['up', '-d'], {cwd: tempDockerDir});
 
@@ -91,3 +85,43 @@ exports.executeCompose = resultStream =>
       resolve(code.toString());
     });
   });
+
+// function to check if the template fits this recipe
+exports.checkTemplate = async () => {
+  // if project already has docker-compose - just exit
+  try {
+    fs.readFileSync(composePath);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+// function to execute current template
+exports.executeTemplate = async ({username, resultStream}) => {
+  // if it does - run compose workflow
+  logger.debug('Docker-compose file found, executing compose workflow..');
+  writeStatus(resultStream, {message: 'Deploying docker-compose project..', level: 'info'});
+
+  // update compose file with project params
+  const composeConfig = updateCompose({username});
+  logger.debug('Compose modified:', composeConfig);
+  writeStatus(resultStream, {message: 'Compose file modified', data: composeConfig, level: 'verbose'});
+
+  // execute compose
+  const exitCode = await executeCompose(resultStream);
+  logger.debug('Compose executed, exit code:', exitCode);
+
+  // get container infos
+  const allContainers = await docker.listContainers({all: true});
+  const deployments = await Promise.all(
+    Object.keys(composeConfig.services)
+      .map(svc => composeConfig.services[svc].container_name)
+      .map(name => allContainers.find(c => c.Names.find(n => n === `/${name}`)))
+      .map(info => docker.getContainer(info.Id))
+      .map(container => container.inspect())
+  );
+  // return them
+  writeStatus(resultStream, {message: 'Deployment success!', deployments, level: 'info'});
+  resultStream.end('');
+};

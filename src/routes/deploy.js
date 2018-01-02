@@ -3,87 +3,26 @@ const _ = require('highland');
 const {Readable} = require('stream');
 
 // our modules
-const logger = require('../logger');
-const {hasCompose, updateCompose, executeCompose} = require('../docker/dockercompose');
-const generateDockerfile = require('../docker/dockerfile');
-const build = require('../docker/build');
-const start = require('../docker/start');
-const {sleep, cleanTemp, unpack, getProjectConfig, projectFromConfig, writeStatus} = require('../util');
+const {sleep, cleanTemp, unpack, getProjectConfig, projectFromConfig} = require('../util');
 const docker = require('../docker/docker');
 const {removeContainer} = require('../docker/util');
+const templates = require('../docker/templates');
 
 // time to wait before removing old projects on update
 const WAIT_TIME = 5000;
 
 // deployment from unpacked files
 const deploy = async ({username, resultStream}) => {
-  // check if it's a docker-compose project
-  if (hasCompose()) {
-    // if it does - run compose workflow
-    logger.debug('Docker-compose file found, executing compose workflow..');
-    writeStatus(resultStream, {message: 'Deploying docker-compose project..', level: 'info'});
-
-    // update compose file with project params
-    const composeConfig = updateCompose({username});
-    logger.debug('Compose modified:', composeConfig);
-    writeStatus(resultStream, {message: 'Compose file modified', data: composeConfig, level: 'verbose'});
-
-    // execute compose
-    const exitCode = await executeCompose(resultStream);
-    logger.debug('Compose executed, exit code:', exitCode);
-
-    // get container infos
-    const allContainers = await docker.listContainers({all: true});
-    const deployments = await Promise.all(
-      Object.keys(composeConfig.services)
-        .map(svc => composeConfig.services[svc].container_name)
-        .map(name => allContainers.find(c => c.Names.find(n => n === `/${name}`)))
-        .map(info => docker.getContainer(info.Id))
-        .map(container => container.inspect())
-    );
-    // return them
-    writeStatus(resultStream, {message: 'Deployment success!', deployments, level: 'info'});
-    resultStream.end('');
-    return;
-  }
-
-  // generate dockerfile
-  generateDockerfile(resultStream);
-
-  // build docker image
-  try {
-    const buildRes = await build({username, resultStream});
-    logger.debug('Build result:', buildRes);
-
-    // check for errors in build log
-    if (
-      buildRes.log
-        .map(it => it.toLowerCase())
-        .some(it => it.includes('error') || (it.includes('failed') && !it.includes('optional')))
-    ) {
-      logger.debug('Build log conains error!');
-      writeStatus(resultStream, {message: 'Build log contains errors!', level: 'error'});
-      resultStream.end('');
-      return;
+  let template;
+  for (let i = 0; i < templates.length; i++) {
+    const t = templates[i];
+    const isRightTemplate = await t.checkTemplate({username, resultStream});
+    if (isRightTemplate) {
+      template = t;
+      break;
     }
-
-    // start image
-    const containerInfo = await start(Object.assign({}, buildRes, {username, resultStream}));
-    logger.debug(containerInfo.Name);
-
-    // clean temp folder
-    await cleanTemp();
-
-    const containerData = docker.getContainer(containerInfo.Id);
-    const container = await containerData.inspect();
-    // return new deployments
-    writeStatus(resultStream, {message: 'Deployment success!', deployments: [container], level: 'info'});
-    resultStream.end('');
-  } catch (e) {
-    logger.debug('build failed!', e);
-    writeStatus(resultStream, {message: e.error, error: e.error, log: e.log, level: 'error'});
-    resultStream.end('');
   }
+  await template.executeTemplate({username, resultStream});
 };
 
 module.exports = fastify => {
