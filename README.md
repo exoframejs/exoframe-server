@@ -64,6 +64,7 @@ letsencryptEmail: your@email.com # email used for letsencrypt
 compress: true # whether to apply gzip compression, default "true"
 baseDomain: false # base domain to use for deployments without domains specified, default "false"
 cors: false # CORS support; can be "true" ("*" header) or object with "origin" property, default "false"
+updateChannel: 'stable' # server image update channel; can be "stable" or "nightly", default "stable"
 publicKeysPath: '/path/to/your/public/keys' # path to folder with authorized_keys, default "~/.ssh"
 ```
 

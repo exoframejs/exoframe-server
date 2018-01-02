@@ -3,10 +3,12 @@ const logger = require('../logger');
 const docker = require('../docker/docker');
 const {pullImage, initDocker, initNetwork, traefikName} = require('../docker/init');
 const {sleep} = require('../util');
+const {getConfig} = require('../config');
 
 // image names
 const traefikImageName = 'traefik:latest';
-const serverImageName = 'exoframe/server:latest';
+const serverImageNameStable = 'exoframe/server:latest';
+const serverImageNameNightly = 'exoframe/server:develop';
 
 module.exports = fastify => {
   fastify.route({
@@ -55,11 +57,15 @@ module.exports = fastify => {
 
       // self update logic
       if (target === 'server') {
+        // get config
+        const config = getConfig();
         // get all containers
         const allContainers = await docker.listContainers();
         // try to find traefik instance
         const oldServer = allContainers.find(c => c.Names.find(n => n.startsWith('/exoframe-server')));
 
+        // determine server image name based on user config
+        const serverImageName = config.updateChannel === 'stable' ? serverImageNameStable : serverImageNameNightly;
         const pullLog = await pullImage(serverImageName);
         // check if already up to date
         if (pullLog.includes('Image is up to date')) {

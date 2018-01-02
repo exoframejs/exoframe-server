@@ -37,6 +37,7 @@ const defaultConfig = {
   compress: true,
   baseDomain: false,
   cors: false,
+  updateChannel: 'stable',
   publicKeysPath,
 };
 
