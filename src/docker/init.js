@@ -103,6 +103,7 @@ exports.initDocker = async () => {
     '--acme',
     `--acme.email=${config.letsencryptEmail}`,
     '--acme.storage=/var/acme/acme.json',
+    '--acme.httpchallenge.entrypoint=http',
     '--acme.entrypoint=https',
     '--acme.onhostrule=true',
     '--accesslogsfile=/var/acme/access.log',
