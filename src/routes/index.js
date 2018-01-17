@@ -5,6 +5,7 @@ const remove = require('./remove');
 const logs = require('./logs');
 const update = require('./update');
 const version = require('./version');
+const templates = require('./templates');
 
 module.exports = (fastify, opts, next) => {
   // enable auth for all routes
@@ -16,6 +17,7 @@ module.exports = (fastify, opts, next) => {
   logs(fastify);
   update(fastify);
   version(fastify);
+  templates(fastify);
 
   next();
 };

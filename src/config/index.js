@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 const chokidar = require('chokidar');
+const {spawn} = require('child_process');
 
 // our packages
 const logger = require('../logger');
@@ -18,15 +19,30 @@ const publicKeysPath =
   process.env.NODE_ENV !== 'testing'
     ? path.join(os.homedir(), '.ssh')
     : path.join(__dirname, '..', '..', 'test', 'fixtures');
+const extensionsFolder = path.join(baseFolder, 'extensions');
 
 // export paths for others
 exports.baseFolder = baseFolder;
+exports.extensionsFolder = extensionsFolder;
 
 // create base folder if doesn't exist
 try {
   fs.statSync(baseFolder);
 } catch (e) {
   fs.mkdirSync(baseFolder);
+}
+
+// create extensions folder if doesn't exist
+try {
+  fs.statSync(extensionsFolder);
+} catch (e) {
+  fs.mkdirSync(extensionsFolder);
+}
+// init package.json if it doesn't exist
+try {
+  fs.statSync(path.join(extensionsFolder, 'package.json'));
+} catch (e) {
+  spawn('yarn', ['init', '-y'], {cwd: extensionsFolder});
 }
 
 // default config

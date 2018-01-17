@@ -2,5 +2,13 @@ const docker = require('./docker');
 
 exports.removeContainer = async containerInfo => {
   const service = docker.getContainer(containerInfo.Id);
-  await service.remove({force: true});
+  try {
+    await service.remove({force: true});
+  } catch (e) {
+    // ignore not found errors
+    if (e.statusCode === 404) {
+      return;
+    }
+    throw e;
+  }
 };

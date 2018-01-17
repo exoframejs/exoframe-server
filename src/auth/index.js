@@ -37,7 +37,7 @@ const loginRoutes = (fastify, opts, next) => {
     handler(request, reply) {
       const templatePath = join(__dirname, '..', 'templates', 'home.html');
       const template = fs.readFileSync(templatePath).toString();
-      reply(template);
+      reply.header('Content-Type', 'text/html; charset=UTF-8').send(template);
     },
   });
 
