@@ -67,33 +67,32 @@ beforeAll(async () => {
 
 afterAll(() => fastify.close());
 
-test('Should list deployed projects', done => {
-  fastify.inject(options, async response => {
-    const result = JSON.parse(response.payload);
+test('Should list deployed projects', async done => {
+  const response = await fastify.inject(options);
+  const result = JSON.parse(response.payload);
 
-    // check response
-    expect(response.statusCode).toEqual(200);
-    expect(result.length).toBeGreaterThanOrEqual(2);
+  // check response
+  expect(response.statusCode).toEqual(200);
+  expect(result.length).toBeGreaterThanOrEqual(2);
 
-    // check container info
-    const container = result.find(c => c.Name.includes('listtest1'));
-    expect(container.Name.startsWith(`/${containerConfig1.name}`)).toBeTruthy();
-    expect(container.Config.Labels['exoframe.deployment']).toEqual(containerConfig1.Labels['exoframe.deployment']);
-    expect(container.Config.Labels['exoframe.user']).toEqual(containerConfig1.Labels['exoframe.user']);
-    expect(container.Config.Labels['traefik.backend']).toEqual(containerConfig1.Labels['traefik.backend']);
-    expect(container.Config.Labels['traefik.frontend.rule']).toEqual(containerConfig1.Labels['traefik.frontend.rule']);
+  // check container info
+  const container = result.find(c => c.Name.includes('listtest1'));
+  expect(container.Name.startsWith(`/${containerConfig1.name}`)).toBeTruthy();
+  expect(container.Config.Labels['exoframe.deployment']).toEqual(containerConfig1.Labels['exoframe.deployment']);
+  expect(container.Config.Labels['exoframe.user']).toEqual(containerConfig1.Labels['exoframe.user']);
+  expect(container.Config.Labels['traefik.backend']).toEqual(containerConfig1.Labels['traefik.backend']);
+  expect(container.Config.Labels['traefik.frontend.rule']).toEqual(containerConfig1.Labels['traefik.frontend.rule']);
 
-    // check second container info
-    const containerTwo = result.find(r => r.Name.startsWith(`/${containerConfig2.name}`));
-    expect(containerTwo.Name.startsWith(`/${containerConfig2.name}`)).toBeTruthy();
-    expect(containerTwo.Config.Labels['exoframe.deployment'].startsWith(containerConfig2.name)).toBeTruthy();
-    expect(containerTwo.Config.Labels['exoframe.user']).toEqual(containerConfig2.Labels['exoframe.user']);
-    expect(containerTwo.Config.Labels['traefik.backend']).toEqual(containerConfig2.Labels['traefik.backend']);
-    expect(containerTwo.Config.Labels['traefik.frontend.rule']).toEqual('Host:test');
+  // check second container info
+  const containerTwo = result.find(r => r.Name.startsWith(`/${containerConfig2.name}`));
+  expect(containerTwo.Name.startsWith(`/${containerConfig2.name}`)).toBeTruthy();
+  expect(containerTwo.Config.Labels['exoframe.deployment'].startsWith(containerConfig2.name)).toBeTruthy();
+  expect(containerTwo.Config.Labels['exoframe.user']).toEqual(containerConfig2.Labels['exoframe.user']);
+  expect(containerTwo.Config.Labels['traefik.backend']).toEqual(containerConfig2.Labels['traefik.backend']);
+  expect(containerTwo.Config.Labels['traefik.frontend.rule']).toEqual('Host:test');
 
-    await container1.remove({force: true});
-    await container2.remove({force: true});
+  await container1.remove({force: true});
+  await container2.remove({force: true});
 
-    done();
-  });
+  done();
 });

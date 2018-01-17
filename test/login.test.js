@@ -27,28 +27,27 @@ beforeAll(async () => {
 
 afterAll(() => server.close());
 
-test('Should get login id and login phrase', done => {
+test('Should get login id and login phrase', async done => {
   const options = {
     method: 'GET',
     url: '/login',
   };
 
-  server.inject(options, response => {
-    const result = JSON.parse(response.payload);
+  const response = await server.inject(options);
+  const result = JSON.parse(response.payload);
 
-    expect(response.statusCode).toBe(200);
-    expect(response.headers['access-control-allow-origin']).toEqual('http://test.com');
-    expect(result.phrase).toBeTruthy();
-    expect(result.uid).toBeTruthy();
+  expect(response.statusCode).toBe(200);
+  expect(response.headers['access-control-allow-origin']).toEqual('http://test.com');
+  expect(result.phrase).toBeTruthy();
+  expect(result.uid).toBeTruthy();
 
-    // save phrase for login request
-    loginPhrase = result.phrase;
-    loginReqId = result.uid;
-    done();
-  });
+  // save phrase for login request
+  loginPhrase = result.phrase;
+  loginReqId = result.uid;
+  done();
 });
 
-test('Should login with admin username and correct token', done => {
+test('Should login with admin username and correct token', async done => {
   const privateKeyPath = path.join(__dirname, 'fixtures', 'id_rsa');
   const reqToken = jwt.sign(loginPhrase, fs.readFileSync(privateKeyPath), {algorithm: 'RS256'});
 
@@ -62,25 +61,24 @@ test('Should login with admin username and correct token', done => {
     },
   };
 
-  server.inject(options, response => {
-    const result = JSON.parse(response.payload);
+  const response = await server.inject(options);
+  const result = JSON.parse(response.payload);
 
-    expect(response.statusCode).toBe(200);
-    expect(result.token).toBeTruthy();
+  expect(response.statusCode).toBe(200);
+  expect(result.token).toBeTruthy();
 
-    const decodedUser = jwt.verify(result.token, authConfig.privateKey);
+  const decodedUser = jwt.verify(result.token, authConfig.privateKey);
 
-    expect(decodedUser.user.username).toBe('admin');
-    expect(decodedUser.loggedIn).toBeTruthy();
+  expect(decodedUser.user.username).toBe('admin');
+  expect(decodedUser.loggedIn).toBeTruthy();
 
-    // save token for return
-    const {token} = result;
-    authToken = token;
-    done();
-  });
+  // save token for return
+  const {token} = result;
+  authToken = token;
+  done();
 });
 
-test('Should generate valid deploy token', done => {
+test('Should generate valid deploy token', async done => {
   const options = {
     method: 'POST',
     url: '/deployToken',
@@ -92,27 +90,26 @@ test('Should generate valid deploy token', done => {
     },
   };
 
-  server.inject(options, response => {
-    const result = JSON.parse(response.payload);
+  const response = await server.inject(options);
+  const result = JSON.parse(response.payload);
 
-    expect(response.statusCode).toBe(200);
-    expect(result.token).toBeTruthy();
+  expect(response.statusCode).toBe(200);
+  expect(result.token).toBeTruthy();
 
-    const decodedUser = jwt.verify(result.token, authConfig.privateKey);
+  const decodedUser = jwt.verify(result.token, authConfig.privateKey);
 
-    expect(decodedUser.user.username).toBe('admin');
-    expect(decodedUser.tokenName).toBe('test');
-    expect(decodedUser.loggedIn).toBeTruthy();
-    expect(decodedUser.deploy).toBeTruthy();
+  expect(decodedUser.user.username).toBe('admin');
+  expect(decodedUser.tokenName).toBe('test');
+  expect(decodedUser.loggedIn).toBeTruthy();
+  expect(decodedUser.deploy).toBeTruthy();
 
-    // store for further tests
-    deployToken = result.token;
+  // store for further tests
+  deployToken = result.token;
 
-    done();
-  });
+  done();
 });
 
-test('Should allow request with valid deploy token', done => {
+test('Should allow request with valid deploy token', async done => {
   const options = {
     method: 'GET',
     url: '/checkToken',
@@ -121,20 +118,19 @@ test('Should allow request with valid deploy token', done => {
     },
   };
 
-  server.inject(options, response => {
-    const result = JSON.parse(response.payload);
+  const response = await server.inject(options);
+  const result = JSON.parse(response.payload);
 
-    expect(response.statusCode).toBe(200);
-    expect(result.credentials).toBeTruthy();
+  expect(response.statusCode).toBe(200);
+  expect(result.credentials).toBeTruthy();
 
-    expect(result.message).toBe('Token is valid');
-    expect(result.credentials.username).toBe('admin');
+  expect(result.message).toBe('Token is valid');
+  expect(result.credentials.username).toBe('admin');
 
-    done();
-  });
+  done();
 });
 
-test('Should list generated deploy tokens', done => {
+test('Should list generated deploy tokens', async done => {
   const options = {
     method: 'GET',
     url: '/deployToken',
@@ -143,20 +139,19 @@ test('Should list generated deploy tokens', done => {
     },
   };
 
-  server.inject(options, response => {
-    const result = JSON.parse(response.payload);
+  const response = await server.inject(options);
+  const result = JSON.parse(response.payload);
 
-    expect(response.statusCode).toBe(200);
-    expect(result.tokens).toBeTruthy();
+  expect(response.statusCode).toBe(200);
+  expect(result.tokens).toBeTruthy();
 
-    expect(result.tokens.length).toBe(1);
-    expect(result.tokens[0].tokenName).toBe('test');
+  expect(result.tokens.length).toBe(1);
+  expect(result.tokens[0].tokenName).toBe('test');
 
-    done();
-  });
+  done();
 });
 
-test('Should remove generated deploy tokens', done => {
+test('Should remove generated deploy tokens', async done => {
   const options = {
     method: 'DELETE',
     url: '/deployToken',
@@ -168,18 +163,17 @@ test('Should remove generated deploy tokens', done => {
     },
   };
 
-  server.inject(options, response => {
-    expect(response.statusCode).toBe(204);
+  const response = await server.inject(options);
+  expect(response.statusCode).toBe(204);
 
-    // read tokens from DB and make sure there are none
-    const tokens = getTokenCollection().find();
-    expect(tokens.length).toBe(0);
+  // read tokens from DB and make sure there are none
+  const tokens = getTokenCollection().find();
+  expect(tokens.length).toBe(0);
 
-    done();
-  });
+  done();
 });
 
-test('Should not allow request with removed deploy token', done => {
+test('Should not allow request with removed deploy token', async done => {
   const options = {
     method: 'GET',
     url: '/checkToken',
@@ -188,17 +182,16 @@ test('Should not allow request with removed deploy token', done => {
     },
   };
 
-  server.inject(options, response => {
-    const result = JSON.parse(response.payload);
+  const response = await server.inject(options);
+  const result = JSON.parse(response.payload);
 
-    expect(response.statusCode).toBe(401);
-    expect(result.error).toBe('Unauthorized');
+  expect(response.statusCode).toBe(401);
+  expect(result.error).toBe('Unauthorized');
 
-    done();
-  });
+  done();
 });
 
-test('Should not login without a token', done => {
+test('Should not login without a token', async done => {
   const options = {
     method: 'POST',
     url: '/login',
@@ -207,17 +200,16 @@ test('Should not login without a token', done => {
     },
   };
 
-  server.inject(options, response => {
-    const result = JSON.parse(response.payload);
+  const response = await server.inject(options);
+  const result = JSON.parse(response.payload);
 
-    expect(response.statusCode).toBe(401);
-    expect(result.error).toBe('No token given!');
+  expect(response.statusCode).toBe(401);
+  expect(result.error).toBe('No token given!');
 
-    done();
-  });
+  done();
 });
 
-test('Should not login with a broken token', done => {
+test('Should not login with a broken token', async done => {
   const options = {
     method: 'POST',
     url: '/login',
@@ -228,12 +220,11 @@ test('Should not login with a broken token', done => {
     },
   };
 
-  server.inject(options, response => {
-    const result = JSON.parse(response.payload);
+  const response = await server.inject(options);
+  const result = JSON.parse(response.payload);
 
-    expect(response.statusCode).toBe(401);
-    expect(result.error).toBe('Login request not found!');
+  expect(response.statusCode).toBe(401);
+  expect(result.error).toBe('Login request not found!');
 
-    done();
-  });
+  done();
 });

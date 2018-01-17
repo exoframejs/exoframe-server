@@ -125,64 +125,62 @@ test('Should deploy traefik', async done => {
 });
 
 // run update test
-test('Should update traefik', done => {
+test('Should update traefik', async done => {
   const options = Object.assign({}, baseOptions, {
     url: '/update/traefik',
   });
 
-  fastify.inject(options, async response => {
-    // check response
-    expect(response.statusCode).toEqual(200);
+  const response = await fastify.inject(options);
+  // check response
+  expect(response.statusCode).toEqual(200);
 
-    // check docker services
-    const allImages = await docker.listImages();
-    const newTraefik = allImages.find(it => it.RepoTags && it.RepoTags.includes('traefik:latest'));
-    expect(newTraefik.Id).not.toBe(oldTraefik.Id);
+  // check docker services
+  const allImages = await docker.listImages();
+  const newTraefik = allImages.find(it => it.RepoTags && it.RepoTags.includes('traefik:latest'));
+  expect(newTraefik.Id).not.toBe(oldTraefik.Id);
 
-    done();
-  });
+  done();
 });
 
 // run update test
-test.only('Should update server', done => {
+test('Should update server', async done => {
   // options base
   const options = Object.assign({}, baseOptions, {
     url: '/update/server',
   });
 
-  fastify.inject(options, async response => {
-    // check response
-    expect(response.statusCode).toEqual(200);
+  const response = await fastify.inject(options);
+  // check response
+  expect(response.statusCode).toEqual(200);
 
-    // check docker services
-    const allImages = await docker.listImages();
-    const newServer = allImages.find(it => it.RepoTags && it.RepoTags.includes('exoframe/server:latest'));
-    expect(newServer.Id).not.toBe(oldServer.Id);
+  // check docker services
+  const allImages = await docker.listImages();
+  const newServer = allImages.find(it => it.RepoTags && it.RepoTags.includes('exoframe/server:latest'));
+  expect(newServer.Id).not.toBe(oldServer.Id);
 
-    // wait for removal of old server
-    await sleep(1500);
-    try {
-      const oldServerContainer = docker.getContainer(oldServer.Id);
-      await oldServerContainer.inspect();
-    } catch (e) {
-      expect(e.message).toContain('no such container');
-    }
+  // wait for removal of old server
+  await sleep(1500);
+  try {
+    const oldServerContainer = docker.getContainer(oldServer.Id);
+    await oldServerContainer.inspect();
+  } catch (e) {
+    expect(e.message).toContain('no such container');
+  }
 
-    // cleanup
-    const allContainers = await docker.listContainers({all: true});
-    const containerTraefik = allContainers.find(c => c.Names.find(n => n.startsWith('/exoframe-traefik')));
-    const containerServer = allContainers.find(
-      c => c.Image === 'exoframe/server:latest' && c.Names.find(n => n.startsWith('/exoframe-server'))
-    );
-    // remove new server instance
-    const srvInst = docker.getContainer(containerServer.Id);
-    await srvInst.remove({force: true});
-    // if traefik hasn't been removed yet - remove it
-    if (containerTraefik) {
-      const trInst = docker.getContainer(containerTraefik.Id);
-      await trInst.remove({force: true});
-    }
+  // cleanup
+  const allContainers = await docker.listContainers({all: true});
+  const containerTraefik = allContainers.find(c => c.Names.find(n => n.startsWith('/exoframe-traefik')));
+  const containerServer = allContainers.find(
+    c => c.Image === 'exoframe/server:latest' && c.Names.find(n => n.startsWith('/exoframe-server'))
+  );
+  // remove new server instance
+  const srvInst = docker.getContainer(containerServer.Id);
+  await srvInst.remove({force: true});
+  // if traefik hasn't been removed yet - remove it
+  if (containerTraefik) {
+    const trInst = docker.getContainer(containerTraefik.Id);
+    await trInst.remove({force: true});
+  }
 
-    done();
-  });
+  done();
 });

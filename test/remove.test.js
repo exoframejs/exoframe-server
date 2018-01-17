@@ -81,54 +81,51 @@ beforeAll(async () => {
 
 afterAll(() => fastify.close());
 
-test('Should remove current deployment', done => {
+test('Should remove current deployment', async done => {
   const options = Object.assign({}, baseOptions, {
     url: `/remove/${containerName}`,
   });
 
-  fastify.inject(options, async response => {
-    // check response
-    expect(response.statusCode).toEqual(204);
+  const response = await fastify.inject(options);
+  // check response
+  expect(response.statusCode).toEqual(204);
 
-    // check docker services
-    const allContainers = await docker.listContainers();
-    const exContainer = allContainers.find(c => c.Names.includes(`/${containerName}`));
-    expect(exContainer).toBeUndefined();
+  // check docker services
+  const allContainers = await docker.listContainers();
+  const exContainer = allContainers.find(c => c.Names.includes(`/${containerName}`));
+  expect(exContainer).toBeUndefined();
 
-    done();
-  });
+  done();
 });
 
-test('Should remove current project', done => {
+test('Should remove current project', async done => {
   // options base
   const options = Object.assign({}, baseOptions, {
     url: `/remove/${projectName}`,
   });
 
-  fastify.inject(options, async response => {
-    // check response
-    expect(response.statusCode).toEqual(204);
+  const response = await fastify.inject(options);
+  // check response
+  expect(response.statusCode).toEqual(204);
 
-    // check docker services
-    const allContainers = await docker.listContainers();
-    const prjContainers = allContainers.filter(c => c.Labels['exoframe.project'] === projectName);
-    expect(prjContainers.length).toEqual(0);
+  // check docker services
+  const allContainers = await docker.listContainers();
+  const prjContainers = allContainers.filter(c => c.Labels['exoframe.project'] === projectName);
+  expect(prjContainers.length).toEqual(0);
 
-    done();
-  });
+  done();
 });
 
-test('Should return error when removing nonexistent project', done => {
+test('Should return error when removing nonexistent project', async done => {
   // options base
   const options = Object.assign({}, baseOptions, {
     url: `/remove/do-not-exist`,
   });
 
-  fastify.inject(options, response => {
-    const result = JSON.parse(response.payload);
-    // check response
-    expect(response.statusCode).toEqual(404);
-    expect(result).toMatchObject({error: 'Container not found!'});
-    done();
-  });
+  const response = await fastify.inject(options);
+  const result = JSON.parse(response.payload);
+  // check response
+  expect(response.statusCode).toEqual(404);
+  expect(result).toMatchObject({error: 'Container not found!'});
+  done();
 });

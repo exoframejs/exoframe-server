@@ -83,83 +83,80 @@ beforeAll(async () => {
 
 afterAll(() => fastify.close());
 
-test('Should get logs for current deployment', done => {
+test('Should get logs for current deployment', async done => {
   const options = Object.assign({}, baseOptions, {
     url: `/logs/${containerName}`,
   });
 
-  fastify.inject(options, async response => {
-    // check response
-    expect(response.statusCode).toEqual(200);
+  const response = await fastify.inject(options);
+  // check response
+  expect(response.statusCode).toEqual(200);
 
-    // check logs
-    const lines = response.payload
-      // split by lines
-      .split('\n')
-      // remove unicode chars
-      .map(line => line.replace(/^\u0001.+?\d/, '').replace(/\n+$/, ''))
-      // filter blank lines
-      .filter(line => line && line.length > 0)
-      // remove timestamps
-      .map(line => {
-        const parts = line.split(/\dZ\s/);
-        return parts[1].replace(/\sv\d.+/, ''); // strip any versions
-      });
-    expect(lines).toMatchObject(['123']);
+  // check logs
+  const lines = response.payload
+    // split by lines
+    .split('\n')
+    // remove unicode chars
+    .map(line => line.replace(/^\u0001.+?\d/, '').replace(/\n+$/, ''))
+    // filter blank lines
+    .filter(line => line && line.length > 0)
+    // remove timestamps
+    .map(line => {
+      const parts = line.split(/\dZ\s/);
+      return parts[1].replace(/\sv\d.+/, ''); // strip any versions
+    });
+  expect(lines).toMatchObject(['123']);
 
-    // cleanup
-    await container.remove({force: true});
+  // cleanup
+  await container.remove({force: true});
 
-    done();
-  });
+  done();
 });
 
-test('Should get logs for current project', done => {
+test('Should get logs for current project', async done => {
   // options base
   const options = Object.assign({}, baseOptions, {
     url: `/logs/${projectName}`,
   });
 
-  fastify.inject(options, async response => {
-    // check response
-    expect(response.statusCode).toEqual(200);
+  const response = await fastify.inject(options);
+  // check response
+  expect(response.statusCode).toEqual(200);
 
-    const text = response.payload
-      // split by lines
-      .split('\n')
-      // remove unicode chars
-      .map(line => line.replace(/^\u0001.+?\d/, '').replace(/\n+$/, ''))
-      // filter blank lines
-      .filter(line => line && line.length > 0)
-      // remove timestamps
-      .map(line => {
-        if (line.startsWith('Logs for')) {
-          return line;
-        }
-        const parts = line.split(/\dZ\s/);
-        return parts[1].replace(/\sv\d.+/, ''); // strip any versions
-      });
-    expect(text).toMatchObject(['Logs for logtest3', 'asd', 'Logs for logtest2', '123']);
+  const text = response.payload
+    // split by lines
+    .split('\n')
+    // remove unicode chars
+    .map(line => line.replace(/^\u0001.+?\d/, '').replace(/\n+$/, ''))
+    // filter blank lines
+    .filter(line => line && line.length > 0)
+    // remove timestamps
+    .map(line => {
+      if (line.startsWith('Logs for')) {
+        return line;
+      }
+      const parts = line.split(/\dZ\s/);
+      return parts[1].replace(/\sv\d.+/, ''); // strip any versions
+    });
+  expect(text).toMatchObject(['Logs for logtest3', 'asd', 'Logs for logtest2', '123']);
 
-    // cleanup
-    await projectContainer1.remove({force: true});
-    await projectContainer2.remove({force: true});
+  // cleanup
+  await projectContainer1.remove({force: true});
+  await projectContainer2.remove({force: true});
 
-    done();
-  });
+  done();
 });
 
-test('Should not get logs for nonexistent project', done => {
+test('Should not get logs for nonexistent project', async done => {
   // options base
   const options = Object.assign({}, baseOptions, {
     url: `/logs/do-not-exist`,
   });
 
-  fastify.inject(options, response => {
-    const result = JSON.parse(response.payload);
-    // check response
-    expect(response.statusCode).toEqual(404);
-    expect(result).toMatchObject({error: 'Container not found!'});
-    done();
-  });
+  const response = await fastify.inject(options);
+  const result = JSON.parse(response.payload);
+  // check response
+  expect(response.statusCode).toEqual(404);
+  expect(result).toMatchObject({error: 'Container not found!'});
+  done();
 });

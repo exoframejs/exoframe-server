@@ -21,7 +21,7 @@ beforeAll(async () => {
 
 afterAll(() => fastify.close());
 
-test('Should get current and latest versions', done => {
+test('Should get current and latest versions', async done => {
   // options base
   const options = {
     method: 'GET',
@@ -31,16 +31,15 @@ test('Should get current and latest versions', done => {
     },
   };
 
-  fastify.inject(options, async response => {
-    const result = JSON.parse(response.payload);
+  const response = await fastify.inject(options);
+  const result = JSON.parse(response.payload);
 
-    // check response
-    expect(response.statusCode).toEqual(200);
-    expect(result.server).toBeDefined();
-    expect(result.traefik).toBeDefined();
-    expect(result.latestServer).toBeDefined();
-    expect(result.latestTraefik).toBeDefined();
+  // check response
+  expect(response.statusCode).toEqual(200);
+  expect(result.server).toBeDefined();
+  expect(result.traefik).toBeDefined();
+  expect(result.latestServer).toBeDefined();
+  expect(result.latestTraefik).toBeDefined();
 
-    done();
-  });
+  done();
 });
