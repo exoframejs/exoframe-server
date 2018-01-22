@@ -55,9 +55,9 @@ const updateCompose = ({username, config, composePath}) => {
 };
 
 // function to execute docker-compose file and return the output
-const executeCompose = ({resultStream, tempDockerDir, writeStatus}) =>
+const executeCompose = ({cmd, resultStream, tempDockerDir, writeStatus}) =>
   new Promise(resolve => {
-    const dc = spawn('docker-compose', ['up', '-d'], {cwd: tempDockerDir});
+    const dc = spawn('docker-compose', cmd, {cwd: tempDockerDir});
 
     dc.stdout.on('data', data => {
       const message = data.toString().replace(/\n$/, '');
@@ -104,9 +104,23 @@ exports.executeTemplate = async ({username, config, tempDockerDir, resultStream,
   util.logger.debug('Compose modified:', composeConfig);
   util.writeStatus(resultStream, {message: 'Compose file modified', data: composeConfig, level: 'verbose'});
 
-  // execute compose
-  const exitCode = await executeCompose({resultStream, tempDockerDir, writeStatus: util.writeStatus});
-  util.logger.debug('Compose executed, exit code:', exitCode);
+  // re-build services if needed
+  const buildExitCode = await executeCompose({
+    cmd: ['build'],
+    resultStream,
+    tempDockerDir,
+    writeStatus: util.writeStatus,
+  });
+  util.logger.debug('Compose build executed, exit code:', buildExitCode);
+
+  // execute compose 'up -d'
+  const exitCode = await executeCompose({
+    cmd: ['up', '-d'],
+    resultStream,
+    tempDockerDir,
+    writeStatus: util.writeStatus,
+  });
+  util.logger.debug('Compose up executed, exit code:', exitCode);
 
   // get container infos
   const allContainers = await docker.daemon.listContainers({all: true});
