@@ -5,6 +5,7 @@ const getPort = require('get-port');
 // our packages
 const authToken = require('./fixtures/authToken');
 const {startServer} = require('../src');
+const {pullImage} = require('../src/docker/init');
 const docker = require('../src/docker/docker');
 
 // options base
@@ -46,6 +47,9 @@ beforeAll(async () => {
   // start server
   const port = await getPort();
   fastify = await startServer(port);
+
+  // pull busybox:latest
+  await pullImage('busybox:latest');
 
   // create test container to get single deployment logs
   const containerConfig = generateContainerConfig({
