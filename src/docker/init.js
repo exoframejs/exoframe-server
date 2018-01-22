@@ -11,8 +11,6 @@ const logger = require('../logger');
 
 // config vars
 const baseFolder = path.join(os.homedir(), '.exoframe');
-const traefikName = 'exoframe-traefik';
-exports.traefikName = traefikName;
 
 // pull image
 const pullImage = tag =>
@@ -35,12 +33,15 @@ exports.pullImage = pullImage;
 
 // create exoframe network if needed
 const initNetwork = async () => {
+  // get config
+  const config = getConfig();
+
   const nets = await docker.listNetworks();
-  let exoNet = nets.find(n => n.Name === 'exoframe');
+  let exoNet = nets.find(n => n.Name === config.exoframeNetwork);
   if (!exoNet) {
-    logger.info('Exoframe network does not exists, creating...');
+    logger.info(`Exoframe network ${config.exoframeNetwork} does not exists, creating...`);
     exoNet = await docker.createNetwork({
-      Name: 'exoframe',
+      Name: config.exoframeNetwork,
       Driver: 'bridge',
     });
   } else {
@@ -54,10 +55,22 @@ exports.initNetwork = initNetwork;
 // export default function
 exports.initDocker = async () => {
   logger.info('Initializing docker services...');
+  // create exoframe network if needed
+  const exoNet = await initNetwork();
+
+  // get config
+  const config = getConfig();
+
+  // check if traefik management is disabled
+  if (!config.traefikImage) {
+    logger.info('Traefik managment disabled, skipping init..');
+    return;
+  }
+
   // get all containers
   const allContainers = await docker.listContainers({all: true});
   // try to find traefik instance
-  const traefik = allContainers.find(c => c.Names.find(n => n === `/${traefikName}`));
+  const traefik = allContainers.find(c => c.Names.find(n => n === `/${config.traefikName}`));
 
   // if traefik exists and running - just return
   if (traefik && !traefik.Status.includes('Exited')) {
@@ -73,11 +86,6 @@ exports.initDocker = async () => {
     await traefikContainer.remove();
   }
 
-  // create exoframe network if needed
-  const exoNet = await initNetwork();
-
-  // get config
-  const config = getConfig();
   // build acme path
   const acmePath = path.join(baseFolder, 'traefik', 'acme');
   try {
@@ -88,10 +96,10 @@ exports.initDocker = async () => {
 
   // pull image if needed
   const allImages = await docker.listImages();
-  const traefikImage = allImages.find(img => img.RepoTags && img.RepoTags.includes('traefik:latest'));
+  const traefikImage = allImages.find(img => img.RepoTags && img.RepoTags.includes(config.traefikImage));
   if (!traefikImage) {
     logger.info('No traefik image found, pulling..');
-    const pullLog = await pullImage('traefik:latest');
+    const pullLog = await pullImage(config.traefikImage);
     logger.debug(pullLog);
   }
 
@@ -125,12 +133,13 @@ exports.initDocker = async () => {
     '--docker',
     ...(config.letsencrypt ? letsencrypt : entrypoints),
     ...(config.debug ? debug : []),
+    ...(config.traefikArgs || []),
   ];
 
   // start traefik
   const container = await docker.createContainer({
-    Image: 'traefik:latest',
-    name: traefikName,
+    Image: config.traefikImage,
+    name: config.traefikName,
     Cmd,
     Labels: {
       'exoframe.deployment': 'exo-traefik',

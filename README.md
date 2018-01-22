@@ -64,6 +64,10 @@ letsencryptEmail: your@email.com # email used for letsencrypt
 compress: true # whether to apply gzip compression, default "true"
 baseDomain: false # base domain to use for deployments without domains specified, default "false"
 cors: false # CORS support; can be "true" ("*" header) or object with "origin" property, default "false"
+traefikImage: 'traefik:latest' # Traefik image to be used; set to "false" to disable traefik management, default "traefik:latest"
+traefikName: 'exoframe-traefik' # Traefik container name, default "exoframe-traefik"
+traefikArgs: [] # Additional Traefik start args, default []
+exoframeNetwork: 'exoframe' # Network used by traefik to connect services to, default "exoframe"
 updateChannel: 'stable' # server image update channel; can be "stable" or "nightly", default "stable"
 publicKeysPath: '/path/to/your/public/keys' # path to folder with authorized_keys, default "~/.ssh"
 ```

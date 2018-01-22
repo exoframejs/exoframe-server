@@ -1,12 +1,11 @@
 // our modules
 const logger = require('../logger');
 const docker = require('../docker/docker');
-const {pullImage, initDocker, initNetwork, traefikName} = require('../docker/init');
+const {pullImage, initDocker, initNetwork} = require('../docker/init');
 const {sleep} = require('../util');
 const {getConfig} = require('../config');
 
 // image names
-const traefikImageName = 'traefik:latest';
 const serverImageNameStable = 'exoframe/server:latest';
 const serverImageNameNightly = 'exoframe/server:develop';
 
@@ -18,16 +17,27 @@ module.exports = fastify => {
       // get username
       const {target} = request.params;
 
+      // get traefik image name
+      const config = getConfig();
+      const {traefikName, traefikImage} = config;
+
       // traefik update logic
       if (target === 'traefik') {
+        if (!traefikImage) {
+          reply
+            .code(500)
+            .send({updated: false, error: 'Cannot updating traefik', log: ['Traefik management is disabled!']});
+          return;
+        }
+
         // get all containers
         const allContainers = await docker.listContainers();
         // try to find traefik instance
         const oldTraefik = allContainers.find(
-          c => c.Image === traefikImageName && c.Names.find(n => n === `/${traefikName}`)
+          c => c.Image === traefikImage && c.Names.find(n => n === `/${traefikName}`)
         );
 
-        const pullLog = await pullImage(traefikImageName);
+        const pullLog = await pullImage(traefikImage);
         // check if already up to date
         if (pullLog.includes('Image is up to date')) {
           logger.debug('Traefik is already up to date!');
@@ -57,8 +67,6 @@ module.exports = fastify => {
 
       // self update logic
       if (target === 'server') {
-        // get config
-        const config = getConfig();
         // get all containers
         const allContainers = await docker.listContainers();
         // try to find traefik instance
@@ -86,7 +94,7 @@ module.exports = fastify => {
             .pop()
             .substr(0, 12);
           // init config
-          const config = {
+          const dockerConfig = {
             Image: serverImageName,
             name: `exoframe-server-${hash}`,
             Env: oldServerInfo.Config.Env,
@@ -96,7 +104,7 @@ module.exports = fastify => {
             },
           };
           // start new self
-          const container = await docker.createContainer(config);
+          const container = await docker.createContainer(dockerConfig);
           // get exoframe network
           const exoNet = await initNetwork();
           // connect traefik to exoframe net

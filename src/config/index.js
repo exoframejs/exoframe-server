@@ -54,6 +54,10 @@ const defaultConfig = {
   baseDomain: false,
   cors: false,
   updateChannel: 'stable',
+  traefikImage: 'traefik:latest',
+  traefikName: 'exoframe-traefik',
+  traefikArgs: [],
+  exoframeNetwork: 'exoframe',
   publicKeysPath,
 };
 
