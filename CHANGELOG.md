@@ -1,4 +1,23 @@
 
+2.0.0 / 2018-01-24
+==================
+
+Additions:
+  * Add 3rd party templates support
+  * Add CORS support that can be enabled via config
+  * Add way to update to nightly builds
+  * Allow specifying project template using config file
+  * Allow configuring Traefik via server config
+
+Changes:
+  * Rebuild docker-compose services on deployment
+  * Replace tap with jest and better parallelized tests
+  * Replace hapi with fastify
+
+Fixes:
+  * Use Traefik 1.5.0 acme HTTP challenge due to changes to letsencrypt
+  * Kill self on update on next tick and increase delay to prevent internal errors
+
 1.1.2 / 2017-12-29
 ==================
 
