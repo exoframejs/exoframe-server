@@ -43,7 +43,7 @@ exports.startServer = async (port = 8080) => {
     .ready();
 
   // start server
-  await fastify.listen(port);
+  await fastify.listen(port, '0.0.0.0');
   logger.info(`Server running at: ${fastify.server.address().port}`);
 
   return fastify;
