@@ -1,5 +1,7 @@
 // npm packages
-const Hapi = require('hapi');
+const initFastify = require('fastify');
+const fastifyAuth = require('fastify-auth');
+const cors = require('cors');
 
 // our packages
 const logger = require('./logger');
@@ -7,37 +9,51 @@ const logger = require('./logger');
 // init docker service
 const {initDocker} = require('./docker/init');
 
+// config
+const {getConfig, waitForConfig} = require('./config');
+
 // paths
 const setupAuth = require('./auth');
-const setupRoutes = require('./routes');
+const routes = require('./routes');
 
-// create server
-const server = new Hapi.Server();
+exports.startServer = async (port = 8080) => {
+  // create server
+  const fastify = initFastify().register(fastifyAuth);
 
-// setup connection
-server.connection({port: 8080, host: '0.0.0.0'});
+  // enable cors if needed
+  await waitForConfig();
+  const config = getConfig();
+  if (config.cors) {
+    logger.warn('cors is enabled with config:', config.cors);
+    // if it's just true - simply enable it
+    if (typeof config.cors === 'boolean') {
+      fastify.use(cors());
+    } else {
+      // otherwise pass config object to cors
+      fastify.use(cors(config.cors));
+    }
+  }
 
-const setupServer = async () => {
-  // setup auth
-  const authServer = await setupAuth(server);
-  // setup routes with auth
-  setupRoutes(authServer);
+  // add custom parser that just passes stream on
+  fastify.addContentTypeParser('*', (req, done) => done());
 
-  return server;
+  // register plugins
+  await setupAuth(fastify)
+    .register(routes)
+    .ready();
+
+  // start server
+  await fastify.listen(port);
+  logger.info(`Server running at: ${fastify.server.address().port}`);
+
+  return fastify;
 };
-
-// export server for testing
-exports.setupServer = setupServer;
 
 // export start function
 exports.start = async () => {
   // init required docker service
   await initDocker();
 
-  // setup server
-  await setupServer();
-
-  // start server
-  await server.start();
-  logger.info(`Server running at: ${server.info.uri}`);
+  // init and return server
+  return exports.startServer();
 };

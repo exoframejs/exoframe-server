@@ -1,38 +1,47 @@
 // our modules
 const logger = require('../logger');
 const docker = require('../docker/docker');
-const {pullImage, initDocker, initNetwork, traefikName} = require('../docker/init');
+const {pullImage, initDocker, initNetwork} = require('../docker/init');
 const {sleep} = require('../util');
+const {getConfig} = require('../config');
 
 // image names
-const traefikImageName = 'traefik:latest';
-const serverImageName = 'exoframe/server:latest';
+const serverImageNameStable = 'exoframe/server:latest';
+const serverImageNameNightly = 'exoframe/server:develop';
 
-module.exports = server => {
-  server.route({
+module.exports = fastify => {
+  fastify.route({
     method: 'POST',
-    path: '/update/{target}',
-    config: {
-      auth: 'token',
-    },
+    path: '/update/:target',
     async handler(request, reply) {
       // get username
       const {target} = request.params;
 
+      // get traefik image name
+      const config = getConfig();
+      const {traefikName, traefikImage} = config;
+
       // traefik update logic
       if (target === 'traefik') {
+        if (!traefikImage) {
+          reply
+            .code(500)
+            .send({updated: false, error: 'Cannot updating traefik', log: ['Traefik management is disabled!']});
+          return;
+        }
+
         // get all containers
         const allContainers = await docker.listContainers();
         // try to find traefik instance
         const oldTraefik = allContainers.find(
-          c => c.Image === traefikImageName && c.Names.find(n => n === `/${traefikName}`)
+          c => c.Image === traefikImage && c.Names.find(n => n === `/${traefikName}`)
         );
 
-        const pullLog = await pullImage(traefikImageName);
+        const pullLog = await pullImage(traefikImage);
         // check if already up to date
         if (pullLog.includes('Image is up to date')) {
           logger.debug('Traefik is already up to date!');
-          reply({updated: false}).code(200);
+          reply.code(200).send({updated: false});
           return;
         }
         // check if new image was pulled
@@ -47,12 +56,12 @@ module.exports = server => {
           // re-init traefik
           initDocker({restart: true});
           // reply
-          reply({updated: true}).code(200);
+          reply.code(200).send({updated: true});
           return;
         }
 
         // otherwise report error with current log
-        reply({updated: false, error: 'Error updating image', log: pullLog}).code(500);
+        reply.code(500).send({updated: false, error: 'Error updating image', log: pullLog});
         return;
       }
 
@@ -63,11 +72,13 @@ module.exports = server => {
         // try to find traefik instance
         const oldServer = allContainers.find(c => c.Names.find(n => n.startsWith('/exoframe-server')));
 
+        // determine server image name based on user config
+        const serverImageName = config.updateChannel === 'stable' ? serverImageNameStable : serverImageNameNightly;
         const pullLog = await pullImage(serverImageName);
         // check if already up to date
         if (pullLog.includes('Image is up to date')) {
           logger.debug('Exoframe server is already up to date!');
-          reply({updated: false}).code(200);
+          reply.code(200).send({updated: false});
           return;
         }
         // check if new image was pulled
@@ -79,12 +90,11 @@ module.exports = server => {
           // get image and its hash
           const allImages = await docker.listImages();
           const serverImage = allImages.find(img => img.RepoTags && img.RepoTags.includes(serverImageName));
-          const hash = serverImage.Id
-            .split(':')
+          const hash = serverImage.Id.split(':')
             .pop()
             .substr(0, 12);
           // init config
-          const config = {
+          const dockerConfig = {
             Image: serverImageName,
             name: `exoframe-server-${hash}`,
             Env: oldServerInfo.Config.Env,
@@ -94,7 +104,7 @@ module.exports = server => {
             },
           };
           // start new self
-          const container = await docker.createContainer(config);
+          const container = await docker.createContainer(dockerConfig);
           // get exoframe network
           const exoNet = await initNetwork();
           // connect traefik to exoframe net
@@ -104,21 +114,21 @@ module.exports = server => {
           // start container
           await container.start();
           // reply
-          reply({updated: true}).code(200);
-          // sleep for a few ms to let reply finish
-          await sleep(300);
-          // kill old self
-          serverContainer.remove({force: true});
+          reply.code(200).send({updated: true});
+          // sleep for a second to let reply finish
+          await sleep(1000);
+          // kill old self on next tick
+          process.nextTick(() => serverContainer.remove({force: true}));
           return;
         }
 
         // otherwise report error with current log
-        reply({updated: false, error: 'Error updating image', log: pullLog}).code(500);
+        reply.code(500).send({updated: false, error: 'Error updating image', log: pullLog});
         return;
       }
 
       // default reply
-      reply({updated: false, error: 'Wat'}).code(204);
+      reply.code(204).send({updated: false, error: 'Wat'});
     },
   });
 };

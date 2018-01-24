@@ -1,5 +1,6 @@
 // our modules
 const docker = require('./docker');
+const {initNetwork} = require('../docker/init');
 const {getProjectConfig, baseNameFromImage, nameFromImage, projectFromConfig, writeStatus} = require('../util');
 const {getConfig} = require('../config');
 
@@ -77,9 +78,7 @@ module.exports = async ({image, username, resultStream}) => {
   const container = await docker.createContainer(containerConfig);
 
   // connect container to exoframe network
-  const nets = await docker.listNetworks();
-  const exoNetInfo = nets.find(n => n.Name === 'exoframe');
-  const exoNet = docker.getNetwork(exoNetInfo.Id);
+  const exoNet = await initNetwork();
   await exoNet.connect({
     Container: container.id,
   });

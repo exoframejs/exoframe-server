@@ -1,12 +1,12 @@
 {
   "name": "exoframe-server",
-  "version": "1.1.2",
+  "version": "2.0.0",
   "description": "Exoframe is a self-hosted tool that allows simple one-command deployments using Docker",
   "main": "index.js",
   "bin": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "NODE_ENV=testing tap --timeout=300 --cov --coverage-report=lcov --reporter=spec ./test/index.js",
+    "test": "NODE_ENV=testing jest --coverage --silent --maxWorkers=3 --ci",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "build": "pkg -t node8.9.0-alpine -o exoframe-server ."
   },
@@ -17,13 +17,14 @@
   "author": "Tim Ermilov <yamalight@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "chokidar": "^1.7.0",
+    "chokidar": "^2.0.0",
+    "cors": "^2.8.4",
     "dockerode": "^2.4.3",
-    "hapi": "^16.5.0",
-    "hapi-auth-jwt": "^4.0.0",
+    "fastify": "^0.40.0",
+    "fastify-auth": "^0.1.0",
     "highland": "^2.11.1",
     "js-yaml": "^3.9.1",
-    "jsonwebtoken": "^8.1.0",
+    "jsonwebtoken": "^8.1.1",
     "lodash": "^4.17.4",
     "lokijs": "^1.5.0",
     "mkdirp": "^0.5.1",
@@ -32,12 +33,13 @@
     "semver-compare": "^1.0.0",
     "sshpk": "^1.13.1",
     "tar-fs": "^1.15.2",
-    "uuid": "^3.0.1",
+    "uuid": "^3.2.1",
     "winston": "^2.3.1"
   },
   "devDependencies": {
     "coveralls": "^3.0.0",
-    "pkg": "^4.3.0-beta.1",
-    "tap": "^11.0.0"
+    "get-port": "^3.2.0",
+    "jest": "^22.1.4",
+    "pkg": "^4.3.0"
   }
 }

@@ -4,6 +4,6 @@
   "project": "simple-html",
   "restart": "no",
   "labels": {
-    "custom.label" : "additional-label"
+    "custom.label": "additional-label"
   }
 }

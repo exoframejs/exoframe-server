@@ -17,10 +17,10 @@ exports.tempDockerDir = tempDir;
 exports.cleanTemp = () => new Promise(resolve => rimraf(tempDir, resolve));
 
 // unpack function for incoming project files
-exports.unpack = tarPath =>
+exports.unpack = tarStream =>
   new Promise((resolve, reject) => {
     // create whatever writestream you want
-    const s = fs.createReadStream(tarPath).pipe(tar.extract(tempDir));
+    const s = tarStream.pipe(tar.extract(tempDir));
     s.on('finish', () => resolve());
     s.on('error', e => reject(e));
   });

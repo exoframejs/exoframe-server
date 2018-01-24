@@ -2,3 +2,5 @@ debug: true
 letsencrypt: false
 letsencryptEmail: test@gmail.com
 baseDomain: '.test'
+cors:
+  origin: 'http://test.com'
