@@ -43,8 +43,8 @@ exports.nameFromImage = image => {
 };
 
 exports.projectFromConfig = ({username, config}) => {
-  const tag = exports.tagFromConfig({username, config});
-  const baseName = tag.split(':').shift();
+  const image = exports.tagFromConfig({username, config});
+  const baseName = exports.baseNameFromImage(image);
   return config.project || baseName;
 };
 
