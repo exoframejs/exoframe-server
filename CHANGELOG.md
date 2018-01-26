@@ -1,4 +1,11 @@
 
+2.0.2 / 2018-01-26
+==================
+
+Fixes:
+  * Auto-prepend dot to baseDomain if it's not present & better document baseDomain usage
+  * Construct unique deployments backend strings to fix loadbalancing for unique deployments
+
 2.0.1 / 2018-01-24
 ==================
 
