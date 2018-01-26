@@ -14,7 +14,11 @@ module.exports = async ({image, username, resultStream}) => {
   const config = getProjectConfig();
 
   // generate host
-  const defaultDomain = serverConfig.baseDomain ? `${name}${serverConfig.baseDomain}` : undefined;
+  // construct base domain from config, prepend with "." if it's not there
+  const baseDomain = serverConfig.baseDomain ? serverConfig.baseDomain.replace(/^(\.?)/, '.') : undefined;
+  // construc default domain using given base domain
+  const defaultDomain = baseDomain ? `${name}${baseDomain}` : undefined;
+  // construct host
   const host = config.domain === undefined ? defaultDomain : config.domain;
 
   // generate env vars
