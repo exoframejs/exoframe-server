@@ -1,11 +1,10 @@
 // our modules
 const docker = require('./docker');
 const {initNetwork} = require('../docker/init');
-const {getProjectConfig, baseNameFromImage, nameFromImage, projectFromConfig, writeStatus} = require('../util');
+const {getProjectConfig, nameFromImage, projectFromConfig, writeStatus} = require('../util');
 const {getConfig} = require('../config');
 
 module.exports = async ({image, username, resultStream}) => {
-  const baseName = baseNameFromImage(image);
   const name = nameFromImage(image);
 
   // get server config
@@ -15,7 +14,11 @@ module.exports = async ({image, username, resultStream}) => {
   const config = getProjectConfig();
 
   // generate host
-  const defaultDomain = serverConfig.baseDomain ? `${name}${serverConfig.baseDomain}` : undefined;
+  // construct base domain from config, prepend with "." if it's not there
+  const baseDomain = serverConfig.baseDomain ? serverConfig.baseDomain.replace(/^(\.?)/, '.') : undefined;
+  // construc default domain using given base domain
+  const defaultDomain = baseDomain ? `${name}${baseDomain}` : undefined;
+  // construct host
   const host = config.domain === undefined ? defaultDomain : config.domain;
 
   // generate env vars
@@ -41,6 +44,9 @@ module.exports = async ({image, username, resultStream}) => {
   }
   const additionalLabels = config.labels || {};
 
+  // construct backend name from host (if available) or name
+  const backend = host && host.length ? host : name;
+
   // create config
   const containerConfig = {
     Image: image,
@@ -50,7 +56,7 @@ module.exports = async ({image, username, resultStream}) => {
       'exoframe.deployment': name,
       'exoframe.user': username,
       'exoframe.project': project,
-      'traefik.backend': baseName,
+      'traefik.backend': backend,
     }),
     HostConfig: {
       RestartPolicy,

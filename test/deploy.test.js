@@ -75,16 +75,13 @@ test('Should deploy simple docker project', async done => {
   // check docker services
   const allContainers = await docker.listContainers();
   const containerInfo = allContainers.find(c => c.Names.includes(completeDeployments[0].Name));
-  const deployId = completeDeployments[0].Name.split('-')
-    .slice(-1)
-    .shift();
   const name = completeDeployments[0].Name.slice(1);
 
   expect(containerInfo).toBeDefined();
   expect(containerInfo.Labels['exoframe.deployment']).toEqual(name);
   expect(containerInfo.Labels['exoframe.user']).toEqual('admin');
   expect(containerInfo.Labels['exoframe.project']).toEqual('test-project');
-  expect(containerInfo.Labels['traefik.backend']).toEqual(name.replace(`-${deployId}`, ''));
+  expect(containerInfo.Labels['traefik.backend']).toEqual(`${name}.test`);
   expect(containerInfo.NetworkSettings.Networks.exoframe).toBeDefined();
 
   const containerData = docker.getContainer(containerInfo.Id);
@@ -133,7 +130,7 @@ test('Should deploy simple node project', async done => {
   expect(container.Labels['exoframe.deployment']).toEqual(name);
   expect(container.Labels['exoframe.user']).toEqual('admin');
   expect(container.Labels['exoframe.project']).toEqual(name.replace(`-${deployId}`, ''));
-  expect(container.Labels['traefik.backend']).toEqual(name.replace(`-${deployId}`, ''));
+  expect(container.Labels['traefik.backend']).toEqual('localhost');
   expect(container.Labels['traefik.frontend.rule']).toEqual('Host:localhost');
   expect(container.NetworkSettings.Networks.exoframe).toBeDefined();
 
@@ -177,7 +174,7 @@ test('Should deploy simple HTML project', async done => {
   expect(container.Labels['exoframe.deployment']).toEqual(name);
   expect(container.Labels['exoframe.user']).toEqual('admin');
   expect(container.Labels['exoframe.project']).toEqual('simple-html');
-  expect(container.Labels['traefik.backend']).toEqual(name.replace(`-${deployId}`, ''));
+  expect(container.Labels['traefik.backend']).toEqual(name);
   expect(container.Labels['traefik.frontend.rule']).toBeUndefined();
   expect(container.NetworkSettings.Networks.exoframe).toBeDefined();
 
@@ -221,7 +218,7 @@ test('Should update simple HTML project', async done => {
   expect(container.Labels['exoframe.deployment']).toEqual(name);
   expect(container.Labels['exoframe.user']).toEqual('admin');
   expect(container.Labels['exoframe.project']).toEqual('simple-html');
-  expect(container.Labels['traefik.backend']).toEqual(name.replace(`-${deployId}`, ''));
+  expect(container.Labels['traefik.backend']).toEqual(name);
   expect(container.Labels['traefik.frontend.rule']).toBeUndefined();
   expect(container.NetworkSettings.Networks.exoframe).toBeDefined();
 
@@ -498,7 +495,7 @@ test('Should deploy project with configured template', async done => {
   expect(container.Labels['exoframe.deployment']).toEqual(name);
   expect(container.Labels['exoframe.user']).toEqual('admin');
   expect(container.Labels['exoframe.project']).toEqual(name.replace(`-${deployId}`, ''));
-  expect(container.Labels['traefik.backend']).toEqual(name.replace(`-${deployId}`, ''));
+  expect(container.Labels['traefik.backend']).toEqual('localhost');
   expect(container.Labels['traefik.frontend.rule']).toEqual('Host:localhost');
   expect(container.NetworkSettings.Networks.exoframe).toBeDefined();
 
