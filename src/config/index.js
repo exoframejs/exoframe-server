@@ -58,6 +58,8 @@ const defaultConfig = {
   traefikName: 'exoframe-traefik',
   traefikArgs: [],
   exoframeNetwork: 'exoframe',
+  exoframeNetworkSwarm: 'exoframe-swarm',
+  swarm: false,
   publicKeysPath,
 };
 

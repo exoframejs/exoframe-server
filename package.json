@@ -17,18 +17,18 @@
   "author": "Tim Ermilov <yamalight@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "chokidar": "^2.0.0",
+    "chokidar": "^2.0.2",
     "cors": "^2.8.4",
-    "dockerode": "^2.4.3",
-    "fastify": "^0.40.0",
-    "fastify-auth": "^0.1.0",
+    "dockerode": "^2.5.4",
+    "fastify": "^1.0.0-rc.3",
+    "fastify-auth": "^0.2.0",
     "highland": "^2.11.1",
     "js-yaml": "^3.9.1",
-    "jsonwebtoken": "^8.1.1",
-    "lodash": "^4.17.4",
-    "lokijs": "^1.5.0",
+    "jsonwebtoken": "^8.2.0",
+    "lodash": "^4.17.5",
+    "lokijs": "^1.5.3",
     "mkdirp": "^0.5.1",
-    "node-fetch": "^1.7.3",
+    "node-fetch": "^2.1.1",
     "rimraf": "^2.6.1",
     "semver-compare": "^1.0.0",
     "sshpk": "^1.13.1",
@@ -39,7 +39,7 @@
   "devDependencies": {
     "coveralls": "^3.0.0",
     "get-port": "^3.2.0",
-    "jest": "^22.1.4",
+    "jest": "^22.4.2",
     "pkg": "^4.3.0"
   }
 }

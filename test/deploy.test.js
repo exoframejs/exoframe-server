@@ -8,7 +8,7 @@ const getPort = require('get-port');
 const authToken = require('./fixtures/authToken');
 const {startServer} = require('../src');
 const docker = require('../src/docker/docker');
-const {initNetwork} = require('../src/docker/init');
+const {initNetwork} = require('../src/docker/network');
 
 // create tar streams
 const streamDocker = tar.pack(path.join(__dirname, 'fixtures', 'docker-project'));

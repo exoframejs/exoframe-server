@@ -1,6 +1,6 @@
 // our modules
 const docker = require('./docker');
-const {initNetwork} = require('../docker/init');
+const {initNetwork} = require('../docker/network');
 const {getProjectConfig, nameFromImage, projectFromConfig, writeStatus} = require('../util');
 const {getConfig} = require('../config');
 
@@ -47,17 +47,67 @@ module.exports = async ({image, username, resultStream}) => {
   // construct backend name from host (if available) or name
   const backend = host && host.length ? host : name;
 
+  const Labels = Object.assign({'traefik.port': '80'}, additionalLabels, {
+    'exoframe.deployment': name,
+    'exoframe.user': username,
+    'exoframe.project': project,
+    'traefik.backend': backend,
+  });
+
+  // if host is set - add it to config
+  if (host && host.length) {
+    Labels['traefik.frontend.rule'] = `Host:${host}`;
+  }
+
+  // if running in swarm mode - run traefik as swarm service
+  if (serverConfig.swarm) {
+    const serviceConfig = {
+      Name: name,
+      Labels,
+      TaskTemplate: {
+        ContainerSpec: {
+          Image: image,
+          Env,
+        },
+        Resources: {
+          Limits: {},
+          Reservations: {},
+        },
+        RestartPolicy,
+        Placement: {},
+      },
+      Mode: {
+        Replicated: {
+          Replicas: 1,
+        },
+      },
+      UpdateConfig: {
+        Parallelism: 1,
+      },
+      Networks: [
+        {
+          Target: serverConfig.exoframeNetworkSwarm,
+          Aliases: config.hostname && config.hostname.length ? [config.hostname] : [],
+        },
+      ],
+    };
+
+    writeStatus(resultStream, {message: 'Starting serivce with following config:', serviceConfig, level: 'verbose'});
+
+    // create service
+    const service = await docker.createService(serviceConfig);
+
+    writeStatus(resultStream, {message: 'Service successfully started!', level: 'verbose'});
+
+    return service.inspect();
+  }
+
   // create config
   const containerConfig = {
     Image: image,
     name,
     Env,
-    Labels: Object.assign({}, additionalLabels, {
-      'exoframe.deployment': name,
-      'exoframe.user': username,
-      'exoframe.project': project,
-      'traefik.backend': backend,
-    }),
+    Labels,
     HostConfig: {
       RestartPolicy,
     },
@@ -71,11 +121,6 @@ module.exports = async ({image, username, resultStream}) => {
         },
       },
     };
-  }
-
-  // if host is set - add it to config
-  if (host && host.length) {
-    containerConfig.Labels['traefik.frontend.rule'] = `Host:${host}`;
   }
 
   writeStatus(resultStream, {message: 'Starting container with following config:', containerConfig, level: 'verbose'});
@@ -94,5 +139,7 @@ module.exports = async ({image, username, resultStream}) => {
 
   writeStatus(resultStream, {message: 'Container successfully started!', level: 'verbose'});
 
-  return container.inspect();
+  const containerInfo = await container.inspect();
+  const containerData = docker.getContainer(containerInfo.Id);
+  return containerData.inspect();
 };
