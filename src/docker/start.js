@@ -47,7 +47,8 @@ module.exports = async ({image, username, resultStream}) => {
   // construct backend name from host (if available) or name
   const backend = host && host.length ? host : name;
 
-  const Labels = Object.assign({'traefik.port': '80'}, additionalLabels, {
+  const baseLabels = serverConfig.swarm ? {'traefik.port': '80'} : {};
+  const Labels = Object.assign(baseLabels, additionalLabels, {
     'exoframe.deployment': name,
     'exoframe.user': username,
     'exoframe.project': project,
