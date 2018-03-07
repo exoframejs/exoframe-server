@@ -4,7 +4,7 @@ const {initNetwork} = require('../docker/network');
 const {getProjectConfig, nameFromImage, projectFromConfig, writeStatus} = require('../util');
 const {getConfig} = require('../config');
 
-module.exports = async ({image, username, resultStream}) => {
+module.exports = async ({image, username, resultStream, existing = []}) => {
   const name = nameFromImage(image);
 
   // get server config
@@ -62,6 +62,7 @@ module.exports = async ({image, username, resultStream}) => {
 
   // if running in swarm mode - run traefik as swarm service
   if (serverConfig.swarm) {
+    // create service config
     const serviceConfig = {
       Name: name,
       Labels,
@@ -83,7 +84,9 @@ module.exports = async ({image, username, resultStream}) => {
         },
       },
       UpdateConfig: {
-        Parallelism: 1,
+        Parallelism: 2, // allow 2 instances to run at the same time
+        Delay: 10000000000, // 10s
+        Order: 'start-first', // start new instance first, then remove old one
       },
       Networks: [
         {
@@ -92,6 +95,27 @@ module.exports = async ({image, username, resultStream}) => {
         },
       ],
     };
+
+    // try to find existing service
+    const existingService = existing.find(
+      s => s.Spec.Labels['exoframe.project'] === project && s.Spec.TaskTemplate.ContainerSpec.Image === image
+    );
+    if (existingService) {
+      // assign required vars from existing services
+      serviceConfig.version = parseInt(existingService.Version.Index, 10);
+      serviceConfig.Name = existingService.Spec.Name;
+      serviceConfig.TaskTemplate.ForceUpdate = 1;
+
+      writeStatus(resultStream, {message: 'Updating serivce with following config:', serviceConfig, level: 'verbose'});
+
+      // update service
+      const service = docker.getService(existingService.ID);
+      await service.update(serviceConfig);
+
+      writeStatus(resultStream, {message: 'Service successfully updated!', level: 'verbose'});
+
+      return service.inspect();
+    }
 
     writeStatus(resultStream, {message: 'Starting serivce with following config:', serviceConfig, level: 'verbose'});
 

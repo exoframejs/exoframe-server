@@ -1,0 +1,9 @@
+version: '3'
+services:
+  web:
+    build: .
+    deploy:
+      labels:
+        traefik.frontend.rule: 'Host:test.dev'
+  redis:
+    image: 'redis:alpine'

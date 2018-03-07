@@ -17,7 +17,7 @@ exports.checkTemplate = async ({tempDockerDir}) => {
 };
 
 // function to execute current template
-exports.executeTemplate = async ({username, resultStream, util, docker}) => {
+exports.executeTemplate = async ({username, resultStream, util, docker, existing}) => {
   // build docker image
   try {
     util.writeStatus(resultStream, {message: 'Deploying Dockerfile project..', level: 'info'});
@@ -38,8 +38,8 @@ exports.executeTemplate = async ({username, resultStream, util, docker}) => {
     }
 
     // start image
-    const container = await docker.start(Object.assign({}, buildRes, {username, resultStream}));
-    util.logger.debug(container.Name);
+    const container = await docker.start(Object.assign({}, buildRes, {username, existing, resultStream}));
+    util.logger.debug(container);
 
     // clean temp folder
     await util.cleanTemp();

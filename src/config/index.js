@@ -10,20 +10,17 @@ const {spawn} = require('child_process');
 const logger = require('../logger');
 
 // construct paths
-const baseFolder =
-  process.env.NODE_ENV !== 'testing'
-    ? path.join(os.homedir(), '.exoframe')
-    : path.join(__dirname, '..', '..', 'test', 'fixtures');
+const baseFolder = path.join(os.homedir(), '.exoframe');
 const configPath = path.join(baseFolder, 'server.config.yml');
-const publicKeysPath =
-  process.env.NODE_ENV !== 'testing'
-    ? path.join(os.homedir(), '.ssh')
-    : path.join(__dirname, '..', '..', 'test', 'fixtures');
+const publicKeysPath = path.join(os.homedir(), '.ssh');
 const extensionsFolder = path.join(baseFolder, 'extensions');
+// dir for temporary files used to build docker images
+const tempDir = path.join(baseFolder, 'deploying');
 
 // export paths for others
 exports.baseFolder = baseFolder;
 exports.extensionsFolder = extensionsFolder;
+exports.tempDockerDir = tempDir;
 
 // create base folder if doesn't exist
 try {

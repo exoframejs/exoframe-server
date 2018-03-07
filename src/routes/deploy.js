@@ -6,6 +6,7 @@ const {Readable} = require('stream');
 // our modules
 const logger = require('../logger');
 const util = require('../util');
+const {getConfig, tempDockerDir} = require('../config');
 const docker = require('../docker/docker');
 const build = require('../docker/build');
 const start = require('../docker/start');
@@ -13,20 +14,24 @@ const getTemplates = require('../docker/templates');
 const {removeContainer} = require('../docker/util');
 
 // destruct locally used functions
-const {sleep, cleanTemp, unpack, getProjectConfig, projectFromConfig, tempDockerDir} = util;
+const {sleep, cleanTemp, unpack, getProjectConfig, projectFromConfig} = util;
 
 // time to wait before removing old projects on update
 const WAIT_TIME = 5000;
 
 // deployment from unpacked files
-const deploy = async ({username, resultStream}) => {
+const deploy = async ({username, existing, resultStream}) => {
   let template;
   // try getting template from config
   const config = getProjectConfig();
+  // get server config
+  const serverConfig = getConfig();
 
   // generate template props
   const templateProps = {
     config,
+    serverConfig,
+    existing,
     username,
     resultStream,
     tempDockerDir,
@@ -97,14 +102,34 @@ module.exports = fastify => {
       const tarStream = request.req;
       // unpack to temp folder
       await unpack(tarStream);
+      // get server config
+      const serverConfig = getConfig();
       // get old project containers if present
       // get project config and name
       const config = getProjectConfig();
       const project = projectFromConfig({username, config});
+
+      // if running in swarm mode
+      if (serverConfig.swarm) {
+        // get all current services
+        const oldServices = await docker.listServices();
+        // find services for current user and project
+        const existing = oldServices.filter(
+          c => c.Spec.Labels['exoframe.user'] === username && c.Spec.Labels['exoframe.project'] === project
+        );
+        // create new highland stream for results
+        const resultStream = _();
+        // deploy new versions
+        deploy({username, payload: request.payload, existing, resultStream});
+        // reply with deploy stream
+        reply.code(200).send(new Readable().wrap(resultStream));
+        return;
+      }
+
       // get all current containers
       const oldContainers = await docker.listContainers({all: true});
       // find containers for current user and project
-      const existingContainers = oldContainers.filter(
+      const existing = oldContainers.filter(
         c => c.Labels['exoframe.user'] === username && c.Labels['exoframe.project'] === project
       );
 
@@ -118,7 +143,7 @@ module.exports = fastify => {
         await sleep(WAIT_TIME);
 
         // remove old containers
-        await Promise.all(existingContainers.map(removeContainer));
+        await Promise.all(existing.map(removeContainer));
       });
       // reply with deploy stream
       reply.code(200).send(new Readable().wrap(resultStream));

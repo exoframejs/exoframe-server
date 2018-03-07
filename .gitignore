@@ -3,3 +3,5 @@ node_modules
 coverage
 test/fixtures/auth.db
 test/fixtures/extensions/
+test/fixtures/deploying/
+test/fixtures/deploying-swarm/

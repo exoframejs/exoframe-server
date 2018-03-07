@@ -17,7 +17,11 @@
     "object-curly-spacing": ["warn", "never"],
     "max-len": ["error", 120, 4],
     "no-confusing-arrow": "warn",
+    "global-require": "off",
+    "no-underscore-dangle": "off",
+    "no-await-in-loop": "off",
     "no-plusplus": "off",
+    "prefer-promise-reject-errors": "off",
     "comma-dangle": [
       "error",
       {
@@ -28,7 +32,6 @@
         "functions": "ignore"
       }
     ],
-    "react/jsx-filename-extension": "off",
     "prettier/prettier": [
       "error",
       {

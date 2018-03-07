@@ -1,17 +1,13 @@
 // npm modules
 const _ = require('lodash');
-const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const tar = require('tar-fs');
 const rimraf = require('rimraf');
 const uuid = require('uuid');
 
-// dir for temporary files used to build docker images
-// construct paths
-const baseFolder = path.join(os.homedir(), '.exoframe');
-const tempDir = path.join(baseFolder, 'deploying');
-exports.tempDockerDir = tempDir;
+// our modules
+const {tempDockerDir: tempDir} = require('../config');
 
 // cleanup temp folder
 exports.cleanTemp = () => new Promise(resolve => rimraf(tempDir, resolve));
