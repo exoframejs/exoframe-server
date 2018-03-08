@@ -35,7 +35,7 @@ const generateServiceConfig = ({name, username, project, baseName}) => ({
   TaskTemplate: {
     ContainerSpec: {
       Image: 'busybox:latest',
-      Cmd: ['sh', '-c', 'sleep 1000'],
+      Command: ['sh', '-c', 'sleep 1000'],
       Resources: {
         Limits: {},
         Reservations: {},
