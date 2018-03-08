@@ -80,10 +80,12 @@ test('Should list deployed projects', async done => {
 
   // check response
   expect(response.statusCode).toEqual(200);
-  expect(result.length).toBeGreaterThanOrEqual(2);
+  expect(result.services).toBeDefined();
+  expect(result.containers).toBeDefined();
+  expect(result.containers.length).toBeGreaterThanOrEqual(2);
 
   // check container info
-  const container = result.find(c => c.Name.includes('listtest1'));
+  const container = result.containers.find(c => c.Name.includes('listtest1'));
   expect(container.Name.startsWith(`/${containerConfig1.name}`)).toBeTruthy();
   expect(container.Config.Labels['exoframe.deployment']).toEqual(containerConfig1.Labels['exoframe.deployment']);
   expect(container.Config.Labels['exoframe.user']).toEqual(containerConfig1.Labels['exoframe.user']);
@@ -91,7 +93,7 @@ test('Should list deployed projects', async done => {
   expect(container.Config.Labels['traefik.frontend.rule']).toEqual(containerConfig1.Labels['traefik.frontend.rule']);
 
   // check second container info
-  const containerTwo = result.find(r => r.Name.startsWith(`/${containerConfig2.name}`));
+  const containerTwo = result.containers.find(r => r.Name.startsWith(`/${containerConfig2.name}`));
   expect(containerTwo.Name.startsWith(`/${containerConfig2.name}`)).toBeTruthy();
   expect(containerTwo.Config.Labels['exoframe.deployment'].startsWith(containerConfig2.name)).toBeTruthy();
   expect(containerTwo.Config.Labels['exoframe.user']).toEqual(containerConfig2.Labels['exoframe.user']);
