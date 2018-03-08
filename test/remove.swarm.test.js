@@ -1,6 +1,9 @@
 /* eslint-env jest */
 // mock config for testing
 jest.mock('../src/config', () => require('./__mocks__/config'));
+const config = require('../src/config');
+// switch config to swarm
+config.__load('swarm');
 
 // npm packages
 const getPort = require('get-port');
@@ -20,17 +23,15 @@ const baseOptions = {
   payload: {},
 };
 
-// project & container names
-const containerName = 'rmtest1';
+// project & service names
+const serviceName = 'rmtest1';
 const projectName = 'rmtestproject';
 
 // fastify ref
 let fastify;
 
-const generateContainerConfig = ({name, username, project, baseName}) => ({
-  Image: 'busybox:latest',
-  Cmd: ['sh', '-c', 'sleep 1000'],
-  name,
+const generateServiceConfig = ({name, username, project, baseName}) => ({
+  Name: name,
   Labels: {
     'exoframe.deployment': name,
     'exoframe.user': username,
@@ -38,6 +39,24 @@ const generateContainerConfig = ({name, username, project, baseName}) => ({
     'traefik.backend': baseName,
     'traefik.frontend.rule': 'Host:test',
   },
+  TaskTemplate: {
+    ContainerSpec: {
+      Image: 'busybox:latest',
+      Cmd: ['sh', '-c', 'sleep 1000'],
+      Resources: {
+        Limits: {},
+        Reservations: {},
+      },
+      RestartPolicy: {},
+      Placement: {},
+    },
+  },
+  Mode: {
+    Replicated: {
+      Replicas: 1,
+    },
+  },
+  UpdateConfig: {},
 });
 
 // set timeout to 60s
@@ -51,43 +70,40 @@ beforeAll(async () => {
   // pull busybox:latest
   await pullImage('busybox:latest');
 
-  // create test container to get single deployment logs
-  const containerConfig = generateContainerConfig({
-    name: containerName,
+  // create test service to get single deployment logs
+  const serviceConfig = generateServiceConfig({
+    name: serviceName,
     username: 'admin',
     project: 'rmtest1',
     baseName: 'exo-admin-rmtest1',
   });
-  const container = await docker.createContainer(containerConfig);
-  await container.start();
+  await docker.createService(serviceConfig);
   // create test project to remove
-  // first project container
-  const prjContainerConfig1 = generateContainerConfig({
+  // first project service
+  const prjServiceConfig1 = generateServiceConfig({
     name: 'rmtest2',
     username: 'admin',
     project: projectName,
     baseName: 'exo-admin-rmtest2',
   });
-  const projectContainer1 = await docker.createContainer(prjContainerConfig1);
-  await projectContainer1.start();
-  // second project container
-  const prjContainerConfig2 = generateContainerConfig({
+  await docker.createService(prjServiceConfig1);
+  // second project service
+  const prjServiceConfig2 = generateServiceConfig({
     name: 'rmtest3',
     username: 'admin',
     project: projectName,
     baseName: 'exo-admin-rmtest3',
   });
-  const projectContainer2 = await docker.createContainer(prjContainerConfig2);
-  await projectContainer2.start();
+  await docker.createService(prjServiceConfig2);
 
   return fastify;
 });
 
 afterAll(() => fastify.close());
 
-test('Should remove current deployment', async done => {
+test('Should remove current deployment from swarm', async done => {
   const options = Object.assign({}, baseOptions, {
-    url: `/remove/${containerName}`,
+    url: `/remove/${serviceName}`,
   });
 
   const response = await fastify.inject(options);
@@ -95,14 +111,14 @@ test('Should remove current deployment', async done => {
   expect(response.statusCode).toEqual(204);
 
   // check docker services
-  const allContainers = await docker.listContainers();
-  const exContainer = allContainers.find(c => c.Names.includes(`/${containerName}`));
-  expect(exContainer).toBeUndefined();
+  const allServices = await docker.listServices();
+  const exService = allServices.find(c => c.Spec.Name === serviceName);
+  expect(exService).toBeUndefined();
 
   done();
 });
 
-test('Should remove current project', async done => {
+test('Should remove current project from swarm', async done => {
   // options base
   const options = Object.assign({}, baseOptions, {
     url: `/remove/${projectName}`,
@@ -113,14 +129,14 @@ test('Should remove current project', async done => {
   expect(response.statusCode).toEqual(204);
 
   // check docker services
-  const allContainers = await docker.listContainers();
-  const prjContainers = allContainers.filter(c => c.Labels['exoframe.project'] === projectName);
-  expect(prjContainers.length).toEqual(0);
+  const allServices = await docker.listServices();
+  const prjServices = allServices.filter(c => c.Spec.Labels['exoframe.project'] === projectName);
+  expect(prjServices.length).toEqual(0);
 
   done();
 });
 
-test('Should return error when removing nonexistent project', async done => {
+test('Should return error when removing nonexistent project from swarm', async done => {
   // options base
   const options = Object.assign({}, baseOptions, {
     url: `/remove/do-not-exist`,
@@ -130,6 +146,6 @@ test('Should return error when removing nonexistent project', async done => {
   const result = JSON.parse(response.payload);
   // check response
   expect(response.statusCode).toEqual(404);
-  expect(result).toMatchObject({error: 'Container not found!'});
+  expect(result).toMatchObject({error: 'Service not found!'});
   done();
 });
