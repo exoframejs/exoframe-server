@@ -32,6 +32,40 @@ const pullImage = tag =>
   });
 exports.pullImage = pullImage;
 
+// join swarm network
+const joinSwarmNetwork = async config => {
+  const allServices = await docker.listServices();
+  // try to find traefik instance
+  const exoframeServer = allServices.find(c => c.Spec.Name.startsWith('exoframe-server'));
+  // if server found - we're running as docker container
+  if (exoframeServer) {
+    const instance = docker.getService(exoframeServer.ID);
+    const instanceInfo = await instance.inspect();
+    if (instanceInfo.Spec.Networks && instanceInfo.Spec.Networks.find(n => n.Target === config.exoframeNetworkSwarm)) {
+      logger.debug('Already joined swarm network, done.');
+      return;
+    }
+    logger.debug('Not joined swarm network, updating..');
+    await instance.update({
+      Name: instanceInfo.Spec.Name,
+      version: parseInt(instanceInfo.Version.Index, 10),
+      Labels: instanceInfo.Spec.Labels,
+      TaskTemplate: Object.assign({}, instanceInfo.Spec.TaskTemplate, {
+        Networks: [
+          {
+            Target: config.exoframeNetworkSwarm,
+          },
+        ],
+      }),
+      Networks: [
+        {
+          Target: config.exoframeNetworkSwarm,
+        },
+      ],
+    });
+  }
+};
+
 // export default function
 exports.initDocker = async () => {
   await waitForConfig();
@@ -57,6 +91,7 @@ exports.initDocker = async () => {
   // if traefik exists and running - just return
   if (traefik && !traefik.Status.includes('Exited')) {
     logger.info('Traefik already running, docker init done!');
+    joinSwarmNetwork(config);
     return;
   }
 
@@ -186,6 +221,8 @@ exports.initDocker = async () => {
     });
 
     logger.info('Traefik instance started..');
+    // apply auto network join in case we're running in a container
+    joinSwarmNetwork(config);
     return;
   }
 
