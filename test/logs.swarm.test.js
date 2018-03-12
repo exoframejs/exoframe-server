@@ -102,8 +102,8 @@ beforeAll(async () => {
   });
   projectContainer2 = await docker.createService(prjServiceConfig2);
 
-  // wait for 5s to let services spin up
-  await sleep(5000);
+  // wait for 10s to let services spin up
+  await sleep(10000);
 
   return fastify;
 });

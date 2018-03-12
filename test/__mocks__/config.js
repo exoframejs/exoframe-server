@@ -10,6 +10,7 @@ const baseFolder = path.join(__dirname, '..', '..', 'test', 'fixtures');
 // const configPath = path.join(baseFolder, 'server.config.yml');
 const publicKeysPath = path.join(__dirname, '..', '..', 'test', 'fixtures');
 const extensionsFolder = path.join(baseFolder, 'extensions');
+const recipesFolder = path.join(baseFolder, 'recipes');
 const tempDirNormal = path.join(baseFolder, 'deploying');
 const tempDirSwarm = path.join(baseFolder, 'deploying-swarm');
 
@@ -58,6 +59,7 @@ cfg.getConfig = () => mockConfig;
 // export paths for others
 cfg.baseFolder = baseFolder;
 cfg.extensionsFolder = extensionsFolder;
+cfg.recipesFolder = recipesFolder;
 cfg.tempDockerDir = tempDirNormal;
 
 module.exports = cfg;

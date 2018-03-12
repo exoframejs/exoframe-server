@@ -2,6 +2,7 @@
 const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
+const {spawn} = require('child_process');
 const tar = require('tar-fs');
 const rimraf = require('rimraf');
 const uuid = require('uuid');
@@ -30,7 +31,11 @@ exports.getProjectConfig = () => {
 
 exports.tagFromConfig = ({username, config}) => `exo-${_.kebabCase(username)}-${_.kebabCase(config.name)}:latest`;
 
-exports.baseNameFromImage = image => image.split(':').shift();
+exports.baseNameFromImage = image =>
+  image
+    .split(':')
+    .shift()
+    .replace(/[^a-zA-Z0-9_.-]/, '');
 
 exports.nameFromImage = image => {
   const baseName = exports.baseNameFromImage(image);
@@ -47,3 +52,23 @@ exports.projectFromConfig = ({username, config}) => {
 exports.sleep = time => new Promise(r => setTimeout(r, time));
 
 exports.writeStatus = (stream, data) => stream.write(`${JSON.stringify(data)}\n`);
+
+exports.runYarn = ({args, cwd}) =>
+  new Promise(resolve => {
+    const yarn = spawn('yarn', args, {cwd});
+    const log = [];
+    yarn.stdout.on('data', data => {
+      const message = data.toString().replace(/\n$/, '');
+      const hasError = message.toLowerCase().includes('error');
+      log.push({message, level: hasError ? 'error' : 'info'});
+    });
+    yarn.stderr.on('data', data => {
+      const message = data.toString().replace(/\n$/, '');
+      const hasError = message.toLowerCase().includes('error');
+      log.push({message, level: hasError ? 'error' : 'info'});
+    });
+    yarn.on('exit', code => {
+      log.push({message: `yarn exited with code ${code.toString()}`, level: 'info'});
+      resolve(log);
+    });
+  });

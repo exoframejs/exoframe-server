@@ -14,12 +14,14 @@ const baseFolder = path.join(os.homedir(), '.exoframe');
 const configPath = path.join(baseFolder, 'server.config.yml');
 const publicKeysPath = path.join(os.homedir(), '.ssh');
 const extensionsFolder = path.join(baseFolder, 'extensions');
+const recipesFolder = path.join(baseFolder, 'recipes');
 // dir for temporary files used to build docker images
 const tempDir = path.join(baseFolder, 'deploying');
 
 // export paths for others
 exports.baseFolder = baseFolder;
 exports.extensionsFolder = extensionsFolder;
+exports.recipesFolder = recipesFolder;
 exports.tempDockerDir = tempDir;
 
 // create base folder if doesn't exist
@@ -40,6 +42,19 @@ try {
   fs.statSync(path.join(extensionsFolder, 'package.json'));
 } catch (e) {
   spawn('yarn', ['init', '-y'], {cwd: extensionsFolder});
+}
+
+// create recipes folder if doesn't exist
+try {
+  fs.statSync(recipesFolder);
+} catch (e) {
+  fs.mkdirSync(recipesFolder);
+}
+// init package.json if it doesn't exist
+try {
+  fs.statSync(path.join(recipesFolder, 'package.json'));
+} catch (e) {
+  spawn('yarn', ['init', '-y'], {cwd: recipesFolder});
 }
 
 // default config
