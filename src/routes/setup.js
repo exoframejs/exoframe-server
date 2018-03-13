@@ -9,7 +9,7 @@ const {getConfig, recipesFolder, tempDockerDir} = require('../config');
 const {pullImage} = require('../docker/init');
 const docker = require('../docker/docker');
 const build = require('../docker/build');
-const start = require('../docker/start');
+const {start, startFromParams} = require('../docker/start');
 const {initNetwork: getNetwork} = require('../docker/network');
 const util = require('../util');
 
@@ -67,6 +67,7 @@ module.exports = fastify => {
           daemon: docker,
           build,
           start,
+          startFromParams,
           pullImage,
           getNetwork,
         },

@@ -4,7 +4,133 @@ const {initNetwork} = require('../docker/network');
 const {getProjectConfig, nameFromImage, projectFromConfig, writeStatus} = require('../util');
 const {getConfig} = require('../config');
 
-module.exports = async ({image, username, resultStream, existing = []}) => {
+exports.startFromParams = async ({
+  image,
+  deploymentName,
+  projectName,
+  username,
+  backendName,
+  frontend,
+  hostname,
+  restartPolicy,
+  Env = [],
+  additionalLabels = {},
+}) => {
+  const name = deploymentName || nameFromImage(image);
+  const backend = backendName || name;
+
+  // get server config
+  const serverConfig = getConfig();
+
+  // construct restart policy
+  const RestartPolicy = {
+    Name: restartPolicy,
+  };
+  if (restartPolicy.includes('on-failure')) {
+    let restartCount = 2;
+    try {
+      restartCount = parseInt(restartPolicy.split(':')[1], 10);
+    } catch (e) {
+      // error parsing restart count, using default value
+    }
+    RestartPolicy.Name = 'on-failure';
+    RestartPolicy.MaximumRetryCount = restartCount;
+  }
+
+  // construct backend name from host (if available) or name
+  const baseLabels = serverConfig.swarm ? {'traefik.port': '80'} : {};
+  const Labels = Object.assign(baseLabels, additionalLabels, {
+    'exoframe.deployment': name,
+    'exoframe.user': username,
+    'exoframe.project': projectName,
+    'traefik.backend': backend,
+  });
+
+  // if host is set - add it to config
+  if (frontend && frontend.length) {
+    Labels['traefik.frontend.rule'] = frontend;
+  }
+
+  // if running in swarm mode - run traefik as swarm service
+  if (serverConfig.swarm) {
+    // create service config
+    const serviceConfig = {
+      Name: name,
+      Labels,
+      TaskTemplate: {
+        ContainerSpec: {
+          Image: image,
+          Env,
+        },
+        Resources: {
+          Limits: {},
+          Reservations: {},
+        },
+        RestartPolicy,
+        Placement: {},
+      },
+      Mode: {
+        Replicated: {
+          Replicas: 1,
+        },
+      },
+      UpdateConfig: {
+        Parallelism: 2, // allow 2 instances to run at the same time
+        Delay: 10000000000, // 10s
+        Order: 'start-first', // start new instance first, then remove old one
+      },
+      Networks: [
+        {
+          Target: serverConfig.exoframeNetworkSwarm,
+          Aliases: hostname && hostname.length ? [hostname] : [],
+        },
+      ],
+    };
+
+    // create service
+    const service = await docker.createService(serviceConfig);
+    return service.inspect();
+  }
+
+  // create config
+  const containerConfig = {
+    Image: image,
+    name,
+    Env,
+    Labels,
+    HostConfig: {
+      RestartPolicy,
+    },
+  };
+
+  if (hostname && hostname.length) {
+    containerConfig.NetworkingConfig = {
+      EndpointsConfig: {
+        exoframe: {
+          Aliases: [hostname],
+        },
+      },
+    };
+  }
+
+  // create container
+  const container = await docker.createContainer(containerConfig);
+
+  // connect container to exoframe network
+  const exoNet = await initNetwork();
+  await exoNet.connect({
+    Container: container.id,
+  });
+
+  // start container
+  await container.start();
+
+  const containerInfo = await container.inspect();
+  const containerData = docker.getContainer(containerInfo.Id);
+  return containerData.inspect();
+};
+
+exports.start = async ({image, username, resultStream, existing = []}) => {
   const name = nameFromImage(image);
 
   // get server config

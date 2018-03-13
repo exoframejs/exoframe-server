@@ -9,7 +9,7 @@ const util = require('../util');
 const {getConfig, tempDockerDir} = require('../config');
 const docker = require('../docker/docker');
 const build = require('../docker/build');
-const start = require('../docker/start');
+const {start} = require('../docker/start');
 const getTemplates = require('../docker/templates');
 const {removeContainer} = require('../docker/util');
 
