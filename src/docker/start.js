@@ -15,6 +15,7 @@ exports.startFromParams = async ({
   restartPolicy,
   Env = [],
   additionalLabels = {},
+  Mounts = [],
 }) => {
   const name = deploymentName || nameFromImage(image);
   const backend = backendName || name;
@@ -61,6 +62,7 @@ exports.startFromParams = async ({
         ContainerSpec: {
           Image: image,
           Env,
+          Mounts,
         },
         Resources: {
           Limits: {},
@@ -100,6 +102,7 @@ exports.startFromParams = async ({
     Labels,
     HostConfig: {
       RestartPolicy,
+      Mounts,
     },
   };
 
