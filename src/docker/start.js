@@ -24,18 +24,35 @@ exports.startFromParams = async ({
   const serverConfig = getConfig();
 
   // construct restart policy
-  const RestartPolicy = {
-    Name: restartPolicy,
-  };
-  if (restartPolicy.includes('on-failure')) {
-    let restartCount = 2;
-    try {
-      restartCount = parseInt(restartPolicy.split(':')[1], 10);
-    } catch (e) {
-      // error parsing restart count, using default value
+  let RestartPolicy = {};
+  if (serverConfig.swarm) {
+    const Condition = ['none', 'on-failure', 'any'].find(c => c.startsWith(restartPolicy));
+    RestartPolicy = {Condition, MaxAttempts: 1};
+    if (restartPolicy.includes('on-failure')) {
+      let restartCount = 2;
+      try {
+        restartCount = parseInt(restartPolicy.split(':')[1], 10);
+      } catch (e) {
+        // error parsing restart count, using default value
+      }
+      RestartPolicy.Condition = 'on-failure';
+      RestartPolicy.MaximumRetryCount = restartCount;
     }
-    RestartPolicy.Name = 'on-failure';
-    RestartPolicy.MaximumRetryCount = restartCount;
+  } else {
+    const Name = ['no', 'on-failure', 'always'].find(c => c.startsWith(restartPolicy));
+    RestartPolicy = {
+      Name,
+    };
+    if (restartPolicy.includes('on-failure')) {
+      let restartCount = 2;
+      try {
+        restartCount = parseInt(restartPolicy.split(':')[1], 10);
+      } catch (e) {
+        // error parsing restart count, using default value
+      }
+      RestartPolicy.Name = 'on-failure';
+      RestartPolicy.MaximumRetryCount = restartCount;
+    }
   }
 
   // construct backend name from host (if available) or name
@@ -157,19 +174,37 @@ exports.start = async ({image, username, resultStream, existing = []}) => {
   const project = projectFromConfig({username, config});
 
   // construct restart policy
-  const restartPolicy = config.restart || 'on-failure:2';
-  const RestartPolicy = {
-    Name: restartPolicy,
-  };
-  if (restartPolicy.includes('on-failure')) {
-    let restartCount = 2;
-    try {
-      restartCount = parseInt(restartPolicy.split(':')[1], 10);
-    } catch (e) {
-      // error parsing restart count, using default value
+  let RestartPolicy = {};
+  if (serverConfig.swarm) {
+    const restartPolicy = config.restart || 'on-failure:2';
+    const Condition = ['none', 'on-failure', 'any'].find(c => c.startsWith(restartPolicy));
+    RestartPolicy = {Condition, MaxAttempts: 1};
+    if (restartPolicy.includes('on-failure')) {
+      let restartCount = 2;
+      try {
+        restartCount = parseInt(restartPolicy.split(':')[1], 10);
+      } catch (e) {
+        // error parsing restart count, using default value
+      }
+      RestartPolicy.Condition = 'on-failure';
+      RestartPolicy.MaximumRetryCount = restartCount;
     }
-    RestartPolicy.Name = 'on-failure';
-    RestartPolicy.MaximumRetryCount = restartCount;
+  } else {
+    const restartPolicy = config.restart || 'on-failure:2';
+    const Name = ['no', 'on-failure', 'always'].find(c => c.startsWith(restartPolicy));
+    RestartPolicy = {
+      Name,
+    };
+    if (restartPolicy.includes('on-failure')) {
+      let restartCount = 2;
+      try {
+        restartCount = parseInt(restartPolicy.split(':')[1], 10);
+      } catch (e) {
+        // error parsing restart count, using default value
+      }
+      RestartPolicy.Name = 'on-failure';
+      RestartPolicy.MaximumRetryCount = restartCount;
+    }
   }
   const additionalLabels = config.labels || {};
 

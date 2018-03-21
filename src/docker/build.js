@@ -7,19 +7,10 @@ const docker = require('./docker');
 const {tempDockerDir} = require('../config');
 const {getProjectConfig, tagFromConfig, writeStatus} = require('../util');
 
-module.exports = ({username, resultStream}) =>
+const noop = () => {};
+
+exports.buildFromParams = ({tarStream, tag, logLine = noop}) =>
   new Promise(async (resolve, reject) => {
-    // get packed stream
-    const tarStream = tar.pack(tempDockerDir);
-
-    // get project info
-    const config = getProjectConfig();
-
-    // construct image tag
-    const tag = tagFromConfig({username, config});
-    logger.debug('building with tag:', tag);
-    writeStatus(resultStream, {message: `Building image with tag: ${tag}`, level: 'verbose'});
-
     // deploy as docker
     const log = [];
     // track errors
@@ -35,21 +26,21 @@ module.exports = ({username, resultStream}) =>
           // process log data
           if (data.stream && data.stream.length) {
             log.push(data.stream);
-            writeStatus(resultStream, {message: data.stream, level: 'verbose'});
+            logLine({message: data.stream, level: 'verbose'});
           } else if (data.error && data.error.length) {
             // process error data
             log.push(data.error);
-            writeStatus(resultStream, {message: data.error, level: 'error'});
+            logLine({message: data.error, level: 'error'});
             hasErrors = true;
           } else {
             // push everything else as-is
             log.push(s);
-            writeStatus(resultStream, {message: s, level: 'verbose'});
+            logLine({message: s, level: 'verbose'});
           }
         } catch (e) {
           if (s && s.length) {
             log.push(s);
-            writeStatus(resultStream, {message: s, level: 'verbose'});
+            logLine({message: s, level: 'verbose'});
           }
         }
       });
@@ -62,3 +53,22 @@ module.exports = ({username, resultStream}) =>
       resolve({log, image: tag});
     });
   });
+
+exports.build = async ({username, resultStream}) => {
+  // get packed stream
+  const tarStream = tar.pack(tempDockerDir);
+
+  // get project info
+  const config = getProjectConfig();
+
+  // construct image tag
+  const tag = tagFromConfig({username, config});
+  logger.debug('building with tag:', tag);
+  writeStatus(resultStream, {message: `Building image with tag: ${tag}`, level: 'verbose'});
+
+  // create logger function
+  const logLine = data => writeStatus(resultStream, data);
+
+  // return build
+  return exports.buildFromParams({tarStream, tag, logLine});
+};
