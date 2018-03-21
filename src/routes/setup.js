@@ -10,7 +10,7 @@ const {pullImage} = require('../docker/init');
 const docker = require('../docker/docker');
 const build = require('../docker/build');
 const {start, startFromParams} = require('../docker/start');
-const {initNetwork: getNetwork} = require('../docker/network');
+const {initNetwork: getNetwork, createNetwork} = require('../docker/network');
 const util = require('../util');
 
 module.exports = fastify => {
@@ -70,6 +70,7 @@ module.exports = fastify => {
           startFromParams,
           pullImage,
           getNetwork,
+          createNetwork,
         },
         util: Object.assign({}, util, {
           logger,

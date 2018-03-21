@@ -3,13 +3,13 @@ const {getConfig} = require('../config');
 const docker = require('./docker');
 const logger = require('../logger');
 
-const initDockerNetwork = async config => {
+const createDockerNetwork = async networkName => {
   const nets = await docker.listNetworks();
-  let exoNet = nets.find(n => n.Name === config.exoframeNetwork);
+  let exoNet = nets.find(n => n.Name === networkName);
   if (!exoNet) {
-    logger.info(`Exoframe network ${config.exoframeNetwork} does not exists, creating...`);
+    logger.info(`Exoframe network ${networkName} does not exists, creating...`);
     exoNet = await docker.createNetwork({
-      Name: config.exoframeNetwork,
+      Name: networkName,
       Driver: 'bridge',
     });
   } else {
@@ -18,14 +18,15 @@ const initDockerNetwork = async config => {
 
   return exoNet;
 };
+const initDockerNetwork = async config => createDockerNetwork(config.exoframeNetwork);
 
-const initSwarmNetwork = async config => {
+const createSwarmNetwork = async networkName => {
   const nets = await docker.listNetworks();
-  let exoNet = nets.find(n => n.Name === config.exoframeNetworkSwarm);
+  let exoNet = nets.find(n => n.Name === networkName);
   if (!exoNet) {
-    logger.info(`Exoframe network ${config.exoframeNetworkSwarm} does not exists, creating...`);
+    logger.info(`Exoframe network ${networkName} does not exists, creating...`);
     exoNet = await docker.createNetwork({
-      Name: config.exoframeNetworkSwarm,
+      Name: networkName,
       Driver: 'overlay',
     });
   } else {
@@ -34,6 +35,7 @@ const initSwarmNetwork = async config => {
 
   return exoNet;
 };
+const initSwarmNetwork = async config => createSwarmNetwork(config.exoframeNetworkSwarm);
 
 // create exoframe network if needed
 const initNetwork = async () => {
@@ -46,3 +48,15 @@ const initNetwork = async () => {
   return initDockerNetwork(config);
 };
 exports.initNetwork = initNetwork;
+
+// create network function
+const createNetwork = async networkName => {
+  // get config
+  const config = getConfig();
+  if (config.swarm) {
+    return createSwarmNetwork(networkName);
+  }
+
+  return createDockerNetwork(networkName);
+};
+exports.createNetwork = createNetwork;
