@@ -103,7 +103,7 @@ test('Should deploy simple docker project to swarm', async done => {
   expect(serviceInfo.Spec.Labels['traefik.backend']).toEqual(`${name}.test`);
   expect(serviceInfo.Spec.Networks.length).toEqual(1);
   expect(serviceInfo.Spec.Networks[0].Aliases.includes('test')).toBeTruthy();
-  expect(serviceInfo.Spec.TaskTemplate.RestartPolicy).toMatchObject({Condition: 'any', MaxAttempts: 0});
+  expect(serviceInfo.Spec.TaskTemplate.RestartPolicy).toMatchObject({Condition: 'none', MaxAttempts: 1});
 
   // cleanup
   const instance = docker.getService(serviceInfo.ID);
