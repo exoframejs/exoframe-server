@@ -23,6 +23,7 @@ docker run -d \
   -e EXO_PRIVATE_KEY=your_private_key \
   --label traefik.backend=exoframe-server \
   --label traefik.frontend.rule=Host:exoframe.your-host.com \
+  --restart always \
   --name exoframe-server \
   exoframe/server
 
