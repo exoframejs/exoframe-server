@@ -1,6 +1,6 @@
 // npm modules
 const _ = require('highland');
-const {Readable} = require('stream');
+const {Readable, PassThrough} = require('stream');
 
 // our modules
 const docker = require('../docker/docker');
@@ -13,6 +13,15 @@ const logsConfig = {
   timestamps: true,
 };
 
+// fix for dockerode returning array of strings instead of log stream
+const fixLogStream = logs => {
+  if (typeof logs === 'string') {
+    return _(logs.split('\n').map(l => `${l}\n`));
+  }
+
+  return logs;
+};
+
 const getContainerLogs = async ({username, id, reply}) => {
   const allContainers = await docker.listContainers({all: true});
   const containerInfo = allContainers.find(
@@ -21,7 +30,8 @@ const getContainerLogs = async ({username, id, reply}) => {
 
   if (containerInfo) {
     const container = docker.getContainer(containerInfo.Id);
-    const logStream = await container.logs(logsConfig);
+    const logs = await container.logs(logsConfig);
+    const logStream = fixLogStream(logs);
     reply.send(logStream);
     return;
   }
@@ -40,9 +50,10 @@ const getContainerLogs = async ({username, id, reply}) => {
     containers.map(async cInfo => {
       const container = docker.getContainer(cInfo.Id);
       const logs = await container.logs(logsConfig);
+      const logStream = fixLogStream(logs);
       const name = cInfo.Names[0].replace(/^\//, '');
       const nameStream = _([`Logs for ${name}\n\n`]);
-      return [nameStream, _(logs)];
+      return [nameStream, _(logStream)];
     })
   );
   // flatten results
@@ -57,7 +68,8 @@ const getServiceLogs = async ({username, id, reply}) => {
 
   if (serviceInfo) {
     const service = docker.getService(serviceInfo.ID);
-    const logStream = await service.logs(logsConfig);
+    const logs = await service.logs(logsConfig);
+    const logStream = fixLogStream(logs);
     reply.send(logStream);
     return;
   }
@@ -76,9 +88,10 @@ const getServiceLogs = async ({username, id, reply}) => {
     services.map(async cInfo => {
       const container = docker.getService(cInfo.ID);
       const logs = await container.logs(logsConfig);
+      const logStream = fixLogStream(logs);
       const name = cInfo.Spec.Name;
       const nameStream = _([`Logs for ${name}\n\n`]);
-      return [nameStream, _(logs)];
+      return [nameStream, _(logStream)];
     })
   );
   // flatten results

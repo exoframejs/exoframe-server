@@ -35,7 +35,7 @@ exports.baseNameFromImage = image =>
   image
     .split(':')
     .shift()
-    .replace(/[^a-zA-Z0-9_.-]/, '');
+    .replace(/[^a-zA-Z0-9_-]/g, '');
 
 exports.nameFromImage = image => {
   const baseName = exports.baseNameFromImage(image);
