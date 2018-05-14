@@ -1,6 +1,6 @@
 // our modules
 const docker = require('./docker');
-const {initNetwork} = require('../docker/network');
+const {initNetwork, createNetwork} = require('../docker/network');
 const {getProjectConfig, nameFromImage, projectFromConfig, writeStatus} = require('../util');
 const {getConfig} = require('../config');
 
@@ -16,6 +16,7 @@ exports.startFromParams = async ({
   Env = [],
   additionalLabels = {},
   Mounts = [],
+  additionalNetworks = [],
 }) => {
   const name = deploymentName || nameFromImage(image);
   const backend = backendName || name;
@@ -62,6 +63,7 @@ exports.startFromParams = async ({
     'exoframe.user': username,
     'exoframe.project': projectName,
     'traefik.backend': backend,
+    'traefik.docker.network': serverConfig.swarm ? serverConfig.exoframeNetworkSwarm : serverConfig.exoframeNetwork,
   });
 
   // if host is set - add it to config
@@ -99,6 +101,9 @@ exports.startFromParams = async ({
         Order: 'start-first', // start new instance first, then remove old one
       },
       Networks: [
+        ...additionalNetworks.map(networkName => ({
+          Target: networkName,
+        })),
         {
           Target: serverConfig.exoframeNetworkSwarm,
           Aliases: hostname && hostname.length ? [hostname] : [],
@@ -141,6 +146,14 @@ exports.startFromParams = async ({
   await exoNet.connect({
     Container: container.id,
   });
+
+  // connect to additional networks if any
+  await Promise.all(
+    additionalNetworks.map(async netName => {
+      const net = await createNetwork(netName);
+      await net.connect({Container: container.id});
+    })
+  );
 
   // start container
   await container.start();
