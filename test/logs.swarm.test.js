@@ -1,6 +1,9 @@
 /* eslint-env jest */
 // mock config for testing
 jest.mock('../src/config', () => require('./__mocks__/config'));
+const config = require('../src/config');
+// switch config to swarm
+config.__load('swarm');
 
 // npm packages
 const getPort = require('get-port');
@@ -10,6 +13,7 @@ const authToken = require('./fixtures/authToken');
 const {startServer} = require('../src');
 const {pullImage} = require('../src/docker/init');
 const docker = require('../src/docker/docker');
+const {sleep} = require('../src/util');
 
 // options base
 const baseOptions = {
@@ -19,10 +23,8 @@ const baseOptions = {
   },
 };
 
-const generateContainerConfig = ({name, cmd, username, project, baseName}) => ({
-  Image: 'busybox:latest',
-  Cmd: ['sh', '-c', `${cmd}; sleep 1000`],
-  name,
+const generateServiceConfig = ({name, cmd, username, project, baseName}) => ({
+  Name: name,
   Labels: {
     'exoframe.deployment': name,
     'exoframe.user': username,
@@ -30,10 +32,28 @@ const generateContainerConfig = ({name, cmd, username, project, baseName}) => ({
     'traefik.backend': baseName,
     'traefik.frontend.rule': 'Host:test',
   },
+  TaskTemplate: {
+    ContainerSpec: {
+      Image: 'busybox:latest',
+      Command: ['sh', '-c', `${cmd}; sleep 1000`],
+      Resources: {
+        Limits: {},
+        Reservations: {},
+      },
+      RestartPolicy: {},
+      Placement: {},
+    },
+  },
+  Mode: {
+    Replicated: {
+      Replicas: 1,
+    },
+  },
+  UpdateConfig: {},
 });
 
 // project & container names
-const containerName = 'logtest1';
+const serviceName = 'logtest1';
 const projectName = 'logtestproject';
 
 // container vars
@@ -54,45 +74,45 @@ beforeAll(async () => {
   await pullImage('busybox:latest');
 
   // create test container to get single deployment logs
-  const containerConfig = generateContainerConfig({
+  const serviceConfig = generateServiceConfig({
     cmd: 'echo "123"',
-    name: containerName,
+    name: serviceName,
     username: 'admin',
     project: 'logtest1',
     baseName: 'exo-admin-logtest1',
   });
-  container = await docker.createContainer(containerConfig);
-  await container.start();
+  container = await docker.createService(serviceConfig);
   // create test deployments to get project logs
   // first project container
-  const prjContainerConfig1 = generateContainerConfig({
+  const prjServiceConfig1 = generateServiceConfig({
     cmd: 'echo "123"',
     name: 'logtest2',
     username: 'admin',
     project: projectName,
     baseName: 'exo-admin-logtest2',
   });
-  projectContainer1 = await docker.createContainer(prjContainerConfig1);
-  await projectContainer1.start();
+  projectContainer1 = await docker.createService(prjServiceConfig1);
   // second project container
-  const prjContainerConfig2 = generateContainerConfig({
+  const prjServiceConfig2 = generateServiceConfig({
     cmd: 'echo "asd"',
     name: 'logtest3',
     username: 'admin',
     project: projectName,
     baseName: 'exo-admin-logtest3',
   });
-  projectContainer2 = await docker.createContainer(prjContainerConfig2);
-  await projectContainer2.start();
+  projectContainer2 = await docker.createService(prjServiceConfig2);
+
+  // wait for 10s to let services spin up
+  await sleep(10000);
 
   return fastify;
 });
 
 afterAll(() => fastify.close());
 
-test('Should get logs for current deployment', async done => {
+test('Should get logs for current deployment from swarm', async done => {
   const options = Object.assign({}, baseOptions, {
-    url: `/logs/${containerName}`,
+    url: `/logs/${serviceName}`,
   });
 
   const response = await fastify.inject(options);
@@ -115,12 +135,12 @@ test('Should get logs for current deployment', async done => {
   expect(lines).toMatchObject(['123']);
 
   // cleanup
-  await container.remove({force: true});
+  await container.remove();
 
   done();
 });
 
-test('Should get logs for current project', async done => {
+test('Should get logs for current project from swarm', async done => {
   // options base
   const options = Object.assign({}, baseOptions, {
     url: `/logs/${projectName}`,
@@ -145,11 +165,11 @@ test('Should get logs for current project', async done => {
       const parts = line.split(/\dZ\s/);
       return parts[1].replace(/\sv\d.+/, ''); // strip any versions
     });
-  expect(text).toMatchObject(['Logs for logtest3', 'asd', 'Logs for logtest2', '123']);
+  expect(text).toEqual(expect.arrayContaining(['Logs for logtest3', 'asd', 'Logs for logtest2', '123']));
 
   // cleanup
-  await projectContainer1.remove({force: true});
-  await projectContainer2.remove({force: true});
+  await projectContainer1.remove();
+  await projectContainer2.remove();
 
   done();
 });
@@ -164,6 +184,6 @@ test('Should not get logs for nonexistent project', async done => {
   const result = JSON.parse(response.payload);
   // check response
   expect(response.statusCode).toEqual(404);
-  expect(result).toMatchObject({error: 'Container not found!'});
+  expect(result).toMatchObject({error: 'Service not found!'});
   done();
 });

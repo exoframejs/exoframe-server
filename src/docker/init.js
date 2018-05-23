@@ -5,9 +5,10 @@ const path = require('path');
 const mkdirp = require('mkdirp');
 
 // our modules
-const {getConfig} = require('../config');
+const {getConfig, waitForConfig} = require('../config');
 const docker = require('./docker');
 const logger = require('../logger');
+const {initNetwork} = require('./network');
 
 // config vars
 const baseFolder = path.join(os.homedir(), '.exoframe');
@@ -31,29 +32,44 @@ const pullImage = tag =>
   });
 exports.pullImage = pullImage;
 
-// create exoframe network if needed
-const initNetwork = async () => {
-  // get config
-  const config = getConfig();
-
-  const nets = await docker.listNetworks();
-  let exoNet = nets.find(n => n.Name === config.exoframeNetwork);
-  if (!exoNet) {
-    logger.info(`Exoframe network ${config.exoframeNetwork} does not exists, creating...`);
-    exoNet = await docker.createNetwork({
-      Name: config.exoframeNetwork,
-      Driver: 'bridge',
+// join swarm network
+const joinSwarmNetwork = async config => {
+  const allServices = await docker.listServices();
+  // try to find traefik instance
+  const exoframeServer = allServices.find(c => c.Spec.Name.startsWith('exoframe-server'));
+  // if server found - we're running as docker container
+  if (exoframeServer) {
+    const instance = docker.getService(exoframeServer.ID);
+    const instanceInfo = await instance.inspect();
+    if (instanceInfo.Spec.Networks && instanceInfo.Spec.Networks.find(n => n.Target === config.exoframeNetworkSwarm)) {
+      logger.debug('Already joined swarm network, done.');
+      return;
+    }
+    logger.debug('Not joined swarm network, updating..');
+    await instance.update({
+      Name: instanceInfo.Spec.Name,
+      version: parseInt(instanceInfo.Version.Index, 10),
+      Labels: instanceInfo.Spec.Labels,
+      TaskTemplate: Object.assign({}, instanceInfo.Spec.TaskTemplate, {
+        Networks: [
+          {
+            Target: config.exoframeNetworkSwarm,
+          },
+        ],
+      }),
+      Networks: [
+        {
+          Target: config.exoframeNetworkSwarm,
+        },
+      ],
     });
-  } else {
-    exoNet = docker.getNetwork(exoNet.Id);
   }
-
-  return exoNet;
 };
-exports.initNetwork = initNetwork;
 
 // export default function
 exports.initDocker = async () => {
+  await waitForConfig();
+
   logger.info('Initializing docker services...');
   // create exoframe network if needed
   const exoNet = await initNetwork();
@@ -70,11 +86,12 @@ exports.initDocker = async () => {
   // get all containers
   const allContainers = await docker.listContainers({all: true});
   // try to find traefik instance
-  const traefik = allContainers.find(c => c.Names.find(n => n === `/${config.traefikName}`));
+  const traefik = allContainers.find(c => c.Names.find(n => n.startsWith(`/${config.traefikName}`)));
 
   // if traefik exists and running - just return
   if (traefik && !traefik.Status.includes('Exited')) {
     logger.info('Traefik already running, docker init done!');
+    joinSwarmNetwork(config);
     return;
   }
 
@@ -131,29 +148,96 @@ exports.initDocker = async () => {
     '-c',
     '/dev/null',
     '--docker',
+    '--docker.watch',
+    ...(config.swarm ? ['--docker.swarmmode'] : []),
     ...(config.letsencrypt ? letsencrypt : entrypoints),
     ...(config.debug ? debug : []),
     ...(config.traefikArgs || []),
   ];
 
-  // start traefik
+  const Labels = {
+    'exoframe.deployment': 'exo-traefik',
+    'exoframe.user': 'admin',
+  };
+
+  const RestartPolicy = {
+    Name: 'on-failure',
+    MaximumRetryCount: 2,
+  };
+
+  // if running in swarm mode - run traefik as swarm service
+  if (config.swarm) {
+    await docker.createService({
+      Name: config.traefikName,
+      TaskTemplate: {
+        ContainerSpec: {
+          Image: config.traefikImage,
+          Args: Cmd,
+          Labels,
+          Mounts: [
+            {
+              Source: '/var/run/docker.sock',
+              Target: '/var/run/docker.sock',
+              Type: 'bind',
+            },
+          ],
+        },
+        Resources: {
+          Limits: {},
+          Reservations: {},
+        },
+        RestartPolicy,
+        Placement: {
+          Constraints: ['node.role==manager'],
+        },
+      },
+      EndpointSpec: {
+        Ports: [
+          {
+            Protocol: 'tcp',
+            PublishedPort: 80,
+            TargetPort: 80,
+          },
+          {
+            Protocol: 'tcp',
+            PublishedPort: 443,
+            TargetPort: 443,
+          },
+        ],
+      },
+      Mode: {
+        Replicated: {
+          Replicas: 1,
+        },
+      },
+      UpdateConfig: {
+        Parallelism: 1,
+      },
+      Networks: [
+        {
+          Target: config.exoframeNetworkSwarm,
+        },
+      ],
+    });
+
+    logger.info('Traefik instance started..');
+    // apply auto network join in case we're running in a container
+    joinSwarmNetwork(config);
+    return;
+  }
+
+  // start traefik in docker
   const container = await docker.createContainer({
     Image: config.traefikImage,
     name: config.traefikName,
     Cmd,
-    Labels: {
-      'exoframe.deployment': 'exo-traefik',
-      'exoframe.user': 'admin',
-    },
+    Labels,
     ExposedPorts: {
       '80/tcp': {},
       '443/tcp': {},
     },
     HostConfig: {
-      RestartPolicy: {
-        Name: 'on-failure',
-        MaximumRetryCount: 2,
-      },
+      RestartPolicy,
       Binds: ['/var/run/docker.sock:/var/run/docker.sock', `${acmePath}:/var/acme`],
       PortBindings: {
         '80/tcp': [{HostPort: '80'}],

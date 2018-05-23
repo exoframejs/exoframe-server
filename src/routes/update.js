@@ -1,7 +1,8 @@
 // our modules
 const logger = require('../logger');
 const docker = require('../docker/docker');
-const {pullImage, initDocker, initNetwork} = require('../docker/init');
+const {pullImage, initDocker} = require('../docker/init');
+const {initNetwork} = require('../docker/network');
 const {sleep} = require('../util');
 const {getConfig} = require('../config');
 

@@ -9,14 +9,16 @@ const getPort = require('get-port');
 
 // our packages
 const authToken = require('./fixtures/authToken');
+const {runYarn} = require('../src/util');
 const {startServer} = require('../src');
-const {extensionsFolder} = require('../src/config');
+const {recipesFolder} = require('../src/config');
 
 // container vars
 let fastify;
 
-// test template name
-const testTemplate = 'exoframe-template-java';
+// test recipe name
+const testInstallRecipe = 'exoframe-recipe-wordpress';
+const testRunRecipe = 'test-recipe';
 
 // set timeout to 60s
 jest.setTimeout(60000);
@@ -28,18 +30,18 @@ beforeAll(async () => {
   return fastify;
 });
 
-afterAll(() => fastify.close());
+afterAll(() => {
+  fastify.close();
+  runYarn({args: ['remove', '--verbose', testInstallRecipe], cwd: recipesFolder});
+});
 
-test('Should install new template', async done => {
+test('Should install new recipe and return list of questions', async done => {
   // options base
   const options = {
-    method: 'POST',
-    url: '/templates',
+    method: 'GET',
+    url: `/setup?recipeName=${testInstallRecipe}`,
     headers: {
       Authorization: `Bearer ${authToken}`,
-    },
-    payload: {
-      templateName: testTemplate,
     },
   };
 
@@ -50,58 +52,52 @@ test('Should install new template', async done => {
   expect(response.statusCode).toEqual(200);
   expect(result.success).toBeTruthy();
   expect(result.log.length).toBeGreaterThan(0);
+  expect(result.questions).toMatchSnapshot();
 
   // check folder
-  const files = fs.readdirSync(path.join(extensionsFolder, 'node_modules'));
-  expect(files).toContain(testTemplate);
+  const files = fs.readdirSync(path.join(recipesFolder, 'node_modules'));
+  expect(files).toContain(testInstallRecipe);
 
   done();
 });
 
-test('Should get list of installed templates', async done => {
-  // options base
-  const options = {
-    method: 'GET',
-    url: '/templates',
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
+test('Should execute recipe', async done => {
+  // write test module to folder
+  const folder = path.join(recipesFolder, 'node_modules', testRunRecipe);
+  fs.mkdirSync(folder);
+  fs.writeFileSync(
+    path.join(folder, 'index.js'),
+    `exports.runSetup = async ({answers}) => {
+  return [{message: 'works!', data: answers, level: 'info'}];
+  };`
+  );
+
+  const answers = {
+    test: '1',
+    other: '2',
   };
 
-  const response = await fastify.inject(options);
-  const result = JSON.parse(response.payload);
-
-  // check response
-  expect(response.statusCode).toEqual(200);
-  expect(Object.keys(result)).toEqual([testTemplate]);
-
-  done();
-});
-
-test('Should remove existing template', async done => {
   // options base
   const options = {
-    method: 'DELETE',
-    url: '/templates',
+    method: 'POST',
+    url: '/setup',
     headers: {
       Authorization: `Bearer ${authToken}`,
     },
     payload: {
-      templateName: testTemplate,
+      recipeName: testRunRecipe,
+      answers,
     },
   };
 
   const response = await fastify.inject(options);
   const result = JSON.parse(response.payload);
 
-  // check response
+  // check answer
   expect(response.statusCode).toEqual(200);
-  expect(result.removed).toBeTruthy();
+  expect(result.success).toBeTruthy();
   expect(result.log.length).toBeGreaterThan(0);
-
-  // check folder
-  const files = fs.readdirSync(path.join(extensionsFolder, 'node_modules'));
-  expect(files).not.toContain(testTemplate);
+  expect(result.log).toMatchSnapshot();
 
   done();
 });

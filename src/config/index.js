@@ -10,20 +10,19 @@ const {spawn} = require('child_process');
 const logger = require('../logger');
 
 // construct paths
-const baseFolder =
-  process.env.NODE_ENV !== 'testing'
-    ? path.join(os.homedir(), '.exoframe')
-    : path.join(__dirname, '..', '..', 'test', 'fixtures');
+const baseFolder = path.join(os.homedir(), '.exoframe');
 const configPath = path.join(baseFolder, 'server.config.yml');
-const publicKeysPath =
-  process.env.NODE_ENV !== 'testing'
-    ? path.join(os.homedir(), '.ssh')
-    : path.join(__dirname, '..', '..', 'test', 'fixtures');
+const publicKeysPath = path.join(os.homedir(), '.ssh');
 const extensionsFolder = path.join(baseFolder, 'extensions');
+const recipesFolder = path.join(baseFolder, 'recipes');
+// dir for temporary files used to build docker images
+const tempDir = path.join(baseFolder, 'deploying');
 
 // export paths for others
 exports.baseFolder = baseFolder;
 exports.extensionsFolder = extensionsFolder;
+exports.recipesFolder = recipesFolder;
+exports.tempDockerDir = tempDir;
 
 // create base folder if doesn't exist
 try {
@@ -45,6 +44,19 @@ try {
   spawn('yarn', ['init', '-y'], {cwd: extensionsFolder});
 }
 
+// create recipes folder if doesn't exist
+try {
+  fs.statSync(recipesFolder);
+} catch (e) {
+  fs.mkdirSync(recipesFolder);
+}
+// init package.json if it doesn't exist
+try {
+  fs.statSync(path.join(recipesFolder, 'package.json'));
+} catch (e) {
+  spawn('yarn', ['init', '-y'], {cwd: recipesFolder});
+}
+
 // default config
 const defaultConfig = {
   debug: false,
@@ -58,6 +70,8 @@ const defaultConfig = {
   traefikName: 'exoframe-traefik',
   traefikArgs: [],
   exoframeNetwork: 'exoframe',
+  exoframeNetworkSwarm: 'exoframe-swarm',
+  swarm: false,
   publicKeysPath,
 };
 

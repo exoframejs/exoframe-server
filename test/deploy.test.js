@@ -1,4 +1,10 @@
 /* eslint-env jest */
+// mock config for testing
+jest.mock('../src/config', () => require('./__mocks__/config'));
+const config = require('../src/config');
+// switch config to normal
+config.__load('normal');
+
 // npm packages
 const path = require('path');
 const tar = require('tar-fs');
@@ -8,7 +14,7 @@ const getPort = require('get-port');
 const authToken = require('./fixtures/authToken');
 const {startServer} = require('../src');
 const docker = require('../src/docker/docker');
-const {initNetwork} = require('../src/docker/init');
+const {initNetwork} = require('../src/docker/network');
 
 // create tar streams
 const streamDocker = tar.pack(path.join(__dirname, 'fixtures', 'docker-project'));
@@ -41,13 +47,14 @@ let composeDeployTwo = '';
 // set timeout to 60s
 jest.setTimeout(60000);
 
-beforeAll(async () => {
+beforeAll(async done => {
   // start new instance of fastify
   const port = await getPort();
   fastify = await startServer(port);
   // init docker network
   await initNetwork();
-  return fastify;
+
+  done();
 });
 
 afterAll(() => fastify.close());
@@ -165,10 +172,6 @@ test('Should deploy simple HTML project', async done => {
   // check docker services
   const allContainers = await docker.listContainers();
   const container = allContainers.find(c => c.Names.includes(`/${name}`));
-  const deployId = name
-    .split('-')
-    .slice(-1)
-    .shift();
 
   expect(container).toBeDefined();
   expect(container.Labels['exoframe.deployment']).toEqual(name);
@@ -209,10 +212,6 @@ test('Should update simple HTML project', async done => {
   // check docker services
   const allContainers = await docker.listContainers();
   const container = allContainers.find(c => c.Names.includes(`/${name}`));
-  const deployId = name
-    .split('-')
-    .slice(-1)
-    .shift();
 
   expect(container).toBeDefined();
   expect(container.Labels['exoframe.deployment']).toEqual(name);

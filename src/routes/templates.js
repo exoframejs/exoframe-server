@@ -1,30 +1,10 @@
 // npm packages
 const path = require('path');
 const fs = require('fs');
-const {spawn} = require('child_process');
 
 // our modules
 const {extensionsFolder} = require('../config');
-
-const runYarn = args =>
-  new Promise(resolve => {
-    const yarn = spawn('yarn', args, {cwd: extensionsFolder});
-    const log = [];
-    yarn.stdout.on('data', data => {
-      const message = data.toString().replace(/\n$/, '');
-      const hasError = message.toLowerCase().includes('error');
-      log.push({message, level: hasError ? 'error' : 'info'});
-    });
-    yarn.stderr.on('data', data => {
-      const message = data.toString().replace(/\n$/, '');
-      const hasError = message.toLowerCase().includes('error');
-      log.push({message, level: hasError ? 'error' : 'info'});
-    });
-    yarn.on('exit', code => {
-      log.push({message: `yarn exited with code ${code.toString()}`, level: 'info'});
-      resolve(log);
-    });
-  });
+const {runYarn} = require('../util');
 
 module.exports = fastify => {
   fastify.route({
@@ -44,7 +24,7 @@ module.exports = fastify => {
     path: '/templates',
     async handler(request, reply) {
       const {templateName} = request.body;
-      const log = await runYarn(['add', '--verbose', templateName]);
+      const log = await runYarn({args: ['add', '--verbose', templateName], cwd: extensionsFolder});
       reply.send({success: !log.find(it => it.level === 'error'), log});
     },
   });
@@ -67,7 +47,7 @@ module.exports = fastify => {
         return;
       }
       // remove token from collection
-      const log = await runYarn(['remove', '--verbose', templateName]);
+      const log = await runYarn({args: ['remove', '--verbose', templateName], cwd: extensionsFolder});
       // send back to user
       reply.send({removed: !log.find(it => it.level === 'error'), log});
     },

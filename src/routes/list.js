@@ -22,7 +22,23 @@ module.exports = fastify => {
           .map(c => c.inspect())
       );
 
-      reply.send(userContainers);
+      // if not running in swarm mode - just return results
+      if (!config.swarm) {
+        reply.send({containers: userContainers, services: []});
+        return;
+      }
+
+      // get swarm services
+      const allServices = await docker.listServices();
+      const userServices = await Promise.all(
+        allServices
+          .filter(s => s.Spec.Labels['exoframe.user'] === username)
+          .filter(s => s.Spec.Name !== config.traefikName)
+          .map(s => docker.getService(s.ID))
+          .map(s => s.inspect())
+      );
+
+      reply.send({containers: userContainers, services: userServices});
     },
   });
 };
