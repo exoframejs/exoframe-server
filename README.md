@@ -121,6 +121,9 @@ updateChannel: 'stable'
 
 # path to folder with authorized_keys, default "~/.ssh"
 publicKeysPath: '/path/to/your/public/keys'
+
+# whether Exoframe server whould be running in swarm mode, default "false"
+swarm: false
 ```
 
 _Warning:_ Most changes to config are applied immediately. With exception of Letsencrypt config. If you are enabling letsencrypt after Traefik instance has been started, you'll need to remove Traefik and then restart Exoframe server for changes to take effect.

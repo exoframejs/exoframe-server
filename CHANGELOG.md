@@ -1,4 +1,11 @@
 
+3.0.0 / 2018-05-23
+==================
+
+Additions:
+  * Add complex recipes support
+  * Add swarm mode support
+
 2.0.2 / 2018-01-26
 ==================
 

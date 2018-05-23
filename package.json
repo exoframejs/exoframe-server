@@ -1,6 +1,6 @@
 {
   "name": "exoframe-server",
-  "version": "2.0.2",
+  "version": "3.0.0",
   "description": "Exoframe is a self-hosted tool that allows simple one-command deployments using Docker",
   "main": "index.js",
   "bin": "index.js",
@@ -20,7 +20,7 @@
     "chokidar": "^2.0.3",
     "cors": "^2.8.4",
     "dockerode": "^2.5.5",
-    "fastify": "^1.4.0",
+    "fastify": "^1.5.0",
     "fastify-auth": "^0.2.0",
     "highland": "^2.13.0",
     "js-yaml": "^3.11.0",
@@ -39,7 +39,7 @@
   "devDependencies": {
     "coveralls": "^3.0.1",
     "get-port": "^3.2.0",
-    "jest": "^22.4.3",
+    "jest": "^22.4.4",
     "pkg": "^4.3.1"
   }
 }
