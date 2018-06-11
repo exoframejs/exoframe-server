@@ -64,6 +64,7 @@ exports.startFromParams = async ({
     'exoframe.project': projectName,
     'traefik.backend': backend,
     'traefik.docker.network': serverConfig.swarm ? serverConfig.exoframeNetworkSwarm : serverConfig.exoframeNetwork,
+    'traefik.enable': 'true',
   });
 
   // if host is set - add it to config
@@ -230,6 +231,8 @@ exports.start = async ({image, username, resultStream, existing = []}) => {
     'exoframe.user': username,
     'exoframe.project': project,
     'traefik.backend': backend,
+    'traefik.docker.network': serverConfig.swarm ? serverConfig.exoframeNetworkSwarm : serverConfig.exoframeNetwork,
+    'traefik.enable': 'true',
   });
 
   // if host is set - add it to config
