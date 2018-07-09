@@ -1,4 +1,11 @@
 
+3.0.1 / 2018-07-09
+==================
+
+Fixes:
+  * Do not attempt to join swarm network if not running in swarm
+  * Always append 'traefik.enabled=true' to service docker labels
+
 3.0.0 / 2018-05-23
 ==================
 
