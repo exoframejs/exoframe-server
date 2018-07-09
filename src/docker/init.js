@@ -34,6 +34,11 @@ exports.pullImage = pullImage;
 
 // join swarm network
 const joinSwarmNetwork = async config => {
+  if (!config.swarm) {
+    logger.debug('Not running in swarm, no need to join network..');
+    return;
+  }
+
   const allServices = await docker.listServices();
   // try to find traefik instance
   const exoframeServer = allServices.find(c => c.Spec.Name.startsWith('exoframe-server'));
