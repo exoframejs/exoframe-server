@@ -67,6 +67,7 @@ const updateCompose = ({username, baseName, serverConfig, composePath, util, res
       'traefik.port': '80',
       'traefik.backend': backend,
       'traefik.docker.network': network,
+      'traefik.enable': 'true',
     };
     if (serverConfig.swarm) {
       if (!compose.services[svcKey].deploy) {

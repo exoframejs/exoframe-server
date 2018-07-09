@@ -29,6 +29,9 @@ const streamBrokenNode = tar.pack(path.join(__dirname, 'fixtures', 'broken-node-
 const streamAdditionalLabels = tar.pack(path.join(__dirname, 'fixtures', 'additional-labels'));
 const streamTemplate = tar.pack(path.join(__dirname, 'fixtures', 'template-project'));
 
+// mock config
+const mockConfig = config.getConfig();
+
 // options base
 const optionsBase = {
   method: 'POST',
@@ -101,6 +104,8 @@ test('Should deploy simple docker project to swarm', async done => {
   expect(serviceInfo.Spec.Labels['exoframe.user']).toEqual('admin');
   expect(serviceInfo.Spec.Labels['exoframe.project']).toEqual('test-project');
   expect(serviceInfo.Spec.Labels['traefik.backend']).toEqual(`${name}.test`);
+  expect(serviceInfo.Spec.Labels['traefik.docker.network']).toEqual(mockConfig.exoframeNetworkSwarm);
+  expect(serviceInfo.Spec.Labels['traefik.enable']).toEqual('true');
   expect(serviceInfo.Spec.Networks.length).toEqual(1);
   expect(serviceInfo.Spec.Networks[0].Aliases.includes('test')).toBeTruthy();
   expect(serviceInfo.Spec.TaskTemplate.RestartPolicy).toMatchObject({Condition: 'none', MaxAttempts: 1});
@@ -148,6 +153,8 @@ test('Should deploy simple node project to swarm', async done => {
   expect(serviceInfo.Spec.Labels['exoframe.user']).toEqual('admin');
   expect(serviceInfo.Spec.Labels['exoframe.project']).toEqual(name.replace(`-${deployId}`, ''));
   expect(serviceInfo.Spec.Labels['traefik.backend']).toEqual('localhost');
+  expect(serviceInfo.Spec.Labels['traefik.docker.network']).toEqual(mockConfig.exoframeNetworkSwarm);
+  expect(serviceInfo.Spec.Labels['traefik.enable']).toEqual('true');
   expect(serviceInfo.Spec.Labels['traefik.frontend.rule']).toEqual('Host:localhost');
   expect(serviceInfo.Spec.Networks.length).toEqual(1);
 
@@ -189,6 +196,8 @@ test('Should deploy simple HTML project to swarm', async done => {
   expect(serviceInfo.Spec.Labels['exoframe.user']).toEqual('admin');
   expect(serviceInfo.Spec.Labels['exoframe.project']).toEqual('simple-html');
   expect(serviceInfo.Spec.Labels['traefik.backend']).toEqual(name);
+  expect(serviceInfo.Spec.Labels['traefik.docker.network']).toEqual(mockConfig.exoframeNetworkSwarm);
+  expect(serviceInfo.Spec.Labels['traefik.enable']).toEqual('true');
   expect(serviceInfo.Spec.Labels['traefik.frontend.rule']).toBeUndefined();
   expect(serviceInfo.Spec.Networks.length).toEqual(1);
 
@@ -228,6 +237,8 @@ test('Should update simple HTML project in swarm', async done => {
   expect(serviceInfo.ID).toEqual(simpleHtmlInitialDeploy);
   expect(serviceInfo.Spec.Labels['exoframe.user']).toEqual('admin');
   expect(serviceInfo.Spec.Labels['exoframe.project']).toEqual('simple-html');
+  expect(serviceInfo.Spec.Labels['traefik.docker.network']).toEqual(mockConfig.exoframeNetworkSwarm);
+  expect(serviceInfo.Spec.Labels['traefik.enable']).toEqual('true');
   expect(serviceInfo.Spec.Labels['traefik.frontend.rule']).toBeUndefined();
   expect(serviceInfo.Spec.Networks.length).toEqual(1);
 
@@ -278,6 +289,10 @@ test('Should deploy simple compose project to swarm', async done => {
   expect(serviceTwo.Spec.Labels['exoframe.project']).toEqual(nameTwo.replace('_redis', ''));
   expect(serviceOne.Spec.Labels['traefik.backend']).toEqual(nameOne.replace('_web', '-web'));
   expect(serviceTwo.Spec.Labels['traefik.backend']).toEqual(nameTwo.replace('_redis', '-redis'));
+  expect(serviceOne.Spec.Labels['traefik.docker.network']).toEqual(mockConfig.exoframeNetworkSwarm);
+  expect(serviceTwo.Spec.Labels['traefik.docker.network']).toEqual(mockConfig.exoframeNetworkSwarm);
+  expect(serviceOne.Spec.Labels['traefik.enable']).toEqual('true');
+  expect(serviceTwo.Spec.Labels['traefik.enable']).toEqual('true');
   expect(serviceOne.Spec.Labels['traefik.frontend.rule']).toEqual('Host:test.dev');
   expect(serviceOne.Spec.TaskTemplate.Networks.length).toEqual(2);
   expect(serviceTwo.Spec.TaskTemplate.Networks.length).toEqual(2);
@@ -330,6 +345,10 @@ test('Should update simple compose project in swarm', async done => {
   expect(serviceTwo.Spec.Labels['exoframe.project']).toEqual(nameTwo.replace('_redis', ''));
   expect(serviceOne.Spec.Labels['traefik.backend']).toEqual(nameOne.replace('_web', '-web'));
   expect(serviceTwo.Spec.Labels['traefik.backend']).toEqual(nameTwo.replace('_redis', '-redis'));
+  expect(serviceOne.Spec.Labels['traefik.docker.network']).toEqual(mockConfig.exoframeNetworkSwarm);
+  expect(serviceTwo.Spec.Labels['traefik.docker.network']).toEqual(mockConfig.exoframeNetworkSwarm);
+  expect(serviceOne.Spec.Labels['traefik.enable']).toEqual('true');
+  expect(serviceTwo.Spec.Labels['traefik.enable']).toEqual('true');
   expect(serviceOne.Spec.Labels['traefik.frontend.rule']).toEqual('Host:test.dev');
   expect(serviceOne.Spec.TaskTemplate.Networks.length).toEqual(2);
   expect(serviceTwo.Spec.TaskTemplate.Networks.length).toEqual(2);
@@ -489,6 +508,8 @@ test('Should deploy project with configured template to swarm', async done => {
   expect(serviceInfo.Spec.Labels['exoframe.user']).toEqual('admin');
   expect(serviceInfo.Spec.Labels['exoframe.project']).toEqual(name.replace(`-${deployId}`, ''));
   expect(serviceInfo.Spec.Labels['traefik.backend']).toEqual('localhost');
+  expect(serviceInfo.Spec.Labels['traefik.docker.network']).toEqual(mockConfig.exoframeNetworkSwarm);
+  expect(serviceInfo.Spec.Labels['traefik.enable']).toEqual('true');
   expect(serviceInfo.Spec.Labels['traefik.frontend.rule']).toEqual('Host:localhost');
   expect(serviceInfo.Spec.Networks.length).toEqual(1);
 
