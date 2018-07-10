@@ -31,10 +31,10 @@
     "node-fetch": "^2.1.2",
     "rimraf": "^2.6.2",
     "semver-compare": "^1.0.0",
+    "signale": "^1.2.1",
     "sshpk": "^1.14.2",
     "tar-fs": "^1.16.3",
-    "uuid": "^3.3.2",
-    "winston": "^3.0.0"
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "coveralls": "^3.0.2",
