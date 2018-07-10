@@ -8,7 +8,7 @@
     "start": "node index.js",
     "test": "NODE_ENV=testing jest --coverage --silent --maxWorkers=2 --ci",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "build": "pkg -t node8.9.0-alpine -o exoframe-server ."
+    "build": "pkg -t node8.11.3-alpine -o exoframe-server ."
   },
   "pkg": {
     "assets": "src/templates/*.html"
