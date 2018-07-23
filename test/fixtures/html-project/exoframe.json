@@ -2,5 +2,10 @@
   "name": "test-html-deploy",
   "domain": false,
   "project": "simple-html",
-  "restart": "no"
+  "restart": "no",
+  "rateLimit": {
+    "period": "1s",
+    "average": 1,
+    "burst": 5
+  }
 }

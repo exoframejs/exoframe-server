@@ -240,6 +240,16 @@ exports.start = async ({image, username, resultStream, existing = []}) => {
     Labels['traefik.frontend.rule'] = `Host:${host}`;
   }
 
+  // if rate-limit is set - add it to config
+  if (config.rateLimit) {
+    // we're using IP-based rate-limit
+    Labels['traefik.frontend.rateLimit.extractorFunc'] = 'client.ip';
+    // set values from project config
+    Labels['traefik.frontend.rateLimit.rateSet.exo.period'] = config.rateLimit.period;
+    Labels['traefik.frontend.rateLimit.rateSet.exo.average'] = String(config.rateLimit.average);
+    Labels['traefik.frontend.rateLimit.rateSet.exo.burst'] = String(config.rateLimit.burst);
+  }
+
   // if running in swarm mode - run traefik as swarm service
   if (serverConfig.swarm) {
     // create service config

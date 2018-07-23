@@ -184,6 +184,10 @@ test('Should deploy simple HTML project', async done => {
   expect(container.Labels['traefik.backend']).toEqual(name);
   expect(container.Labels['traefik.docker.network']).toEqual('exoframe');
   expect(container.Labels['traefik.enable']).toEqual('true');
+  expect(container.Labels['traefik.frontend.rateLimit.extractorFunc']).toEqual('client.ip');
+  expect(container.Labels['traefik.frontend.rateLimit.rateSet.exo.period']).toEqual('1s');
+  expect(container.Labels['traefik.frontend.rateLimit.rateSet.exo.average']).toEqual('1');
+  expect(container.Labels['traefik.frontend.rateLimit.rateSet.exo.burst']).toEqual('5');
   expect(container.Labels['traefik.frontend.rule']).toBeUndefined();
   expect(container.NetworkSettings.Networks.exoframe).toBeDefined();
 
