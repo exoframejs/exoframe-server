@@ -6,7 +6,7 @@
   "bin": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "NODE_ENV=testing jest --coverage --silent -i --ci",
+    "test": "NODE_ENV=testing jest --coverage --silent --maxWorkers=2 --ci",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "build": "pkg -t node8.11.3-alpine -o exoframe-server ."
   },
