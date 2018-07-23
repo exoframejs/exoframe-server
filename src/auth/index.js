@@ -59,7 +59,9 @@ const loginRoutes = (fastify, opts, next) => {
     method: 'POST',
     path: '/login',
     async handler(request, reply) {
-      const {body: {user, token, requestId}} = request;
+      const {
+        body: {user, token, requestId},
+      } = request;
       const loginReq = reqCollection.findOne({uid: requestId});
 
       if (!token || !user) {
@@ -84,7 +86,7 @@ const loginRoutes = (fastify, opts, next) => {
           return;
         }
       } catch (e) {
-        reply.code(503).send({error: `Could not read public keys file! ${e.toString()}`});
+        reply.code(405).send({error: `Could not read public keys file! ${e.toString()}`});
         return;
       }
 
