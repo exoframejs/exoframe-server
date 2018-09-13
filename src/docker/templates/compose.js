@@ -204,7 +204,7 @@ exports.executeTemplate = async ({username, config, serverConfig, tempDockerDir,
 
   // re-build images if needed
   const {code: buildExitCode, log: buildLog} = await executeCompose({
-    cmd: ['--project-name', defaultProjectPrefix, 'build'],
+    cmd: ['--project-name', baseName, 'build'],
     resultStream,
     tempDockerDir,
     writeStatus: util.writeStatus,
@@ -272,7 +272,7 @@ exports.executeTemplate = async ({username, config, serverConfig, tempDockerDir,
 
   // execute compose 'up -d'
   const exitCode = await executeCompose({
-    cmd: ['--project-name', defaultProjectPrefix, 'up', '-d'],
+    cmd: ['--project-name', baseName, 'up', '-d'],
     resultStream,
     tempDockerDir,
     writeStatus: util.writeStatus,
