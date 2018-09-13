@@ -54,13 +54,15 @@ const updateCompose = ({username, baseName, serverConfig, composePath, util, res
   Object.keys(compose.services).forEach(svcKey => {
     const name = `${baseName}-${svcKey}-${uid.split('-').shift()}`;
     const backend = `${baseName}-${svcKey}`;
+    const networks = Array.from(
+      new Set([network, ...compose.services[svcKey].networks || ['default']])
+    );
     // update basic settings
     const ext = {
       container_name: name,
       restart: 'on-failure:2',
-      networks: [network, 'default'],
     };
-    compose.services[svcKey] = Object.assign({}, ext, compose.services[svcKey]);
+    compose.services[svcKey] = Object.assign({}, ext, compose.services[svcKey], {networks});
 
     // update labels if needed
     const extLabels = {
