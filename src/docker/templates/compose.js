@@ -23,7 +23,11 @@ const updateCompose = ({username, baseName, serverConfig, composePath, util, res
   // read compose file
   const compose = yaml.safeLoad(fs.readFileSync(composePath, 'utf8'));
 
-  if (serverConfig.swarm && compose.version !== '3') {
+  if (
+    serverConfig.swarm
+    && typeof compose.version === 'string'
+    && !compose.version.startsWith('3')
+  ) {
     util.logger.debug('Compose file should be of version 3!');
     util.writeStatus(resultStream, {
       message: 'Running in swarm mode, can only deploy docker-compose file of version 3!',
