@@ -23,7 +23,11 @@ const updateCompose = ({username, baseName, serverConfig, composePath, util, res
   // read compose file
   const compose = yaml.safeLoad(fs.readFileSync(composePath, 'utf8'));
 
-  if (serverConfig.swarm && compose.version !== '3') {
+  if (
+    serverConfig.swarm
+    && typeof compose.version === 'string'
+    && !compose.version.startsWith('3')
+  ) {
     util.logger.debug('Compose file should be of version 3!');
     util.writeStatus(resultStream, {
       message: 'Running in swarm mode, can only deploy docker-compose file of version 3!',
@@ -50,13 +54,15 @@ const updateCompose = ({username, baseName, serverConfig, composePath, util, res
   Object.keys(compose.services).forEach(svcKey => {
     const name = `${baseName}-${svcKey}-${uid.split('-').shift()}`;
     const backend = `${baseName}-${svcKey}`;
+    const networks = Array.from(
+      new Set([network, ...compose.services[svcKey].networks || ['default']])
+    );
     // update basic settings
     const ext = {
       container_name: name,
       restart: 'on-failure:2',
-      networks: [network, 'default'],
     };
-    compose.services[svcKey] = Object.assign({}, ext, compose.services[svcKey]);
+    compose.services[svcKey] = Object.assign({}, ext, compose.services[svcKey], {networks});
 
     // update labels if needed
     const extLabels = {
@@ -198,7 +204,7 @@ exports.executeTemplate = async ({username, config, serverConfig, tempDockerDir,
 
   // re-build images if needed
   const {code: buildExitCode, log: buildLog} = await executeCompose({
-    cmd: ['--project-name', defaultProjectPrefix, 'build'],
+    cmd: ['--project-name', baseName, 'build'],
     resultStream,
     tempDockerDir,
     writeStatus: util.writeStatus,
@@ -266,7 +272,7 @@ exports.executeTemplate = async ({username, config, serverConfig, tempDockerDir,
 
   // execute compose 'up -d'
   const exitCode = await executeCompose({
-    cmd: ['--project-name', defaultProjectPrefix, 'up', '-d'],
+    cmd: ['--project-name', baseName, 'up', '-d'],
     resultStream,
     tempDockerDir,
     writeStatus: util.writeStatus,
