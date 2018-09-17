@@ -83,10 +83,10 @@ const scheduleCleanup = ({username, project, existing}) => {
     // filter out old container that don't have new containers
     // that are already up and running
     const toRemove = existing.filter(container => {
-      const newInstnace = running.find(runningContainer =>
+      const newInstance = running.find(runningContainer =>
         util.compareNames(container.Labels['exoframe.name'], runningContainer.Labels['exoframe.name'])
       );
-      return newInstnace.State === 'running' && newInstnace.Status.toLowerCase().includes('up');
+      return newInstance && newInstance.State === 'running' && newInstance.Status.toLowerCase().includes('up');
     });
 
     // remove old containers
