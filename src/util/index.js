@@ -72,3 +72,12 @@ exports.runYarn = ({args, cwd}) =>
       resolve(log);
     });
   });
+
+exports.compareNames = (nameOne = '', nameTwo = '') => {
+  const nameOneParts = nameOne.split('-');
+  const nameOneClean = nameOneParts.slice(0, nameOneParts.length - 2).join('-');
+
+  const nameTwoParts = nameTwo.split('-');
+  const nameTwoClean = nameTwoParts.slice(0, nameTwoParts.length - 2).join('-');
+  return nameOneClean === nameTwoClean;
+};

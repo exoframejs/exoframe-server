@@ -58,18 +58,6 @@ exports.executeTemplate = async ({username, tempDockerDir, resultStream, util, d
     const buildRes = await docker.build({username, resultStream});
     util.logger.debug('Build result:', buildRes);
 
-    // check for errors in build log
-    if (
-      buildRes.log
-        .map(it => it.toLowerCase())
-        .some(it => it.includes('error') || (it.includes('failed') && !it.includes('optional')))
-    ) {
-      util.logger.debug('Build log conains error!');
-      util.writeStatus(resultStream, {message: 'Build log contains errors!', level: 'error'});
-      resultStream.end('');
-      return;
-    }
-
     // start image
     const container = await docker.start(Object.assign({}, buildRes, {username, existing, resultStream}));
     util.logger.debug(container.Name);

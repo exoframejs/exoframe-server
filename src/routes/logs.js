@@ -1,17 +1,17 @@
 // npm modules
 const _ = require('highland');
-const {Readable, PassThrough} = require('stream');
+const {Readable} = require('stream');
 
 // our modules
 const docker = require('../docker/docker');
 const {getConfig} = require('../config');
 
-const logsConfig = {
-  follow: false,
+const generateLogsConfig = follow => ({
+  follow: Boolean(follow),
   stdout: true,
   stderr: true,
   timestamps: true,
-};
+});
 
 // fix for dockerode returning array of strings instead of log stream
 const fixLogStream = logs => {
@@ -22,7 +22,7 @@ const fixLogStream = logs => {
   return logs;
 };
 
-const getContainerLogs = async ({username, id, reply}) => {
+const getContainerLogs = async ({username, id, reply, follow}) => {
   const allContainers = await docker.listContainers({all: true});
   const containerInfo = allContainers.find(
     c => c.Labels['exoframe.user'] === username && c.Names.find(n => n === `/${id}`)
@@ -30,7 +30,7 @@ const getContainerLogs = async ({username, id, reply}) => {
 
   if (containerInfo) {
     const container = docker.getContainer(containerInfo.Id);
-    const logs = await container.logs(logsConfig);
+    const logs = await container.logs(generateLogsConfig(follow));
     const logStream = fixLogStream(logs);
     reply.send(logStream);
     return;
@@ -49,7 +49,7 @@ const getContainerLogs = async ({username, id, reply}) => {
   const logRequests = await Promise.all(
     containers.map(async cInfo => {
       const container = docker.getContainer(cInfo.Id);
-      const logs = await container.logs(logsConfig);
+      const logs = await container.logs(generateLogsConfig(follow));
       const logStream = fixLogStream(logs);
       const name = cInfo.Names[0].replace(/^\//, '');
       const nameStream = _([`Logs for ${name}\n\n`]);
@@ -62,13 +62,13 @@ const getContainerLogs = async ({username, id, reply}) => {
   reply.send(new Readable().wrap(allLogsStream));
 };
 
-const getServiceLogs = async ({username, id, reply}) => {
+const getServiceLogs = async ({username, id, reply, follow}) => {
   const allServices = await docker.listServices();
   const serviceInfo = allServices.find(c => c.Spec.Labels['exoframe.user'] === username && c.Spec.Name === id);
 
   if (serviceInfo) {
     const service = docker.getService(serviceInfo.ID);
-    const logs = await service.logs(logsConfig);
+    const logs = await service.logs(generateLogsConfig(follow));
     const logStream = fixLogStream(logs);
     reply.send(logStream);
     return;
@@ -87,7 +87,7 @@ const getServiceLogs = async ({username, id, reply}) => {
   const logRequests = await Promise.all(
     services.map(async cInfo => {
       const container = docker.getService(cInfo.ID);
-      const logs = await container.logs(logsConfig);
+      const logs = await container.logs(generateLogsConfig(follow));
       const logStream = fixLogStream(logs);
       const name = cInfo.Spec.Name;
       const nameStream = _([`Logs for ${name}\n\n`]);
@@ -108,16 +108,17 @@ module.exports = fastify => {
       // get username
       const {username} = request.user;
       const {id} = request.params;
+      const {follow} = request.query;
 
       // get server config
       const config = getConfig();
       // if running in swarm - get service logs
       if (config.swarm) {
-        getServiceLogs({username, id, reply});
+        getServiceLogs({username, id, reply, follow});
         return;
       }
       // otherwise - get container logs
-      getContainerLogs({username, id, reply});
+      getContainerLogs({username, id, reply, follow});
     },
   });
 };

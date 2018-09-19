@@ -68,6 +68,38 @@ const deploy = async ({username, existing, resultStream}) => {
   await template.executeTemplate(templateProps);
 };
 
+const scheduleCleanup = ({username, project, existing}) => {
+  process.nextTick(async () => {
+    // wait a bit for it to start
+    await sleep(WAIT_TIME);
+
+    // get all current containers
+    const containers = await docker.listContainers();
+    // find containers for current user and project
+    const running = containers.filter(
+      c => c.Labels['exoframe.user'] === username && c.Labels['exoframe.project'] === project
+    );
+
+    // filter out old container that don't have new containers
+    // that are already up and running
+    const toRemove = existing.filter(container => {
+      const newInstance = running.find(runningContainer =>
+        util.compareNames(container.Labels['exoframe.name'], runningContainer.Labels['exoframe.name'])
+      );
+      return newInstance && newInstance.State === 'running' && newInstance.Status.toLowerCase().includes('up');
+    });
+
+    // remove old containers
+    await Promise.all(toRemove.map(removeContainer));
+
+    // if not done - schedule with remaining containers
+    if (toRemove.length !== existing.length) {
+      const notRemoved = existing.filter(c => !toRemove.find(rc => rc.Id === c.Id));
+      scheduleCleanup({username, project, existing: notRemoved});
+    }
+  });
+};
+
 module.exports = fastify => {
   fastify.route({
     method: 'POST',
@@ -138,13 +170,7 @@ module.exports = fastify => {
       // deploy new versions
       deploy({username, payload: request.payload, resultStream});
       // schedule cleanup
-      process.nextTick(async () => {
-        // wait a bit for it to start
-        await sleep(WAIT_TIME);
-
-        // remove old containers
-        await Promise.all(existing.map(removeContainer));
-      });
+      scheduleCleanup({username, project, existing});
       // reply with deploy stream
       reply.code(200).send(new Readable().wrap(resultStream));
     },

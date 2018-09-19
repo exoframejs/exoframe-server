@@ -39,8 +39,8 @@ docker run -d \
 # for SSH that holds allowed public keys
 -v /home/user/.ssh/authorized_keys:/root/.ssh/authorized_keys:ro
 
-# this is your private key used for JWT
--e EXO_PRIVATE_KEY=your_private_key
+# this is your private key used for JWT encryption
+-e EXO_PRIVATE_KEY=your_jwt_encryption_key
 
 # this is used to tell traefik to which deployment current docker service belongs
 --label traefik.backend=exoframe-server
