@@ -10,7 +10,7 @@
 
 Exoframe is a self-hosted tool that allows simple one-command deployments using Docker.
 
-## Installation and Usage
+## Installation, usage and docs
 
 For more details on how to get it up and running please follow the following link [how to setup exoframe-server](https://github.com/exoframejs/exoframe/tree/master/docs).
 
