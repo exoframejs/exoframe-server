@@ -12,11 +12,7 @@ Exoframe is a self-hosted tool that allows simple one-command deployments using 
 
 ## Installation and Usage
 
-For more details on how to get up an runing please falow the link [ How to setup exoframe-server](https://github.com/exoframejs/exoframe/tree/master/docs).
-
-## Docs
-
-[Read more about Exoframe and how it works in the main repo](https://github.com/exoframejs/exoframe).
+For more details on how to get it up and running please follow the following link [how to setup exoframe-server](https://github.com/exoframejs/exoframe/tree/master/docs).
 
 ## License
 
