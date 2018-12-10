@@ -4,10 +4,20 @@ jest.mock('../src/config', () => require('./__mocks__/config'));
 
 // npm packages
 const getPort = require('get-port');
+const nock = require('nock');
 
 // our packages
 const authToken = require('./fixtures/authToken');
+const serverReleasesJSON = require('./fixtures/version/server-releases.json');
+const traefikReleasesJSON = require('./fixtures/version/traefik-releases.json');
 const {startServer} = require('../src');
+
+// setup github API mocking to evade rate limits in CI
+nock('https://api.github.com/repos')
+  .get('/exoframejs/exoframe-server/releases')
+  .reply(200, serverReleasesJSON)
+  .get('/containous/traefik/releases')
+  .reply(200, traefikReleasesJSON);
 
 // container vars
 let fastify;
