@@ -189,6 +189,7 @@ test('Should deploy simple HTML project', async done => {
   expect(container.Labels['traefik.frontend.rateLimit.rateSet.exo.average']).toEqual('1');
   expect(container.Labels['traefik.frontend.rateLimit.rateSet.exo.burst']).toEqual('5');
   expect(container.Labels['traefik.frontend.rule']).toBeUndefined();
+  expect(container.Labels['traefik.frontend.auth.basic.users']).toEqual('user:$apr1$$9Cv/OMGj$$ZomWQzuQbL.3TRCS81A1g/');
   expect(container.NetworkSettings.Networks.exoframe).toBeDefined();
 
   // store initial deploy id

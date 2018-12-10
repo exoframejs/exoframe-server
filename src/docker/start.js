@@ -250,6 +250,11 @@ exports.start = async ({image, username, resultStream, existing = []}) => {
     Labels['traefik.frontend.rateLimit.rateSet.exo.burst'] = String(config.rateLimit.burst);
   }
 
+  // if basic auth is set - add it to config
+  if (config.basicAuth && config.basicAuth.length) {
+    Labels['traefik.frontend.auth.basic.users'] = config.basicAuth
+  }
+
   // if running in swarm mode - run traefik as swarm service
   if (serverConfig.swarm) {
     // create service config
