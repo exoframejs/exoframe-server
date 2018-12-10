@@ -1,3 +1,8 @@
+# 3.2.0 / 2018-12-10
+
+- Moved server docs to main repo
+- Added support for frontend basic auth
+
 # 3.1.0 / 2018-09-19
 
 - Better checks for compose version in template for swarm
