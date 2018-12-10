@@ -1,3 +1,7 @@
+# 3.2.1 / 2018-12-10
+
+- Mock github API to evade issues with rate-limits in CI
+
 # 3.2.0 / 2018-12-10
 
 - Moved server docs to main repo
