@@ -2,7 +2,17 @@
 const docker = require('./docker');
 const {initNetwork, createNetwork} = require('../docker/network');
 const {getProjectConfig, nameFromImage, projectFromConfig, writeStatus} = require('../util');
+const {getSecretsCollection} = require('../db/secrets');
 const {getConfig} = require('../config');
+
+// try to find secret with current value name and return secret value if present
+const valueOrSecret = (value, secrets) => {
+  const secret = secrets.find(s => `@${s.name}` === value);
+  if (secret) {
+    return secret.value;
+  }
+  return value;
+};
 
 exports.startFromParams = async ({
   image,
@@ -181,8 +191,10 @@ exports.start = async ({image, username, resultStream, existing = []}) => {
   // construct host
   const host = config.domain === undefined ? defaultDomain : config.domain;
 
-  // generate env vars
-  const Env = config.env ? Object.keys(config.env).map(key => `${key}=${config.env[key]}`) : [];
+  // replace env vars values with secrets if needed
+  const secrets = getSecretsCollection().find({user: username});
+  // generate env vars (with secrets)
+  const Env = config.env ? Object.keys(config.env).map(key => `${key}=${valueOrSecret(config.env[key], secrets)}`) : [];
 
   // generate project name
   const project = projectFromConfig({username, config});
@@ -252,7 +264,7 @@ exports.start = async ({image, username, resultStream, existing = []}) => {
 
   // if basic auth is set - add it to config
   if (config.basicAuth && config.basicAuth.length) {
-    Labels['traefik.frontend.auth.basic.users'] = config.basicAuth
+    Labels['traefik.frontend.auth.basic.users'] = config.basicAuth;
   }
 
   // if running in swarm mode - run traefik as swarm service
