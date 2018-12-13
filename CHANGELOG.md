@@ -1,3 +1,7 @@
+# 3.3.0 / 2018-12-13
+
+- Add basic secrets implementation
+
 # 3.2.1 / 2018-12-10
 
 - Mock github API to evade issues with rate-limits in CI
