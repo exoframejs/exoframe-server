@@ -14,10 +14,7 @@ module.exports = fastify => {
       // find user secrets
       const secrets = getSecretsCollection()
         .find({user: username})
-        .map(s => ({
-          user: username,
-          name: s.name,
-        }));
+        .map(({value, ...s}) => s);
 
       reply.send({secrets});
     },

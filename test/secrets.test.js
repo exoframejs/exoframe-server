@@ -80,7 +80,9 @@ test('Should get list with new secret', async done => {
   expect(response.statusCode).toEqual(200);
   expect(result.secrets).toBeDefined();
   expect(result.secrets.length).toEqual(1);
-  expect(result.secrets[0]).toEqual({name: testSecret.secretName, user: 'admin'});
+  expect(result.secrets[0].user).toEqual('admin');
+  expect(result.secrets[0].name).toEqual(testSecret.secretName);
+  expect(result.secrets[0].value).toBeUndefined();
 
   done();
 });
