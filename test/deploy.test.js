@@ -95,7 +95,6 @@ test('Should deploy simple docker project', async done => {
 
   const containerData = docker.getContainer(containerInfo.Id);
   const container = await containerData.inspect();
-  // console.log(JSON.stringify(container));
   expect(container.NetworkSettings.Networks.exoframe.Aliases.includes('test')).toBeTruthy();
   expect(container.HostConfig.RestartPolicy).toMatchObject({Name: 'no', MaximumRetryCount: 0});
 
