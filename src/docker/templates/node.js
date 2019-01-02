@@ -2,7 +2,21 @@
 const fs = require('fs');
 const path = require('path');
 
-const nodeDockerfile = ({hasYarn}) =>
+const yarnOrNpm = ({hasYarn, hasLock}) => {
+  let installString = 'COPY package.json /usr/src/app/';
+
+  if (hasYarn) {
+    installString += `\nCOPY yarn.lock /usr/src/app/\nRUN yarn --silent`;
+  } else if (hasLock) {
+    installString += `\nCOPY package-lock.json /usr/src/app/\nRUN npm ci --silent`;
+  } else {
+    installString += `\nRUN npm install --silent`;
+  }
+
+  return installString;
+};
+
+const nodeDockerfile = ({hasYarn, hasLock}) =>
   `FROM node:latest
 
 # create folder and set it as workdir
@@ -10,14 +24,7 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # copy package and yarn files to cache deps install
-COPY package.json /usr/src/app/${
-    hasYarn
-      ? `
-COPY yarn.lock /usr/src/app/
-RUN yarn`
-      : `
-RUN npm install --silent`
-  }
+${yarnOrNpm({hasYarn, hasLock})}
 
 # copy app itself
 COPY . /usr/src/app
@@ -49,7 +56,10 @@ exports.executeTemplate = async ({username, tempDockerDir, resultStream, util, d
   try {
     // generate dockerfile
     const filesList = fs.readdirSync(tempDockerDir);
-    const dockerfile = nodeDockerfile({hasYarn: filesList.includes('yarn.lock')});
+    const dockerfile = nodeDockerfile({
+      hasYarn: filesList.includes('yarn.lock'),
+      hasLock: filesList.includes('package-lock.json'),
+    });
     const dfPath = path.join(tempDockerDir, 'Dockerfile');
     fs.writeFileSync(dfPath, dockerfile, 'utf-8');
     util.writeStatus(resultStream, {message: 'Deploying Node.js project..', level: 'info'});

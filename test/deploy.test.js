@@ -19,6 +19,7 @@ const {initNetwork} = require('../src/docker/network');
 // create tar streams
 const streamDocker = tar.pack(path.join(__dirname, 'fixtures', 'docker-project'));
 const streamNode = tar.pack(path.join(__dirname, 'fixtures', 'node-project'));
+const streamNodeLock = tar.pack(path.join(__dirname, 'fixtures', 'node-lock-project'));
 const streamHtml = tar.pack(path.join(__dirname, 'fixtures', 'html-project'));
 const streamHtmlUpdate = tar.pack(path.join(__dirname, 'fixtures', 'html-project'));
 const streamCompose = tar.pack(path.join(__dirname, 'fixtures', 'compose-project'));
@@ -124,6 +125,52 @@ test('Should deploy simple node project', async done => {
   expect(response.statusCode).toEqual(200);
   expect(completeDeployments.length).toEqual(1);
   expect(completeDeployments[0].Name.startsWith('/exo-admin-test-node-deploy-')).toBeTruthy();
+
+  // check docker services
+  const allContainers = await docker.listContainers();
+  const container = allContainers.find(c => c.Names.includes(completeDeployments[0].Name));
+  const name = completeDeployments[0].Name.slice(1);
+  const deployId = name
+    .split('-')
+    .slice(-1)
+    .shift();
+
+  expect(container).toBeDefined();
+  expect(container.Labels['exoframe.deployment']).toEqual(name);
+  expect(container.Labels['exoframe.user']).toEqual('admin');
+  expect(container.Labels['exoframe.project']).toEqual(name.replace(`-${deployId}`, ''));
+  expect(container.Labels['traefik.backend']).toEqual('localhost');
+  expect(container.Labels['traefik.docker.network']).toEqual('exoframe');
+  expect(container.Labels['traefik.enable']).toEqual('true');
+  expect(container.Labels['traefik.frontend.rule']).toEqual('Host:localhost');
+  expect(container.NetworkSettings.Networks.exoframe).toBeDefined();
+
+  // cleanup
+  const instance = docker.getContainer(container.Id);
+  await instance.remove({force: true});
+
+  done();
+});
+
+test('Should deploy simple node project with package-lock', async done => {
+  const options = Object.assign(optionsBase, {
+    payload: streamNodeLock,
+  });
+
+  const response = await fastify.inject(options);
+  // parse result into lines
+  const result = response.payload
+    .split('\n')
+    .filter(l => l && l.length)
+    .map(line => JSON.parse(line));
+
+  // find deployments
+  const completeDeployments = result.find(it => it.deployments && it.deployments.length).deployments;
+
+  // check response
+  expect(response.statusCode).toEqual(200);
+  expect(completeDeployments.length).toEqual(1);
+  expect(completeDeployments[0].Name.startsWith('/exo-admin-test-node-lock-deploy-')).toBeTruthy();
 
   // check docker services
   const allContainers = await docker.listContainers();
