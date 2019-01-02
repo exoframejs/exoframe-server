@@ -9,9 +9,6 @@ const {spawn} = require('child_process');
 // async simple sleep function
 const sleep = time => new Promise(r => setTimeout(r, time));
 
-// default project prefix
-const defaultProjectPrefix = 'exo';
-
 // generates new base name for deployment
 const generateBaseName = ({username, config}) =>
   `exo-${_.kebabCase(username)}-${_.kebabCase(config.name.split(':').shift())}`;
@@ -90,7 +87,7 @@ const updateCompose = ({username, baseName, serverConfig, composePath, util, res
 };
 
 // function to update compose file with pre-built images for stack deploy
-const updateComposeForStack = ({composePath, images}) => {
+const updateComposeForStack = ({composePath, baseName, images}) => {
   // read compose file
   const compose = yaml.safeLoad(fs.readFileSync(composePath, 'utf8'));
 
@@ -99,7 +96,7 @@ const updateComposeForStack = ({composePath, images}) => {
     // if service has build entry, replace it with image
     if (compose.services[svcKey].build) {
       delete compose.services[svcKey].build;
-      compose.services[svcKey].image = images.find(image => image === `${defaultProjectPrefix}_${svcKey}:latest`);
+      compose.services[svcKey].image = images.find(image => image === `${baseName}_${svcKey}:latest`);
     }
   });
 
@@ -209,7 +206,7 @@ exports.executeTemplate = async ({username, config, serverConfig, tempDockerDir,
   if (serverConfig.swarm) {
     // update docker-compose to include pre-built images
     const images = logToImages(buildLog);
-    const stackCompose = await updateComposeForStack({composePath, images});
+    const stackCompose = await updateComposeForStack({composePath, baseName, images});
     util.logger.debug('Compose modified for stack deployment:', stackCompose);
     util.writeStatus(resultStream, {
       message: 'Compose file modified for stack deploy',
