@@ -87,6 +87,29 @@ test('Should get list with new secret', async done => {
   done();
 });
 
+test('Should get value for the secret', async done => {
+  // options base
+  const options = {
+    method: 'GET',
+    url: `/secrets/${testSecret.secretName}`,
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  };
+
+  const response = await fastify.inject(options);
+  const result = JSON.parse(response.payload);
+
+  // check response
+  expect(response.statusCode).toEqual(200);
+  expect(result.secret).toBeDefined();
+  expect(result.secret.user).toEqual('admin');
+  expect(result.secret.name).toEqual(testSecret.secretName);
+  expect(result.secret.value).toEqual(testSecret.secretValue);
+
+  done();
+});
+
 test('Should deploy simple docker project with secret', async done => {
   const options = {
     method: 'POST',

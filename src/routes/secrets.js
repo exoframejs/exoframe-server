@@ -21,6 +21,23 @@ module.exports = fastify => {
   });
 
   fastify.route({
+    method: 'GET',
+    path: '/secrets/:secretName',
+    async handler(request, reply) {
+      // get username
+      const {username} = request.user;
+      const {secretName} = request.params;
+
+      // wait for db to init if required
+      await secretsInited;
+      // find user secrets
+      const secret = getSecretsCollection().findOne({user: username, name: secretName});
+
+      reply.send({secret});
+    },
+  });
+
+  fastify.route({
     method: 'POST',
     path: '/secrets',
     async handler(request, reply) {
