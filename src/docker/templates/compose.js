@@ -103,7 +103,7 @@ const updateComposeForStack = ({composePath, baseName, images, util}) => {
           image === `${baseName}_${svcKey}:latest` ||
           // also try to check for name match without - symbols
           // some docker engines seem to remove it?
-          image === `${baseName.replace(/-/g, '')}_${svcKey}}`
+          image === `${baseName.replace(/-/g, '')}_${svcKey}}:latest`
       );
     }
   });
