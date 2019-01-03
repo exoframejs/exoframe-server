@@ -295,7 +295,7 @@ test('Should update simple HTML project', async done => {
   done();
 });
 
-test('Should deploy simple compose project', async done => {
+test.only('Should deploy simple compose project', async done => {
   const options = Object.assign(optionsBase, {
     payload: streamCompose,
   });

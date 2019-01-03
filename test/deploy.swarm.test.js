@@ -320,8 +320,8 @@ test('Should deploy simple compose project to swarm', async done => {
   // check names
   const nameOne = completeDeployments[0].Spec.Name;
   const nameTwo = completeDeployments[1].Spec.Name;
-  expect(nameOne).toEqual('exo-admin-test-compose-deploy_web');
-  expect(nameTwo).toEqual('exo-admin-test-compose-deploy_redis');
+  expect(nameOne).toEqual('exo-admin-test-compose-swarm-deploy_web');
+  expect(nameTwo).toEqual('exo-admin-test-compose-swarm-deploy_redis');
 
   // check docker services
   const allServices = await docker.listServices();
@@ -376,8 +376,8 @@ test('Should update simple compose project in swarm', async done => {
   // check names
   const nameOne = completeDeployments[0].Spec.Name;
   const nameTwo = completeDeployments[1].Spec.Name;
-  expect(nameOne).toEqual('exo-admin-test-compose-deploy_web');
-  expect(nameTwo).toEqual('exo-admin-test-compose-deploy_redis');
+  expect(nameOne).toEqual('exo-admin-test-compose-swarm-deploy_web');
+  expect(nameTwo).toEqual('exo-admin-test-compose-swarm-deploy_redis');
 
   // check docker services
   const allServices = await docker.listServices();

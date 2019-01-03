@@ -1,4 +1,4 @@
 {
-  "name": "test-compose-deploy",
+  "name": "test-compose-swarm-deploy",
   "restart": "no"
 }
