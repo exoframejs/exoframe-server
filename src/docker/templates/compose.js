@@ -91,18 +91,20 @@ const updateComposeForStack = ({composePath, baseName, images, util}) => {
   // read compose file
   const compose = yaml.safeLoad(fs.readFileSync(composePath, 'utf8'));
 
-  util.logger.info('Built images for stack:', images);
-
   // modify services
   Object.keys(compose.services).forEach(svcKey => {
     // if service has build entry, replace it with image
     if (compose.services[svcKey].build) {
       delete compose.services[svcKey].build;
-      compose.services[svcKey].image = images.find(image => image === `${baseName}_${svcKey}:latest`);
+      compose.services[svcKey].image = images.find(
+        image =>
+          image === `${baseName}_${svcKey}:latest` ||
+          // also try to check for name match without - symbols
+          // some docker engines seem to remove it?
+          image === `${baseName.replace(/-/g, '')}_${svcKey}}`
+      );
     }
   });
-
-  util.logger.info('Updated stack:', JSON.stringify(images, null, 2));
 
   // write new compose back to file
   fs.writeFileSync(composePath, yaml.safeDump(compose), 'utf8');
