@@ -87,7 +87,7 @@ const updateCompose = ({username, baseName, serverConfig, composePath, util, res
 };
 
 // function to update compose file with pre-built images for stack deploy
-const updateComposeForStack = ({composePath, baseName, images, util}) => {
+const updateComposeForStack = ({composePath, baseName, images}) => {
   // read compose file
   const compose = yaml.safeLoad(fs.readFileSync(composePath, 'utf8'));
 
