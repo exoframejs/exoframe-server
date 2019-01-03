@@ -95,16 +95,16 @@ const updateComposeForStack = ({composePath, baseName, images, util}) => {
 
   // modify services
   Object.keys(compose.services).forEach(svcKey => {
+    // generate docker image name
+    const svcImage = `${baseName}_${svcKey}:latest`;
+    // also try to check for name match without - symbols
+    // some docker engines seem to remove it?
+    const svcImageNonKebab = svcImage.replace(/-/g, '');
+    util.logger.info('Searching for images:', svcImage, svcImageNonKebab);
     // if service has build entry, replace it with image
     if (compose.services[svcKey].build) {
       delete compose.services[svcKey].build;
-      compose.services[svcKey].image = images.find(
-        image =>
-          image === `${baseName}_${svcKey}:latest` ||
-          // also try to check for name match without - symbols
-          // some docker engines seem to remove it?
-          image === `${baseName.replace(/-/g, '')}_${svcKey}}:latest`
-      );
+      compose.services[svcKey].image = images.find(image => image === svcImage || image === svcImageNonKebab);
     }
   });
 
