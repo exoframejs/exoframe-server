@@ -91,6 +91,8 @@ const updateComposeForStack = ({composePath, baseName, images, util}) => {
   // read compose file
   const compose = yaml.safeLoad(fs.readFileSync(composePath, 'utf8'));
 
+  util.logger.info('Built images for stack:', images);
+
   // modify services
   Object.keys(compose.services).forEach(svcKey => {
     // if service has build entry, replace it with image
@@ -105,6 +107,8 @@ const updateComposeForStack = ({composePath, baseName, images, util}) => {
       );
     }
   });
+
+  util.logger.info('Updated stack:', JSON.stringify(compose, null, 2));
 
   // write new compose back to file
   fs.writeFileSync(composePath, yaml.safeDump(compose), 'utf8');
