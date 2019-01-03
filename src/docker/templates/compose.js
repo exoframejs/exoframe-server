@@ -87,9 +87,11 @@ const updateCompose = ({username, baseName, serverConfig, composePath, util, res
 };
 
 // function to update compose file with pre-built images for stack deploy
-const updateComposeForStack = ({composePath, baseName, images}) => {
+const updateComposeForStack = ({composePath, baseName, images, util}) => {
   // read compose file
   const compose = yaml.safeLoad(fs.readFileSync(composePath, 'utf8'));
+
+  util.logger.info('Built images for stack:', images);
 
   // modify services
   Object.keys(compose.services).forEach(svcKey => {
@@ -99,6 +101,8 @@ const updateComposeForStack = ({composePath, baseName, images}) => {
       compose.services[svcKey].image = images.find(image => image === `${baseName}_${svcKey}:latest`);
     }
   });
+
+  util.logger.info('Updated stack:', JSON.stringify(images, null, 2));
 
   // write new compose back to file
   fs.writeFileSync(composePath, yaml.safeDump(compose), 'utf8');
@@ -206,7 +210,7 @@ exports.executeTemplate = async ({username, config, serverConfig, tempDockerDir,
   if (serverConfig.swarm) {
     // update docker-compose to include pre-built images
     const images = logToImages(buildLog);
-    const stackCompose = await updateComposeForStack({composePath, baseName, images});
+    const stackCompose = await updateComposeForStack({composePath, baseName, images, util});
     util.logger.debug('Compose modified for stack deployment:', stackCompose);
     util.writeStatus(resultStream, {
       message: 'Compose file modified for stack deploy',
