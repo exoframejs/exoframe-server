@@ -118,9 +118,9 @@ const logToImages = log =>
     .map(line => line.replace(/^Successfully tagged /, '').trim());
 
 // function to execute docker-compose file and return the output
-const executeCompose = ({cmd, resultStream, tempDockerDir, writeStatus}) =>
+const executeCompose = ({cmd, resultStream, tempDockerDir, folder, writeStatus}) =>
   new Promise(resolve => {
-    const dc = spawn('docker-compose', cmd, {cwd: tempDockerDir});
+    const dc = spawn('docker-compose', cmd, {cwd: path.join(tempDockerDir, folder)});
     const log = [];
 
     dc.stdout.on('data', data => {
@@ -142,9 +142,9 @@ const executeCompose = ({cmd, resultStream, tempDockerDir, writeStatus}) =>
   });
 
 // function to execute docker stack deploy using compose file and return the output
-const executeStack = ({cmd, resultStream, tempDockerDir, writeStatus}) =>
+const executeStack = ({cmd, resultStream, tempDockerDir, folder, writeStatus}) =>
   new Promise(resolve => {
-    const dc = spawn('docker', cmd, {cwd: tempDockerDir});
+    const dc = spawn('docker', cmd, {cwd: path.join(tempDockerDir, folder)});
 
     dc.stdout.on('data', data => {
       const message = data.toString().replace(/\n$/, '');
@@ -166,9 +166,9 @@ const executeStack = ({cmd, resultStream, tempDockerDir, writeStatus}) =>
 exports.name = 'docker-compose';
 
 // function to check if the template fits this recipe
-exports.checkTemplate = async ({tempDockerDir}) => {
+exports.checkTemplate = async ({tempDockerDir, folder}) => {
   // compose file path
-  const composePath = path.join(tempDockerDir, 'docker-compose.yml');
+  const composePath = path.join(tempDockerDir, folder, 'docker-compose.yml');
   // if project already has docker-compose - just exit
   try {
     fs.readFileSync(composePath);
@@ -179,9 +179,18 @@ exports.checkTemplate = async ({tempDockerDir}) => {
 };
 
 // function to execute current template
-exports.executeTemplate = async ({username, config, serverConfig, tempDockerDir, resultStream, docker, util}) => {
+exports.executeTemplate = async ({
+  username,
+  config,
+  serverConfig,
+  tempDockerDir,
+  folder,
+  resultStream,
+  docker,
+  util,
+}) => {
   // compose file path
-  const composePath = path.join(tempDockerDir, 'docker-compose.yml');
+  const composePath = path.join(tempDockerDir, folder, 'docker-compose.yml');
   // if it does - run compose workflow
   util.logger.debug('Docker-compose file found, executing compose workflow..');
   util.writeStatus(resultStream, {message: 'Deploying docker-compose project..', level: 'info'});
@@ -203,6 +212,7 @@ exports.executeTemplate = async ({username, config, serverConfig, tempDockerDir,
     cmd: ['--project-name', baseName, 'build'],
     resultStream,
     tempDockerDir,
+    folder,
     writeStatus: util.writeStatus,
   });
   util.logger.debug('Compose build executed, exit code:', buildExitCode);
@@ -224,6 +234,7 @@ exports.executeTemplate = async ({username, config, serverConfig, tempDockerDir,
       cmd: ['stack', 'deploy', '-c', 'docker-compose.yml', baseName],
       resultStream,
       tempDockerDir,
+      folder,
       writeStatus: util.writeStatus,
     });
     util.logger.debug('Stack deploy executed, exit code:', exitCode);
@@ -271,6 +282,7 @@ exports.executeTemplate = async ({username, config, serverConfig, tempDockerDir,
     cmd: ['--project-name', baseName, 'up', '-d'],
     resultStream,
     tempDockerDir,
+    folder,
     writeStatus: util.writeStatus,
   });
   util.logger.debug('Compose up executed, exit code:', exitCode);

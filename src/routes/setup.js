@@ -1,7 +1,9 @@
 /* eslint global-require: off */
 /* eslint import/no-dynamic-require: off */
 // npm packages
+const fs = require('fs');
 const path = require('path');
+const uuidv1 = require('uuid/v1');
 
 // our modules
 const logger = require('../logger');
@@ -51,6 +53,9 @@ module.exports = fastify => {
       logger.debug('executing recipe:', recipeName);
       // get installed recipe path
       const recipePath = path.join(recipesFolder, 'node_modules', recipeName);
+      // create new deploy folder for user
+      const folder = `${username}-${uuidv1()}`;
+      fs.mkdirSync(path.join(tempDockerDir, folder));
       // clear require cache
       delete require.cache[require.resolve(recipePath)];
       // load recipe
@@ -63,6 +68,7 @@ module.exports = fastify => {
         serverConfig,
         username,
         tempDockerDir,
+        folder,
         docker: {
           daemon: docker,
           build,

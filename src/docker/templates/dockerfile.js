@@ -6,10 +6,10 @@ const path = require('path');
 exports.name = 'dockerfile';
 
 // function to check if the template fits this recipe
-exports.checkTemplate = async ({tempDockerDir}) => {
+exports.checkTemplate = async ({tempDockerDir, folder}) => {
   // if project already has dockerfile - just exit
   try {
-    fs.readFileSync(path.join(tempDockerDir, 'Dockerfile'));
+    fs.readFileSync(path.join(tempDockerDir, folder, 'Dockerfile'));
     return true;
   } catch (e) {
     return false;
@@ -17,20 +17,17 @@ exports.checkTemplate = async ({tempDockerDir}) => {
 };
 
 // function to execute current template
-exports.executeTemplate = async ({username, resultStream, util, docker, existing}) => {
+exports.executeTemplate = async ({username, folder, resultStream, util, docker, existing}) => {
   // build docker image
   try {
     util.writeStatus(resultStream, {message: 'Deploying Dockerfile project..', level: 'info'});
 
-    const buildRes = await docker.build({username, resultStream});
+    const buildRes = await docker.build({username, folder, resultStream});
     util.logger.debug('Build result:', buildRes);
 
     // start image
-    const container = await docker.start(Object.assign({}, buildRes, {username, existing, resultStream}));
+    const container = await docker.start(Object.assign({}, buildRes, {username, folder, existing, resultStream}));
     util.logger.debug(container);
-
-    // clean temp folder
-    await util.cleanTemp();
 
     // return new deployments
     util.writeStatus(resultStream, {message: 'Deployment success!', deployments: [container], level: 'info'});

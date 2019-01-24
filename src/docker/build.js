@@ -1,4 +1,5 @@
 // npm modules
+const path = require('path');
 const tar = require('tar-fs');
 
 // our modules
@@ -20,30 +21,32 @@ exports.buildFromParams = ({tarStream, tag, logLine = noop}) =>
     output.on('data', d => {
       const str = d.toString();
       const parts = str.split('\n');
-      parts.filter(s => s.length > 0).forEach(s => {
-        try {
-          const data = JSON.parse(s);
-          // process log data
-          if (data.stream && data.stream.length) {
-            log.push(data.stream);
-            logLine({message: data.stream, level: 'verbose'});
-          } else if (data.error && data.error.length) {
-            // process error data
-            log.push(data.error);
-            logLine({message: data.error, level: 'error'});
-            hasErrors = true;
-          } else {
-            // push everything else as-is
-            log.push(s);
-            logLine({message: s, level: 'verbose'});
+      parts
+        .filter(s => s.length > 0)
+        .forEach(s => {
+          try {
+            const data = JSON.parse(s);
+            // process log data
+            if (data.stream && data.stream.length) {
+              log.push(data.stream);
+              logLine({message: data.stream, level: 'verbose'});
+            } else if (data.error && data.error.length) {
+              // process error data
+              log.push(data.error);
+              logLine({message: data.error, level: 'error'});
+              hasErrors = true;
+            } else {
+              // push everything else as-is
+              log.push(s);
+              logLine({message: s, level: 'verbose'});
+            }
+          } catch (e) {
+            if (s && s.length) {
+              log.push(s);
+              logLine({message: s, level: 'verbose'});
+            }
           }
-        } catch (e) {
-          if (s && s.length) {
-            log.push(s);
-            logLine({message: s, level: 'verbose'});
-          }
-        }
-      });
+        });
     });
     output.on('end', () => {
       if (hasErrors) {
@@ -54,12 +57,12 @@ exports.buildFromParams = ({tarStream, tag, logLine = noop}) =>
     });
   });
 
-exports.build = async ({username, resultStream}) => {
+exports.build = async ({username, folder, resultStream}) => {
   // get packed stream
-  const tarStream = tar.pack(tempDockerDir);
+  const tarStream = tar.pack(path.join(tempDockerDir, folder));
 
   // get project info
-  const config = getProjectConfig();
+  const config = getProjectConfig(folder);
 
   // construct image tag
   const tag = tagFromConfig({username, config});

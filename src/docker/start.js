@@ -174,14 +174,14 @@ exports.startFromParams = async ({
   return containerData.inspect();
 };
 
-exports.start = async ({image, username, resultStream, existing = []}) => {
+exports.start = async ({image, username, folder, resultStream, existing = []}) => {
   const name = nameFromImage(image);
 
   // get server config
   const serverConfig = getConfig();
 
   // get project info
-  const config = getProjectConfig();
+  const config = getProjectConfig(folder);
 
   // generate host
   // construct base domain from config, prepend with "." if it's not there

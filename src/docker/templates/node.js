@@ -38,10 +38,10 @@ CMD ["npm", "start"]
 exports.name = 'node';
 
 // function to check if the template fits this recipe
-exports.checkTemplate = async ({tempDockerDir}) => {
+exports.checkTemplate = async ({tempDockerDir, folder}) => {
   // if project already has dockerfile - just exit
   try {
-    const filesList = fs.readdirSync(tempDockerDir);
+    const filesList = fs.readdirSync(path.join(tempDockerDir, folder));
     if (filesList.includes('package.json')) {
       return true;
     }
@@ -52,28 +52,25 @@ exports.checkTemplate = async ({tempDockerDir}) => {
 };
 
 // function to execute current template
-exports.executeTemplate = async ({username, tempDockerDir, resultStream, util, docker, existing}) => {
+exports.executeTemplate = async ({username, tempDockerDir, folder, resultStream, util, docker, existing}) => {
   try {
     // generate dockerfile
-    const filesList = fs.readdirSync(tempDockerDir);
+    const filesList = fs.readdirSync(path.join(tempDockerDir, folder));
     const dockerfile = nodeDockerfile({
       hasYarn: filesList.includes('yarn.lock'),
       hasLock: filesList.includes('package-lock.json'),
     });
-    const dfPath = path.join(tempDockerDir, 'Dockerfile');
+    const dfPath = path.join(tempDockerDir, folder, 'Dockerfile');
     fs.writeFileSync(dfPath, dockerfile, 'utf-8');
     util.writeStatus(resultStream, {message: 'Deploying Node.js project..', level: 'info'});
 
     // build docker image
-    const buildRes = await docker.build({username, resultStream});
+    const buildRes = await docker.build({username, folder, resultStream});
     util.logger.debug('Build result:', buildRes);
 
     // start image
-    const container = await docker.start(Object.assign({}, buildRes, {username, existing, resultStream}));
+    const container = await docker.start(Object.assign({}, buildRes, {username, folder, existing, resultStream}));
     util.logger.debug(container.Name);
-
-    // clean temp folder
-    await util.cleanTemp();
 
     // return new deployments
     util.writeStatus(resultStream, {message: 'Deployment success!', deployments: [container], level: 'info'});
