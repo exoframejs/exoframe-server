@@ -17,7 +17,18 @@ const baseFolder = path.join(os.homedir(), '.exoframe');
 const pullImage = tag =>
   new Promise(async (resolve, reject) => {
     let log = '';
-    docker.pull(tag, (err, stream) => {
+
+    const auth = {
+      username: 'username',
+      password: 'password',
+      auth: '',
+      email: 'your@email.email',
+      serveraddress: 'https://some.private.registry'
+    };
+    
+    const authConfig = auth ? {'authconfig': auth} : undefined;
+
+    docker.pull(tag, authConfig, (err, stream) => {
       if (err) {
         logger.error('Error pulling:', err);
         reject(err);
