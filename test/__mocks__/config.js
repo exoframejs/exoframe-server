@@ -12,6 +12,7 @@ const publicKeysPath = path.join(__dirname, '..', '..', 'test', 'fixtures');
 const extensionsFolder = path.join(baseFolder, 'extensions');
 const recipesFolder = path.join(baseFolder, 'recipes');
 const tempDirNormal = path.join(baseFolder, 'deploying');
+const pluginsFolder = path.join(baseFolder, 'plugins');
 
 // test config
 const testConfig = {
@@ -34,6 +35,14 @@ const testConfig = {
 // saved configs for re-use
 const savedConfigs = {
   normal: Object.assign({}, testConfig),
+  plugins: Object.assign({}, testConfig, {
+    plugins: {
+      install: ['testplugin'],
+      testplugin: {
+        test: 123,
+      },
+    },
+  }),
 };
 const savedDirs = {
   normal: tempDirNormal,
@@ -54,5 +63,6 @@ cfg.baseFolder = baseFolder;
 cfg.extensionsFolder = extensionsFolder;
 cfg.recipesFolder = recipesFolder;
 cfg.tempDockerDir = tempDirNormal;
+cfg.pluginsFolder = pluginsFolder;
 
 module.exports = cfg;
