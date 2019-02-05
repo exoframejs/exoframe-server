@@ -9,6 +9,7 @@
     "react/react-in-jsx-scope": "off",
     "promise/param-names": "off",
     "prefer-promise-reject-errors": "off",
+    "no-control-regex": "off",
     "prettier/prettier": [
       "error",
       {

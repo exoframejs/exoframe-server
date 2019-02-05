@@ -54,7 +54,7 @@ const getContainerLogs = async ({username, id, reply, follow}) => {
       const logStream = fixLogStream(logs);
       const name = cInfo.Names[0].replace(/^\//, '');
       const nameStream = _([`Logs for ${name}\n\n`]);
-      return [nameStream, _(logStream)];
+      return [nameStream, logStream];
     })
   );
   // flatten results
