@@ -1,7 +1,8 @@
 // our modules
 const docker = require('../docker/docker');
-const {removeContainer, removeService} = require('../docker/util');
-const {getConfig} = require('../config');
+const {removeContainer} = require('../docker/util');
+const {getPlugins} = require('../plugins');
+const logger = require('../logger');
 
 // removal of normal containers
 const removeUserContainer = async ({username, id, reply}) => {
@@ -32,33 +33,6 @@ const removeUserContainer = async ({username, id, reply}) => {
   reply.code(204).send('removed');
 };
 
-// removal of swarm services
-const removeUserService = async ({username, id, reply}) => {
-  // look for normal containers
-  const allServices = await docker.listServices();
-  const serviceInfo = allServices.find(c => c.Spec.Labels['exoframe.user'] === username && c.Spec.Name === id);
-
-  // if container found by name - remove
-  if (serviceInfo) {
-    await removeService(serviceInfo);
-    reply.code(204).send('removed');
-    return;
-  }
-
-  // if not found by name - try to find by project
-  const services = allServices.filter(
-    c => c.Spec.Labels['exoframe.user'] === username && c.Spec.Labels['exoframe.project'] === id
-  );
-  if (!services.length) {
-    reply.code(404).send({error: 'Service not found!'});
-    return;
-  }
-  // remove all
-  await Promise.all(services.map(removeService));
-  // reply
-  reply.code(204).send('removed');
-};
-
 module.exports = fastify => {
   fastify.route({
     method: 'POST',
@@ -68,13 +42,20 @@ module.exports = fastify => {
       const {username} = request.user;
       const {id} = request.params;
 
-      // get server config
-      const config = getConfig();
+      // run remove via plugins if available
+      const plugins = getPlugins();
+      for (const plugin of plugins) {
+        // only run plugins that have remove function
+        if (!plugin.remove) {
+          continue;
+        }
 
-      // if running in swarm - work with services
-      if (config.swarm) {
-        removeUserService({username, id, reply});
-        return;
+        const result = await plugin.remove({docker, username, id, reply});
+        logger.debug('Running remove with plugin:', plugin.config.name, result);
+        if (plugin.config.exclusive) {
+          logger.debug('Remove finished via exclusive plugin:', plugin.config.name);
+          return;
+        }
       }
 
       removeUserContainer({username, id, reply});

@@ -1,10 +1,11 @@
 // npm modules
 const _ = require('highland');
 const {Readable} = require('stream');
+const {getPlugins} = require('../plugins');
+const logger = require('../logger');
 
 // our modules
 const docker = require('../docker/docker');
-const {getConfig} = require('../config');
 
 const generateLogsConfig = follow => ({
   follow: Boolean(follow),
@@ -62,44 +63,6 @@ const getContainerLogs = async ({username, id, reply, follow}) => {
   reply.send(new Readable().wrap(allLogsStream));
 };
 
-const getServiceLogs = async ({username, id, reply, follow}) => {
-  const allServices = await docker.listServices();
-  const serviceInfo = allServices.find(c => c.Spec.Labels['exoframe.user'] === username && c.Spec.Name === id);
-
-  if (serviceInfo) {
-    const service = docker.getService(serviceInfo.ID);
-    const logs = await service.logs(generateLogsConfig(follow));
-    const logStream = fixLogStream(logs);
-    reply.send(logStream);
-    return;
-  }
-
-  // if not found by name - try to find by project
-  const services = allServices.filter(
-    c => c.Spec.Labels['exoframe.user'] === username && c.Spec.Labels['exoframe.project'] === id
-  );
-  if (!services.length) {
-    reply.code(404).send({error: 'Service not found!'});
-    return;
-  }
-
-  // get all log streams and prepend them with service names
-  const logRequests = await Promise.all(
-    services.map(async cInfo => {
-      const container = docker.getService(cInfo.ID);
-      const logs = await container.logs(generateLogsConfig(follow));
-      const logStream = fixLogStream(logs);
-      const name = cInfo.Spec.Name;
-      const nameStream = _([`Logs for ${name}\n\n`]);
-      return [nameStream, _(logStream)];
-    })
-  );
-  // flatten results
-  const allLogsStream = _(logRequests).flatten();
-  // send wrapped highland stream as response
-  reply.send(new Readable().wrap(allLogsStream));
-};
-
 module.exports = fastify => {
   fastify.route({
     method: 'GET',
@@ -110,14 +73,24 @@ module.exports = fastify => {
       const {id} = request.params;
       const {follow} = request.query;
 
-      // get server config
-      const config = getConfig();
-      // if running in swarm - get service logs
-      if (config.swarm) {
-        getServiceLogs({username, id, reply, follow});
-        return;
+      // run logs via plugins if available
+      const plugins = getPlugins();
+      for (const plugin of plugins) {
+        // only run plugins that have logs function
+        if (!plugin.logs) {
+          continue;
+        }
+
+        const logsConfig = generateLogsConfig(follow);
+        const result = await plugin.logs({docker, _, logsConfig, fixLogStream, username, id, reply, follow});
+        logger.debug('Running logs with plugin:', plugin.config.name, result);
+        if (plugin.config.exclusive) {
+          logger.debug('Logs finished via exclusive plugin:', plugin.config.name);
+          return;
+        }
       }
-      // otherwise - get container logs
+
+      // get container logs
       getContainerLogs({username, id, reply, follow});
     },
   });

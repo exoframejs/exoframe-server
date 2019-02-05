@@ -6,33 +6,19 @@ const yaml = require('js-yaml');
 const uuid = require('uuid');
 const {spawn} = require('child_process');
 
-// async simple sleep function
-const sleep = time => new Promise(r => setTimeout(r, time));
-
 // generates new base name for deployment
 const generateBaseName = ({username, config}) =>
   `exo-${_.kebabCase(username)}-${_.kebabCase(config.name.split(':').shift())}`;
 
 // function to update compose file with required vars
-const updateCompose = ({username, baseName, serverConfig, composePath, util, resultStream}) => {
+const updateCompose = ({username, baseName, serverConfig, composePath}) => {
   const uid = uuid.v1();
 
   // read compose file
   const compose = yaml.safeLoad(fs.readFileSync(composePath, 'utf8'));
 
-  if (serverConfig.swarm && typeof compose.version === 'string' && !compose.version.startsWith('3')) {
-    util.logger.debug('Compose file should be of version 3!');
-    util.writeStatus(resultStream, {
-      message: 'Running in swarm mode, can only deploy docker-compose file of version 3!',
-      data: compose,
-      level: 'error',
-    });
-    resultStream.end('');
-    return false;
-  }
-
   // modify networks
-  const network = serverConfig.swarm ? serverConfig.exoframeNetworkSwarm : serverConfig.exoframeNetwork;
+  const network = serverConfig.exoframeNetwork;
   compose.networks = Object.assign(
     {},
     {
@@ -66,18 +52,8 @@ const updateCompose = ({username, baseName, serverConfig, composePath, util, res
       'traefik.docker.network': network,
       'traefik.enable': 'true',
     };
-    if (serverConfig.swarm) {
-      if (!compose.services[svcKey].deploy) {
-        compose.services[svcKey].deploy = {};
-      }
-      compose.services[svcKey].deploy.labels = Object.assign(
-        {},
-        extLabels,
-        compose.services[svcKey].deploy.labels || {}
-      );
-    } else {
-      compose.services[svcKey].labels = Object.assign({}, extLabels, compose.services[svcKey].labels);
-    }
+
+    compose.services[svcKey].labels = Object.assign({}, extLabels, compose.services[svcKey].labels);
   });
 
   // write new compose back to file
@@ -85,37 +61,6 @@ const updateCompose = ({username, baseName, serverConfig, composePath, util, res
 
   return compose;
 };
-
-// function to update compose file with pre-built images for stack deploy
-const updateComposeForStack = ({composePath, baseName, images}) => {
-  // read compose file
-  const compose = yaml.safeLoad(fs.readFileSync(composePath, 'utf8'));
-
-  // modify services
-  Object.keys(compose.services).forEach(svcKey => {
-    // generate docker image name
-    const svcImage = `${baseName}_${svcKey}:latest`;
-    // also try to check for name match without - symbols
-    // some docker engines seem to remove it?
-    const svcImageNonKebab = svcImage.replace(/-/g, '');
-    // if service has build entry, replace it with image
-    if (compose.services[svcKey].build) {
-      delete compose.services[svcKey].build;
-      compose.services[svcKey].image = images.find(image => image === svcImage || image === svcImageNonKebab);
-    }
-  });
-
-  // write new compose back to file
-  fs.writeFileSync(composePath, yaml.safeDump(compose), 'utf8');
-
-  return compose;
-};
-
-// extract pre-built image names from build log
-const logToImages = log =>
-  log
-    .filter(line => line.startsWith('Successfully tagged'))
-    .map(line => line.replace(/^Successfully tagged /, '').trim());
 
 // function to execute docker-compose file and return the output
 const executeCompose = ({cmd, resultStream, tempDockerDir, folder, writeStatus}) =>
@@ -141,26 +86,11 @@ const executeCompose = ({cmd, resultStream, tempDockerDir, folder, writeStatus})
     });
   });
 
-// function to execute docker stack deploy using compose file and return the output
-const executeStack = ({cmd, resultStream, tempDockerDir, folder, writeStatus}) =>
-  new Promise(resolve => {
-    const dc = spawn('docker', cmd, {cwd: path.join(tempDockerDir, folder)});
-
-    dc.stdout.on('data', data => {
-      const message = data.toString().replace(/\n$/, '');
-      const hasError = message.toLowerCase().includes('error') || message.toLowerCase().includes('failed');
-      writeStatus(resultStream, {message, level: hasError ? 'error' : 'info'});
-    });
-    dc.stderr.on('data', data => {
-      const message = data.toString().replace(/\n$/, '');
-      const hasError = message.toLowerCase().includes('error') || message.toLowerCase().includes('failed');
-      writeStatus(resultStream, {message, level: hasError ? 'error' : 'info'});
-    });
-    dc.on('exit', code => {
-      writeStatus(resultStream, {message: `Docker stack deploy exited with code ${code.toString()}`, level: 'info'});
-      resolve(code.toString());
-    });
-  });
+// extract pre-built image names from build log
+const logToImages = log =>
+  log
+    .filter(line => line.startsWith('Successfully tagged'))
+    .map(line => line.replace(/^Successfully tagged /, '').trim());
 
 // template name
 exports.name = 'docker-compose';
@@ -217,64 +147,33 @@ exports.executeTemplate = async ({
   });
   util.logger.debug('Compose build executed, exit code:', buildExitCode);
 
-  // if running in swarm mode - execute using docker stack
-  if (serverConfig.swarm) {
-    // update docker-compose to include pre-built images
-    const images = logToImages(buildLog);
-    const stackCompose = await updateComposeForStack({composePath, baseName, images, util});
-    util.logger.debug('Compose modified for stack deployment:', stackCompose);
-    util.writeStatus(resultStream, {
-      message: 'Compose file modified for stack deploy',
-      data: stackCompose,
-      level: 'verbose',
-    });
+  // run compose via plugins if available
+  const plugins = util.getPlugins();
+  for (const plugin of plugins) {
+    // only run plugins that have compose function
+    if (!plugin.compose) {
+      continue;
+    }
 
-    // execute stack deploy
-    const exitCode = await executeStack({
-      cmd: ['stack', 'deploy', '-c', 'docker-compose.yml', baseName],
+    const images = logToImages(buildLog);
+    const result = await plugin.compose({
+      images,
+      composeConfig,
+      composePath,
+      baseName,
+      docker,
+      util,
+      serverConfig,
       resultStream,
       tempDockerDir,
       folder,
-      writeStatus: util.writeStatus,
+      yaml,
     });
-    util.logger.debug('Stack deploy executed, exit code:', exitCode);
-    if (exitCode !== '0') {
-      // return them
-      util.writeStatus(resultStream, {message: 'Deployment failed!', exitCode, level: 'error'});
-      resultStream.end('');
+    util.logger.debug('Running compose with plugin:', plugin.config.name, result);
+    if (result && plugin.config.exclusive) {
+      util.logger.debug('Compose finished via exclusive plugin:', plugin.config.name);
       return;
     }
-
-    // get service name labels from config
-    const serviceNames = Object.keys(composeConfig.services).map(
-      svc => composeConfig.services[svc].deploy.labels['exoframe.name']
-    );
-
-    // wait for stack to deploy
-    while (true) {
-      // get services info
-      const allServices = await docker.daemon.listServices();
-      const startedServices = serviceNames
-        .map(name => allServices.find(c => c.Spec.Labels['exoframe.name'] === name))
-        .filter(s => !!s);
-      if (startedServices.length === serviceNames.length) {
-        break;
-      }
-      await sleep(1000);
-    }
-
-    // get services info
-    const allServices = await docker.daemon.listServices();
-    const deployments = await Promise.all(
-      serviceNames
-        .map(name => allServices.find(c => c.Spec.Labels['exoframe.name'] === name))
-        .map(info => docker.daemon.getService(info.ID))
-        .map(service => service.inspect())
-    );
-    // return them
-    util.writeStatus(resultStream, {message: 'Deployment success!', deployments, level: 'info'});
-    resultStream.end('');
-    return;
   }
 
   // execute compose 'up -d'
