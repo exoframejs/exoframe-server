@@ -11,10 +11,10 @@ const logger = new Signale({
       stream: level === 'debug' ? [process.stdout] : [],
     },
     info: {
-      stream: level === 'info' ? [process.stdout] : [],
+      stream: ['debug', 'info'].includes(level) ? [process.stdout] : [],
     },
     warn: {
-      stream: level === 'info' ? [process.stdout] : [],
+      stream: ['debug', 'info'].includes(level) ? [process.stdout] : [],
     },
   },
 });

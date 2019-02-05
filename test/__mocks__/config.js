@@ -12,7 +12,6 @@ const publicKeysPath = path.join(__dirname, '..', '..', 'test', 'fixtures');
 const extensionsFolder = path.join(baseFolder, 'extensions');
 const recipesFolder = path.join(baseFolder, 'recipes');
 const tempDirNormal = path.join(baseFolder, 'deploying');
-const tempDirSwarm = path.join(baseFolder, 'deploying-swarm');
 
 // test config
 const testConfig = {
@@ -29,21 +28,15 @@ const testConfig = {
   traefikName: 'exoframe-traefik',
   traefikArgs: [],
   exoframeNetwork: 'exoframe',
-  exoframeNetworkSwarm: 'exoframe-swarm',
-  swarm: false,
   publicKeysPath,
 };
-
-const testConfigSwarm = Object.assign({}, testConfig, {swarm: true});
 
 // saved configs for re-use
 const savedConfigs = {
   normal: Object.assign({}, testConfig),
-  swarm: Object.assign({}, testConfigSwarm),
 };
 const savedDirs = {
   normal: tempDirNormal,
-  swarm: tempDirSwarm,
 };
 
 // mock config

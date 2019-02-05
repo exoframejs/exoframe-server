@@ -2,7 +2,3 @@
 # yarn lockfile v1
 
 
-exoframe-recipe-wordpress@^0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/exoframe-recipe-wordpress/-/exoframe-recipe-wordpress-0.6.0.tgz#17d7d2eef6712633ace06c89662e09941d0018fc"
-  integrity sha512-RtzsQSKA2uSzrYnoLI/jxdv3WYgTtSxdvnGGiZY1kzMFLK2rFAX3xB6ls2n0lQC6S48R5TMJpZ8vzAa2EUnP8Q==

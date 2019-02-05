@@ -15,6 +15,7 @@ const configPath = path.join(baseFolder, 'server.config.yml');
 const publicKeysPath = path.join(os.homedir(), '.ssh');
 const extensionsFolder = path.join(baseFolder, 'extensions');
 const recipesFolder = path.join(baseFolder, 'recipes');
+const pluginsFolder = path.join(baseFolder, 'plugins');
 // dir for temporary files used to build docker images
 const tempDir = path.join(baseFolder, 'deploying');
 
@@ -22,6 +23,7 @@ const tempDir = path.join(baseFolder, 'deploying');
 exports.baseFolder = baseFolder;
 exports.extensionsFolder = extensionsFolder;
 exports.recipesFolder = recipesFolder;
+exports.pluginsFolder = pluginsFolder;
 exports.tempDockerDir = tempDir;
 
 // create base folder if doesn't exist
@@ -57,6 +59,13 @@ try {
   spawn('yarn', ['init', '-y'], {cwd: recipesFolder});
 }
 
+// create plugins folder if doesn't exist
+try {
+  fs.statSync(pluginsFolder);
+} catch (e) {
+  fs.mkdirSync(pluginsFolder);
+}
+
 // default config
 const defaultConfig = {
   debug: false,
@@ -70,9 +79,10 @@ const defaultConfig = {
   traefikName: 'exoframe-traefik',
   traefikArgs: [],
   exoframeNetwork: 'exoframe',
-  exoframeNetworkSwarm: 'exoframe-swarm',
-  swarm: false,
   publicKeysPath,
+  plugins: {
+    install: [],
+  },
 };
 
 // default config

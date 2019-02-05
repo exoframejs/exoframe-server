@@ -13,6 +13,7 @@ const {build} = require('../docker/build');
 const {start} = require('../docker/start');
 const getTemplates = require('../docker/templates');
 const {removeContainer} = require('../docker/util');
+const {getPlugins} = require('../plugins');
 
 // destruct locally used functions
 const {sleep, cleanTemp, unpack, getProjectConfig, projectFromConfig} = util;
@@ -44,6 +45,7 @@ const deploy = async ({username, folder, existing, resultStream}) => {
     },
     util: Object.assign({}, util, {
       logger,
+      getPlugins,
     }),
   };
 
@@ -139,29 +141,10 @@ module.exports = fastify => {
       const folder = `${username}-${uuidv1()}`;
       // unpack to temp user folder
       await unpack({tarStream, folder});
-      // get server config
-      const serverConfig = getConfig();
       // get old project containers if present
       // get project config and name
       const config = getProjectConfig(folder);
       const project = projectFromConfig({username, config});
-
-      // if running in swarm mode
-      if (serverConfig.swarm) {
-        // get all current services
-        const oldServices = await docker.listServices();
-        // find services for current user and project
-        const existing = oldServices.filter(
-          c => c.Spec.Labels['exoframe.user'] === username && c.Spec.Labels['exoframe.project'] === project
-        );
-        // create new highland stream for results
-        const resultStream = _();
-        // deploy new versions
-        deploy({username, folder, payload: request.payload, existing, resultStream});
-        // reply with deploy stream
-        reply.code(200).send(new Readable().wrap(resultStream));
-        return;
-      }
 
       // get all current containers
       const oldContainers = await docker.listContainers({all: true});
