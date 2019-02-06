@@ -43,7 +43,7 @@ try {
 try {
   fs.statSync(path.join(extensionsFolder, 'package.json'));
 } catch (e) {
-  spawn('yarn', ['init', '-y'], {cwd: extensionsFolder});
+  spawn('yarn', ['init', '-y', '--silent'], {cwd: extensionsFolder});
 }
 
 // create recipes folder if doesn't exist
@@ -56,7 +56,7 @@ try {
 try {
   fs.statSync(path.join(recipesFolder, 'package.json'));
 } catch (e) {
-  spawn('yarn', ['init', '-y'], {cwd: recipesFolder});
+  spawn('yarn', ['init', '-y', '--silent'], {cwd: recipesFolder});
 }
 
 // create plugins folder if doesn't exist
@@ -69,7 +69,7 @@ try {
 try {
   fs.statSync(path.join(pluginsFolder, 'package.json'));
 } catch (e) {
-  spawn('yarn', ['init', '-y'], {cwd: pluginsFolder});
+  spawn('yarn', ['init', '-y', '--silent'], {cwd: pluginsFolder});
 }
 
 // default config
