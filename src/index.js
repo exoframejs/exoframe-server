@@ -53,7 +53,7 @@ exports.startServer = async (port = 8080) => {
 };
 
 // export start function
-exports.start = async () => {
+exports.start = async port => {
   // init plugins
   await initPlugins();
 
@@ -61,5 +61,5 @@ exports.start = async () => {
   await initDocker();
 
   // init and return server
-  return exports.startServer();
+  return exports.startServer(port);
 };
