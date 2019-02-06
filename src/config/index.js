@@ -65,6 +65,12 @@ try {
 } catch (e) {
   fs.mkdirSync(pluginsFolder);
 }
+// init package.json if it doesn't exist
+try {
+  fs.statSync(path.join(pluginsFolder, 'package.json'));
+} catch (e) {
+  spawn('yarn', ['init', '-y'], {cwd: pluginsFolder});
+}
 
 // default config
 const defaultConfig = {
