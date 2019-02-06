@@ -2,17 +2,21 @@
   "name": "exoframe-server",
   "version": "3.4.0-dev",
   "description": "Exoframe is a self-hosted tool that allows simple one-command deployments using Docker",
-  "main": "index.js",
-  "bin": "index.js",
+  "main": "exoframe-server.js",
+  "bin": "exoframe-server.js",
   "scripts": {
     "start": "node index.js",
     "test": "NODE_ENV=testing jest --coverage --silent --maxWorkers=2 --ci",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "build": "pkg -t node8.11.3-alpine -o exoframe-server ."
+    "build": "pkg -t node8.11.3-alpine -o exoframe-server .",
+    "build-for-npm": "ncc build index.js -o dist"
   },
   "pkg": {
     "assets": "src/templates/*.html"
   },
+  "files": [
+    "exoframe-server.js"
+  ],
   "repository": "git@github.com:exoframejs/exoframe-server.git",
   "author": "Tim Ermilov <yamalight@gmail.com>",
   "license": "MIT",
@@ -37,6 +41,7 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
+    "@zeit/ncc": "^0.14.0",
     "coveralls": "^3.0.2",
     "get-port": "^4.0.0",
     "jest": "^24.0.0",

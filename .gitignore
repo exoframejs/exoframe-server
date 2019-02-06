@@ -4,3 +4,5 @@ coverage
 test/fixtures/auth.db
 test/fixtures/deploying/
 test/fixtures/secrets.db
+dist/
+exoframe-server.js
