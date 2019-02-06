@@ -25,7 +25,7 @@ after_success:
   - docker push exoframe/server
   # build npm binary
   - yarn build-for-npm
-  - mv dist/index.js exoframe-server.js
+  - mv dist/index.js bin/server-core.js
 
 env:
   global:
