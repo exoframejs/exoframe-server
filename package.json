@@ -8,8 +8,8 @@
     "start": "node index.js",
     "test": "NODE_ENV=testing jest --coverage --silent --maxWorkers=2 --ci",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "build": "pkg -t node10.4.1-alpine -o exoframe-server .",
-    "build-for-npm": "ncc build src/index.js -o dist"
+    "build-bundle": "ncc build src/index.js -o dist --no-cache",
+    "build": "pkg -t node10.4.1-alpine -o exoframe-server ."
   },
   "pkg": {
     "assets": "src/templates/*.html"
@@ -23,7 +23,6 @@
   "license": "MIT",
   "devDependencies": {
     "@zeit/ncc": "^0.15.0",
-    "chokidar": "^2.0.4",
     "cors": "^2.8.4",
     "coveralls": "^3.0.2",
     "dockerode": "^2.5.6",

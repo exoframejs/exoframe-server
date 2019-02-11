@@ -9,12 +9,16 @@ const loadedPlugins = [];
 exports.getPlugins = () => loadedPlugins;
 
 exports.initPlugins = async () => {
+  console.log('init plugins');
   // enable cors if needed
   await waitForConfig();
   const config = getConfig();
 
+  console.log('loaded plugins');
+
   // if no plugins added - just exit
   if (!config.plugins || !config.plugins.install || !config.plugins.install.length) {
+    console.log('no plugins, done');
     return;
   }
 

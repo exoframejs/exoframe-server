@@ -3,7 +3,6 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
-const chokidar = require('chokidar');
 const {spawn} = require('child_process');
 
 // our packages
@@ -94,12 +93,19 @@ const defaultConfig = {
 // default config
 let userConfig = defaultConfig;
 
+// config loaded promise
+let loadedResolve = () => {};
+let isConfigLoaded = new Promise(resolve => {
+  loadedResolve = resolve;
+});
+
 // reload function
-const reloadUserConfig = async () => {
+const reloadUserConfig = () => {
   // mon
   try {
     userConfig = Object.assign(defaultConfig, yaml.safeLoad(fs.readFileSync(configPath, 'utf8')));
     logger.debug('loaded new config:', userConfig);
+    loadedResolve();
   } catch (e) {
     logger.error('error parsing user config:', e);
   }
@@ -114,9 +120,12 @@ if (process.env.NODE_ENV !== 'testing') {
   }
 
   // monitor config for changes if not running in test mode
-  chokidar.watch(configPath).on('all', reloadUserConfig);
+  fs.watchFile(configPath, reloadUserConfig);
 }
+
+// trigger initial load
+reloadUserConfig();
 
 // function to get latest config read config file
 exports.getConfig = () => userConfig;
-exports.waitForConfig = reloadUserConfig;
+exports.waitForConfig = () => isConfigLoaded;
