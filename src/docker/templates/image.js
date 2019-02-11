@@ -20,15 +20,21 @@ exports.executeTemplate = async ({config, username, tempDockerDir, folder, resul
   // build docker image
   try {
     const {image, imageFile} = config;
-    util.writeStatus(resultStream, {message: `Deploying project from image: ${image}..`, level: 'info'});
+    const imageName = image.includes(':') ? image : `${image}:latest`;
+    util.writeStatus(resultStream, {message: `Deploying project from image: ${imageName}..`, level: 'info'});
 
     // import from tar if needed
     if (imageFile && imageFile.length) {
       util.writeStatus(resultStream, {message: `Importing image from file: ${imageFile}..`, level: 'info'});
       // get packed stream
       const tarStream = fs.createReadStream(path.join(tempDockerDir, folder, imageFile));
-      const importRes = await docker.daemon.loadImage(tarStream, {tag: image});
+      const importRes = await docker.daemon.loadImage(tarStream, {tag: imageName});
       util.logger.debug('Import result:', importRes);
+    } else {
+      // otherwise - pull given image to ensure it exists
+      util.writeStatus(resultStream, {message: `Pulling image: ${imageName}..`, level: 'info'});
+      const pullRes = await docker.pullImage(imageName);
+      util.logger.debug('Pull result:', pullRes);
     }
 
     // start image

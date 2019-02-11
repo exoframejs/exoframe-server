@@ -9,6 +9,7 @@ const logger = require('../logger');
 const util = require('../util');
 const {getConfig, tempDockerDir} = require('../config');
 const docker = require('../docker/docker');
+const {pullImage} = require('../docker/init');
 const {build} = require('../docker/build');
 const {start} = require('../docker/start');
 const getTemplates = require('../docker/templates');
@@ -42,6 +43,7 @@ const deploy = async ({username, folder, existing, resultStream}) => {
       daemon: docker,
       build,
       start,
+      pullImage,
     },
     util: Object.assign({}, util, {
       logger,
