@@ -8,9 +8,10 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # copy binary
-COPY dist/index.js /usr/src/app/server.js
+COPY bin/server-core.js /usr/src/app/server-core.js
+COPY bin/exoframe-server.js /usr/src/app/exoframe-server.js
 
 # expose ports
 EXPOSE 8080
 
-CMD ["node", "server.js"]
+CMD ["node", "exoframe-server.js"]
