@@ -93,6 +93,11 @@ test('Should deploy simple docker project', async done => {
   expect(containerInfo.Labels['traefik.docker.network']).toEqual('exoframe');
   expect(containerInfo.Labels['traefik.enable']).toEqual('true');
   expect(containerInfo.NetworkSettings.Networks.exoframe).toBeDefined();
+  expect(containerInfo.Mounts.length).toEqual(1);
+  expect(containerInfo.Mounts[0].Type).toEqual('volume');
+  expect(containerInfo.Mounts[0].Name).toEqual('test');
+  expect(containerInfo.Mounts[0].Source).toEqual('/var/lib/docker/volumes/test/_data');
+  expect(containerInfo.Mounts[0].Destination).toEqual('/volume');
 
   const containerData = docker.getContainer(containerInfo.Id);
   const container = await containerData.inspect();

@@ -264,6 +264,18 @@ exports.start = async ({image, username, folder, resultStream, existing = []}) =
     },
   };
 
+  // if volumes are set - add them to config
+  if (config.volumes && config.volumes.length) {
+    const mounts = config.volumes
+      .map(vol => vol.split(':'))
+      .map(([src, dest]) => ({
+        Type: 'volume',
+        Source: src,
+        Target: dest,
+      }));
+    containerConfig.HostConfig.Mounts = mounts;
+  }
+
   if (config.hostname && config.hostname.length) {
     containerConfig.NetworkingConfig = {
       EndpointsConfig: {
