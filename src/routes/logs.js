@@ -25,10 +25,27 @@ const fixLogStream = logs => {
 
 const getContainerLogs = async ({username, id, reply, follow}) => {
   const allContainers = await docker.listContainers({all: true});
+  const serverContainer = allContainers.find(c => c.Names.find(n => n.startsWith(`/exoframe-server`)));
+
+  // if user asked for server logs - just send them back
+  if (id === 'exoframe-server') {
+    // if not running in container - just notify user
+    if (!serverContainer) {
+      const logStream = fixLogStream(`${new Date().toISOString()} Exoframe server not running in container!`);
+      reply.send(logStream);
+      return;
+    }
+    const container = docker.getContainer(serverContainer.Id);
+    const logs = await container.logs(generateLogsConfig(follow));
+    const logStream = fixLogStream(logs);
+    reply.send(logStream);
+    return;
+  }
+
+  // try to find container by user and name
   const containerInfo = allContainers.find(
     c => c.Labels['exoframe.user'] === username && c.Names.find(n => n === `/${id}`)
   );
-
   if (containerInfo) {
     const container = docker.getContainer(containerInfo.Id);
     const logs = await container.logs(generateLogsConfig(follow));
