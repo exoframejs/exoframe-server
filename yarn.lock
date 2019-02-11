@@ -167,10 +167,10 @@
     "@types/events" "*"
     "@types/node" "*"
 
-"@zeit/ncc@^0.14.0":
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/@zeit/ncc/-/ncc-0.14.0.tgz#1ac4c4555b8647a3ae1fb4f6eed95a4d2b3d418d"
-  integrity sha512-kDyiPuimSkIXgLMwudLFqFMQ2l7cCACWjGN/8HIyCGdLWGRqefmGqE903LB785PjURtEso6SX3r35FxJ6dbrrw==
+"@zeit/ncc@^0.15.0":
+  version "0.15.0"
+  resolved "https://registry.yarnpkg.com/@zeit/ncc/-/ncc-0.15.0.tgz#0f91f7ba5886044081d543ead2ad4ea0c6e45115"
+  integrity sha512-t64mbGZyC5QXqT3ws4NYzg+CX1DSNVelCgJgBithoKrkCVVKoHJ9dMDeGfeIrbvAwEwax0sP/ay+Pndl+T8o7g==
 
 JSONStream@1.3.2:
   version "1.3.2"
