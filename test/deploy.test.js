@@ -17,6 +17,7 @@ const docker = require('../src/docker/docker');
 const {initNetwork} = require('../src/docker/network');
 
 // create tar streams
+const streamDockerImage = tar.pack(path.join(__dirname, 'fixtures', 'docker-image-project'));
 const streamDocker = tar.pack(path.join(__dirname, 'fixtures', 'docker-project'));
 const streamNode = tar.pack(path.join(__dirname, 'fixtures', 'node-project'));
 const streamNodeLock = tar.pack(path.join(__dirname, 'fixtures', 'node-lock-project'));
@@ -102,6 +103,52 @@ test('Should deploy simple docker project', async done => {
   const containerData = docker.getContainer(containerInfo.Id);
   const container = await containerData.inspect();
   expect(container.NetworkSettings.Networks.exoframe.Aliases.includes('test')).toBeTruthy();
+  expect(container.HostConfig.RestartPolicy).toMatchObject({Name: 'no', MaximumRetryCount: 0});
+
+  // cleanup
+  const instance = docker.getContainer(containerInfo.Id);
+  await instance.remove({force: true});
+
+  done();
+});
+
+test('Should deploy simple project from image and image tar', async done => {
+  const options = Object.assign(optionsBase, {
+    payload: streamDockerImage,
+  });
+
+  const response = await fastify.inject(options);
+  // parse result into lines
+  const result = response.payload
+    .split('\n')
+    .filter(l => l && l.length)
+    .map(line => JSON.parse(line));
+
+  // find deployments
+  const completeDeployments = result.find(it => it.deployments && it.deployments.length).deployments;
+
+  // check response
+  expect(response.statusCode).toEqual(200);
+  expect(completeDeployments.length).toEqual(1);
+  expect(completeDeployments[0].Name.startsWith('/exo-test-image-')).toBeTruthy();
+
+  // check docker services
+  const allContainers = await docker.listContainers();
+  const containerInfo = allContainers.find(c => c.Names.includes(completeDeployments[0].Name));
+  const name = completeDeployments[0].Name.slice(1);
+
+  expect(containerInfo).toBeDefined();
+  expect(containerInfo.Labels['exoframe.deployment']).toEqual(name);
+  expect(containerInfo.Labels['exoframe.user']).toEqual('admin');
+  expect(containerInfo.Labels['exoframe.project']).toEqual('test-image-project');
+  expect(containerInfo.Labels['traefik.backend']).toEqual(`${name}.test`);
+  expect(containerInfo.Labels['traefik.docker.network']).toEqual('exoframe');
+  expect(containerInfo.Labels['traefik.enable']).toEqual('true');
+  expect(containerInfo.NetworkSettings.Networks.exoframe).toBeDefined();
+
+  const containerData = docker.getContainer(containerInfo.Id);
+  const container = await containerData.inspect();
+  expect(container.NetworkSettings.Networks.exoframe.Aliases.includes('testimage')).toBeTruthy();
   expect(container.HostConfig.RestartPolicy).toMatchObject({Name: 'no', MaximumRetryCount: 0});
 
   // cleanup
