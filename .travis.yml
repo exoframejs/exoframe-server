@@ -18,7 +18,7 @@ after_success:
   - yarn coveralls
   # build npm binary
   - yarn build-bundle
-  - mv dist/index.js bin/server-core.js
+  - cp dist/index.js bin/server-core.js
   # build main docker image
   - yarn build
   - docker login -u $HUB_USER -p $HUB_PASS
