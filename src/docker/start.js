@@ -53,6 +53,15 @@ exports.startFromParams = async ({
     RestartPolicy.MaximumRetryCount = restartCount;
   }
 
+  // update env with exoframe variables
+  const exoEnv = [
+    `EXOFRAME_DEPLOYMENT=${name}`,
+    `EXOFRAME_USER=${username}`,
+    `EXOFRAME_PROJECT=${projectName}`,
+    `EXOFRAME_HOST=${frontend}`,
+  ];
+  Env = Env.concat(exoEnv);
+
   // construct backend name from host (if available) or name
   const Labels = Object.assign({}, additionalLabels, {
     'exoframe.deployment': name,
@@ -164,14 +173,22 @@ exports.start = async ({image, username, folder, resultStream, existing = []}) =
   const defaultDomain = baseDomain ? `${name}${baseDomain}` : undefined;
   // construct host
   const host = config.domain === undefined ? defaultDomain : config.domain;
+  // generate project name
+  const project = projectFromConfig({username, config});
 
   // replace env vars values with secrets if needed
   const secrets = getSecretsCollection().find({user: username});
   // generate env vars (with secrets)
-  const Env = config.env ? Object.keys(config.env).map(key => `${key}=${valueOrSecret(config.env[key], secrets)}`) : [];
-
-  // generate project name
-  const project = projectFromConfig({username, config});
+  const userEnv = config.env
+    ? Object.keys(config.env).map(key => `${key}=${valueOrSecret(config.env[key], secrets)}`)
+    : [];
+  const exoEnv = [
+    `EXOFRAME_DEPLOYMENT=${name}`,
+    `EXOFRAME_USER=${username}`,
+    `EXOFRAME_PROJECT=${project}`,
+    `EXOFRAME_HOST=${host}`,
+  ];
+  const Env = userEnv.concat(exoEnv);
 
   // construct restart policy
   let RestartPolicy = {};

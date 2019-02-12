@@ -105,6 +105,12 @@ test('Should deploy simple docker project', async done => {
   const container = await containerData.inspect();
   expect(container.NetworkSettings.Networks.exoframe.Aliases.includes('test')).toBeTruthy();
   expect(container.HostConfig.RestartPolicy).toMatchObject({Name: 'no', MaximumRetryCount: 0});
+  expect(container.Config.Env).toContain('EXOFRAME_USER=admin');
+  expect(container.Config.Env).toContain('EXOFRAME_PROJECT=test-project');
+  expect(
+    container.Config.Env.find(env => env.startsWith('EXOFRAME_DEPLOYMENT=exo-admin-test-docker-deploy-'))
+  ).toBeDefined();
+  expect(container.Config.Env.find(env => env.startsWith('EXOFRAME_HOST=exo-admin-test-docker-deploy-'))).toBeDefined();
 
   // cleanup
   const instance = docker.getContainer(containerInfo.Id);
