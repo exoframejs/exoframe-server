@@ -11,19 +11,19 @@ const uuid = require('uuid');
 const {tempDockerDir: tempDir} = require('../config');
 
 // cleanup temp folder
-exports.cleanTemp = () => new Promise(resolve => rimraf(tempDir, resolve));
+exports.cleanTemp = folder => new Promise(resolve => rimraf(path.join(tempDir, folder), resolve));
 
 // unpack function for incoming project files
-exports.unpack = tarStream =>
+exports.unpack = ({tarStream, folder}) =>
   new Promise((resolve, reject) => {
     // create whatever writestream you want
-    const s = tarStream.pipe(tar.extract(tempDir));
+    const s = tarStream.pipe(tar.extract(path.join(tempDir, folder)));
     s.on('finish', () => resolve());
     s.on('error', e => reject(e));
   });
 
-exports.getProjectConfig = () => {
-  const projectConfigString = fs.readFileSync(path.join(tempDir, 'exoframe.json'));
+exports.getProjectConfig = folder => {
+  const projectConfigString = fs.readFileSync(path.join(tempDir, folder, 'exoframe.json'));
   const config = JSON.parse(projectConfigString);
 
   return config;

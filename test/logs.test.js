@@ -154,6 +154,33 @@ test('Should get logs for current project', async done => {
   done();
 });
 
+test('Should get logs for exoframe-server', async done => {
+  const options = Object.assign({}, baseOptions, {
+    url: '/logs/exoframe-server',
+  });
+
+  const response = await fastify.inject(options);
+  // check response
+  expect(response.statusCode).toEqual(200);
+
+  // check logs
+  const lines = response.payload
+    // split by lines
+    .split('\n')
+    // remove unicode chars
+    .map(line => line.replace(/^\u0001.+?\d/, '').replace(/\n+$/, ''))
+    // filter blank lines
+    .filter(line => line && line.length > 0)
+    // remove timestamps
+    .map(line => {
+      const parts = line.split(/\dZ\s/);
+      return parts[1].replace(/\sv\d.+/, ''); // strip any versions
+    });
+  expect(lines).toMatchObject(['Exoframe server not running in container!']);
+
+  done();
+});
+
 test('Should not get logs for nonexistent project', async done => {
   // options base
   const options = Object.assign({}, baseOptions, {

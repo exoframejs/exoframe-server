@@ -1,6 +1,8 @@
 // our modules
 const docker = require('../docker/docker');
 const {getConfig} = require('../config');
+const {getPlugins} = require('../plugins');
+const logger = require('../logger');
 
 module.exports = fastify => {
   fastify.route({
@@ -22,23 +24,25 @@ module.exports = fastify => {
           .map(c => c.inspect())
       );
 
-      // if not running in swarm mode - just return results
-      if (!config.swarm) {
-        reply.send({containers: userContainers, services: []});
-        return;
+      // run list via plugins if available
+      const plugins = getPlugins();
+      for (const plugin of plugins) {
+        // only run plugins that have list function
+        if (!plugin.list) {
+          continue;
+        }
+
+        const result = await plugin.list({docker, username, config});
+        logger.debug('Running list with plugin:', plugin.config.name, result);
+        if (result && plugin.config.exclusive) {
+          logger.debug('List finished via exclusive plugin:', plugin.config.name);
+          reply.send({containers: userContainers, ...result});
+          return;
+        }
       }
 
-      // get swarm services
-      const allServices = await docker.listServices();
-      const userServices = await Promise.all(
-        allServices
-          .filter(s => s.Spec.Labels['exoframe.user'] === username)
-          .filter(s => s.Spec.Name !== config.traefikName)
-          .map(s => docker.getService(s.ID))
-          .map(s => s.inspect())
-      );
-
-      reply.send({containers: userContainers, services: userServices});
+      // return results
+      reply.send({containers: userContainers, services: []});
     },
   });
 };

@@ -12,16 +12,3 @@ exports.removeContainer = async containerInfo => {
     throw e;
   }
 };
-
-exports.removeService = async serviceInfo => {
-  const service = docker.getService(serviceInfo.ID);
-  try {
-    await service.remove();
-  } catch (e) {
-    // ignore not found errors
-    if (e.statusCode === 404) {
-      return;
-    }
-    throw e;
-  }
-};

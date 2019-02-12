@@ -7,6 +7,7 @@ const path = require('path');
 const {extensionsFolder} = require('../../config');
 
 // hard-coded templates
+const imageTemplate = require('./image');
 const composeTemplate = require('./compose');
 const dockerfileTemplate = require('./dockerfile');
 const nodeTemplate = require('./node');
@@ -23,5 +24,5 @@ module.exports = () => {
     return require(templatePath);
   });
 
-  return [composeTemplate, dockerfileTemplate, nodeTemplate, nginxTemplate].concat(userTemplates);
+  return [imageTemplate, composeTemplate, dockerfileTemplate, nodeTemplate, nginxTemplate].concat(userTemplates);
 };

@@ -3,7 +3,6 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
-const chokidar = require('chokidar');
 const {spawn} = require('child_process');
 
 // our packages
@@ -15,6 +14,7 @@ const configPath = path.join(baseFolder, 'server.config.yml');
 const publicKeysPath = path.join(os.homedir(), '.ssh');
 const extensionsFolder = path.join(baseFolder, 'extensions');
 const recipesFolder = path.join(baseFolder, 'recipes');
+const pluginsFolder = path.join(baseFolder, 'plugins');
 // dir for temporary files used to build docker images
 const tempDir = path.join(baseFolder, 'deploying');
 
@@ -22,6 +22,7 @@ const tempDir = path.join(baseFolder, 'deploying');
 exports.baseFolder = baseFolder;
 exports.extensionsFolder = extensionsFolder;
 exports.recipesFolder = recipesFolder;
+exports.pluginsFolder = pluginsFolder;
 exports.tempDockerDir = tempDir;
 
 // create base folder if doesn't exist
@@ -41,7 +42,7 @@ try {
 try {
   fs.statSync(path.join(extensionsFolder, 'package.json'));
 } catch (e) {
-  spawn('yarn', ['init', '-y'], {cwd: extensionsFolder});
+  spawn('yarn', ['init', '-y', '--silent'], {cwd: extensionsFolder});
 }
 
 // create recipes folder if doesn't exist
@@ -54,7 +55,20 @@ try {
 try {
   fs.statSync(path.join(recipesFolder, 'package.json'));
 } catch (e) {
-  spawn('yarn', ['init', '-y'], {cwd: recipesFolder});
+  spawn('yarn', ['init', '-y', '--silent'], {cwd: recipesFolder});
+}
+
+// create plugins folder if doesn't exist
+try {
+  fs.statSync(pluginsFolder);
+} catch (e) {
+  fs.mkdirSync(pluginsFolder);
+}
+// init package.json if it doesn't exist
+try {
+  fs.statSync(path.join(pluginsFolder, 'package.json'));
+} catch (e) {
+  spawn('yarn', ['init', '-y', '--silent'], {cwd: pluginsFolder});
 }
 
 // default config
@@ -70,20 +84,28 @@ const defaultConfig = {
   traefikName: 'exoframe-traefik',
   traefikArgs: [],
   exoframeNetwork: 'exoframe',
-  exoframeNetworkSwarm: 'exoframe-swarm',
-  swarm: false,
   publicKeysPath,
+  plugins: {
+    install: [],
+  },
 };
 
 // default config
 let userConfig = defaultConfig;
 
+// config loaded promise
+let loadedResolve = () => {};
+let isConfigLoaded = new Promise(resolve => {
+  loadedResolve = resolve;
+});
+
 // reload function
-const reloadUserConfig = async () => {
+const reloadUserConfig = () => {
   // mon
   try {
     userConfig = Object.assign(defaultConfig, yaml.safeLoad(fs.readFileSync(configPath, 'utf8')));
     logger.debug('loaded new config:', userConfig);
+    loadedResolve();
   } catch (e) {
     logger.error('error parsing user config:', e);
   }
@@ -98,9 +120,12 @@ if (process.env.NODE_ENV !== 'testing') {
   }
 
   // monitor config for changes if not running in test mode
-  chokidar.watch(configPath).on('all', reloadUserConfig);
+  fs.watchFile(configPath, reloadUserConfig);
 }
+
+// trigger initial load
+reloadUserConfig();
 
 // function to get latest config read config file
 exports.getConfig = () => userConfig;
-exports.waitForConfig = reloadUserConfig;
+exports.waitForConfig = () => isConfigLoaded;

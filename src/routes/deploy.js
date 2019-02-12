@@ -2,16 +2,19 @@
 // npm modules
 const _ = require('highland');
 const {Readable} = require('stream');
+const uuidv1 = require('uuid/v1');
 
 // our modules
 const logger = require('../logger');
 const util = require('../util');
 const {getConfig, tempDockerDir} = require('../config');
 const docker = require('../docker/docker');
+const {pullImage} = require('../docker/init');
 const {build} = require('../docker/build');
 const {start} = require('../docker/start');
 const getTemplates = require('../docker/templates');
 const {removeContainer} = require('../docker/util');
+const {getPlugins} = require('../plugins');
 
 // destruct locally used functions
 const {sleep, cleanTemp, unpack, getProjectConfig, projectFromConfig} = util;
@@ -20,10 +23,10 @@ const {sleep, cleanTemp, unpack, getProjectConfig, projectFromConfig} = util;
 const WAIT_TIME = 5000;
 
 // deployment from unpacked files
-const deploy = async ({username, existing, resultStream}) => {
+const deploy = async ({username, folder, existing, resultStream}) => {
   let template;
   // try getting template from config
-  const config = getProjectConfig();
+  const config = getProjectConfig(folder);
   // get server config
   const serverConfig = getConfig();
 
@@ -35,13 +38,16 @@ const deploy = async ({username, existing, resultStream}) => {
     username,
     resultStream,
     tempDockerDir,
+    folder,
     docker: {
       daemon: docker,
       build,
       start,
+      pullImage,
     },
     util: Object.assign({}, util, {
       logger,
+      getPlugins,
     }),
   };
 
@@ -107,18 +113,21 @@ module.exports = fastify => {
     async handler(request, reply) {
       // get username
       const {username} = request.user;
-      // clean temp folder
-      await cleanTemp();
       // get stream
       const tarStream = request.req;
-      // unpack to temp folder
-      await unpack(tarStream);
+      // create new deploy folder for user
+      const folder = `${username}-${uuidv1()}`;
+      // unpack to user specific temp folder
+      await unpack({tarStream, folder});
       // create new highland stream for results
       const resultStream = _();
       // run deploy
-      deploy({username, resultStream});
+      deploy({username, folder, resultStream});
       // reply with deploy stream
-      reply.code(200).send(new Readable().wrap(resultStream));
+      const responseStream = new Readable().wrap(resultStream);
+      reply.code(200).send(responseStream);
+      // schedule temp folder cleanup on end
+      responseStream.on('end', () => cleanTemp(folder));
     },
   });
 
@@ -128,35 +137,16 @@ module.exports = fastify => {
     async handler(request, reply) {
       // get username
       const {username} = request.user;
-      // clean temp folder
-      await cleanTemp();
       // get stream
       const tarStream = request.req;
-      // unpack to temp folder
-      await unpack(tarStream);
-      // get server config
-      const serverConfig = getConfig();
+      // create new deploy folder for user
+      const folder = `${username}-${uuidv1()}`;
+      // unpack to temp user folder
+      await unpack({tarStream, folder});
       // get old project containers if present
       // get project config and name
-      const config = getProjectConfig();
+      const config = getProjectConfig(folder);
       const project = projectFromConfig({username, config});
-
-      // if running in swarm mode
-      if (serverConfig.swarm) {
-        // get all current services
-        const oldServices = await docker.listServices();
-        // find services for current user and project
-        const existing = oldServices.filter(
-          c => c.Spec.Labels['exoframe.user'] === username && c.Spec.Labels['exoframe.project'] === project
-        );
-        // create new highland stream for results
-        const resultStream = _();
-        // deploy new versions
-        deploy({username, payload: request.payload, existing, resultStream});
-        // reply with deploy stream
-        reply.code(200).send(new Readable().wrap(resultStream));
-        return;
-      }
 
       // get all current containers
       const oldContainers = await docker.listContainers({all: true});
@@ -168,11 +158,14 @@ module.exports = fastify => {
       // create new highland stream for results
       const resultStream = _();
       // deploy new versions
-      deploy({username, payload: request.payload, resultStream});
+      deploy({username, folder, payload: request.payload, resultStream});
       // schedule cleanup
       scheduleCleanup({username, project, existing});
       // reply with deploy stream
-      reply.code(200).send(new Readable().wrap(resultStream));
+      const responseStream = new Readable().wrap(resultStream);
+      reply.code(200).send(responseStream);
+      // schedule temp folder cleanup on end
+      responseStream.on('end', () => cleanTemp(folder));
     },
   });
 };

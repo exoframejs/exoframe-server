@@ -3,4 +3,6 @@ node_modules
 coverage
 test/fixtures/auth.db
 test/fixtures/deploying/
-test/fixtures/deploying-swarm/
+test/fixtures/secrets.db
+dist/
+bin/server-core.js

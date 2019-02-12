@@ -9,6 +9,9 @@ const logger = require('./logger');
 // init docker service
 const {initDocker} = require('./docker/init');
 
+// init plugins system
+const {initPlugins} = require('./plugins');
+
 // config
 const {getConfig, waitForConfig} = require('./config');
 
@@ -50,10 +53,13 @@ exports.startServer = async (port = 8080) => {
 };
 
 // export start function
-exports.start = async () => {
+exports.start = async port => {
+  // init plugins
+  await initPlugins();
+
   // init required docker service
   await initDocker();
 
   // init and return server
-  return exports.startServer();
+  return exports.startServer(port);
 };

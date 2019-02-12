@@ -2,7 +2,19 @@
 const docker = require('./docker');
 const {initNetwork, createNetwork} = require('../docker/network');
 const {getProjectConfig, nameFromImage, projectFromConfig, writeStatus} = require('../util');
+const {getSecretsCollection} = require('../db/secrets');
 const {getConfig} = require('../config');
+const {getPlugins} = require('../plugins');
+const logger = require('../logger');
+
+// try to find secret with current value name and return secret value if present
+const valueOrSecret = (value, secrets) => {
+  const secret = secrets.find(s => `@${s.name}` === value);
+  if (secret) {
+    return secret.value;
+  }
+  return value;
+};
 
 exports.startFromParams = async ({
   image,
@@ -26,44 +38,37 @@ exports.startFromParams = async ({
 
   // construct restart policy
   let RestartPolicy = {};
-  if (serverConfig.swarm) {
-    const Condition = ['none', 'on-failure', 'any'].find(c => c.startsWith(restartPolicy));
-    RestartPolicy = {Condition, MaxAttempts: 1};
-    if (restartPolicy.includes('on-failure')) {
-      let restartCount = 2;
-      try {
-        restartCount = parseInt(restartPolicy.split(':')[1], 10);
-      } catch (e) {
-        // error parsing restart count, using default value
-      }
-      RestartPolicy.Condition = 'on-failure';
-      RestartPolicy.MaximumRetryCount = restartCount;
+  const Name = ['no', 'on-failure', 'always'].find(c => c.startsWith(restartPolicy));
+  RestartPolicy = {
+    Name,
+  };
+  if (restartPolicy.includes('on-failure')) {
+    let restartCount = 2;
+    try {
+      restartCount = parseInt(restartPolicy.split(':')[1], 10);
+    } catch (e) {
+      // error parsing restart count, using default value
     }
-  } else {
-    const Name = ['no', 'on-failure', 'always'].find(c => c.startsWith(restartPolicy));
-    RestartPolicy = {
-      Name,
-    };
-    if (restartPolicy.includes('on-failure')) {
-      let restartCount = 2;
-      try {
-        restartCount = parseInt(restartPolicy.split(':')[1], 10);
-      } catch (e) {
-        // error parsing restart count, using default value
-      }
-      RestartPolicy.Name = 'on-failure';
-      RestartPolicy.MaximumRetryCount = restartCount;
-    }
+    RestartPolicy.Name = 'on-failure';
+    RestartPolicy.MaximumRetryCount = restartCount;
   }
 
+  // update env with exoframe variables
+  const exoEnv = [
+    `EXOFRAME_DEPLOYMENT=${name}`,
+    `EXOFRAME_USER=${username}`,
+    `EXOFRAME_PROJECT=${projectName}`,
+    `EXOFRAME_HOST=${frontend}`,
+  ];
+  Env = Env.concat(exoEnv);
+
   // construct backend name from host (if available) or name
-  const baseLabels = serverConfig.swarm ? {'traefik.port': '80'} : {};
-  const Labels = Object.assign(baseLabels, additionalLabels, {
+  const Labels = Object.assign({}, additionalLabels, {
     'exoframe.deployment': name,
     'exoframe.user': username,
     'exoframe.project': projectName,
     'traefik.backend': backend,
-    'traefik.docker.network': serverConfig.swarm ? serverConfig.exoframeNetworkSwarm : serverConfig.exoframeNetwork,
+    'traefik.docker.network': serverConfig.exoframeNetwork,
     'traefik.enable': 'true',
   });
 
@@ -72,49 +77,37 @@ exports.startFromParams = async ({
     Labels['traefik.frontend.rule'] = frontend;
   }
 
-  // if running in swarm mode - run traefik as swarm service
-  if (serverConfig.swarm) {
-    // create service config
-    const serviceConfig = {
-      Name: name,
-      Labels,
-      TaskTemplate: {
-        ContainerSpec: {
-          Image: image,
-          Env,
-          Mounts,
-        },
-        Resources: {
-          Limits: {},
-          Reservations: {},
-        },
-        RestartPolicy,
-        Placement: {},
-      },
-      Mode: {
-        Replicated: {
-          Replicas: 1,
-        },
-      },
-      UpdateConfig: {
-        Parallelism: 2, // allow 2 instances to run at the same time
-        Delay: 10000000000, // 10s
-        Order: 'start-first', // start new instance first, then remove old one
-      },
-      Networks: [
-        ...additionalNetworks.map(networkName => ({
-          Target: networkName,
-        })),
-        {
-          Target: serverConfig.exoframeNetworkSwarm,
-          Aliases: hostname && hostname.length ? [hostname] : [],
-        },
-      ],
-    };
+  // run startFromParams via plugins if available
+  const plugins = getPlugins();
+  logger.debug('Got plugins, running startFromParams:', plugins);
+  for (const plugin of plugins) {
+    // only run plugins that have startFromParams function
+    if (!plugin.startFromParams) {
+      continue;
+    }
 
-    // create service
-    const service = await docker.createService(serviceConfig);
-    return service.inspect();
+    const result = await plugin.startFromParams({
+      docker,
+      serverConfig,
+      name,
+      image,
+      deploymentName,
+      projectName,
+      username,
+      backendName,
+      frontend,
+      hostname,
+      restartPolicy,
+      serviceLabels: Labels,
+      Env,
+      Mounts,
+      additionalNetworks,
+    });
+    logger.debug('Executed startWithParams with plugin:', plugin.config.name, result);
+    if (result && plugin.config.exclusive) {
+      logger.debug('StartWithParams finished via exclusive plugin:', plugin.config.name);
+      return result;
+    }
   }
 
   // create config
@@ -164,14 +157,14 @@ exports.startFromParams = async ({
   return containerData.inspect();
 };
 
-exports.start = async ({image, username, resultStream, existing = []}) => {
+exports.start = async ({image, username, folder, resultStream, existing = []}) => {
   const name = nameFromImage(image);
 
   // get server config
   const serverConfig = getConfig();
 
   // get project info
-  const config = getProjectConfig();
+  const config = getProjectConfig(folder);
 
   // generate host
   // construct base domain from config, prepend with "." if it's not there
@@ -180,58 +173,51 @@ exports.start = async ({image, username, resultStream, existing = []}) => {
   const defaultDomain = baseDomain ? `${name}${baseDomain}` : undefined;
   // construct host
   const host = config.domain === undefined ? defaultDomain : config.domain;
-
-  // generate env vars
-  const Env = config.env ? Object.keys(config.env).map(key => `${key}=${config.env[key]}`) : [];
-
   // generate project name
   const project = projectFromConfig({username, config});
 
+  // replace env vars values with secrets if needed
+  const secrets = getSecretsCollection().find({user: username});
+  // generate env vars (with secrets)
+  const userEnv = config.env
+    ? Object.keys(config.env).map(key => `${key}=${valueOrSecret(config.env[key], secrets)}`)
+    : [];
+  const exoEnv = [
+    `EXOFRAME_DEPLOYMENT=${name}`,
+    `EXOFRAME_USER=${username}`,
+    `EXOFRAME_PROJECT=${project}`,
+    `EXOFRAME_HOST=${host}`,
+  ];
+  const Env = userEnv.concat(exoEnv);
+
   // construct restart policy
   let RestartPolicy = {};
-  if (serverConfig.swarm) {
-    const restartPolicy = config.restart || 'on-failure:2';
-    const Condition = ['none', 'on-failure', 'any'].find(c => c.startsWith(restartPolicy));
-    RestartPolicy = {Condition, MaxAttempts: 1};
-    if (restartPolicy.includes('on-failure')) {
-      let restartCount = 2;
-      try {
-        restartCount = parseInt(restartPolicy.split(':')[1], 10);
-      } catch (e) {
-        // error parsing restart count, using default value
-      }
-      RestartPolicy.Condition = 'on-failure';
-      RestartPolicy.MaximumRetryCount = restartCount;
+  const restartPolicy = config.restart || 'on-failure:2';
+  const Name = ['no', 'on-failure', 'always'].find(c => c.startsWith(restartPolicy));
+  RestartPolicy = {
+    Name,
+  };
+  if (restartPolicy.includes('on-failure')) {
+    let restartCount = 2;
+    try {
+      restartCount = parseInt(restartPolicy.split(':')[1], 10);
+    } catch (e) {
+      // error parsing restart count, using default value
     }
-  } else {
-    const restartPolicy = config.restart || 'on-failure:2';
-    const Name = ['no', 'on-failure', 'always'].find(c => c.startsWith(restartPolicy));
-    RestartPolicy = {
-      Name,
-    };
-    if (restartPolicy.includes('on-failure')) {
-      let restartCount = 2;
-      try {
-        restartCount = parseInt(restartPolicy.split(':')[1], 10);
-      } catch (e) {
-        // error parsing restart count, using default value
-      }
-      RestartPolicy.Name = 'on-failure';
-      RestartPolicy.MaximumRetryCount = restartCount;
-    }
+    RestartPolicy.Name = 'on-failure';
+    RestartPolicy.MaximumRetryCount = restartCount;
   }
   const additionalLabels = config.labels || {};
 
   // construct backend name from host (if available) or name
   const backend = host && host.length ? host : name;
 
-  const baseLabels = serverConfig.swarm ? {'traefik.port': '80'} : {};
-  const Labels = Object.assign(baseLabels, additionalLabels, {
+  const Labels = Object.assign({}, additionalLabels, {
     'exoframe.deployment': name,
     'exoframe.user': username,
     'exoframe.project': project,
     'traefik.backend': backend,
-    'traefik.docker.network': serverConfig.swarm ? serverConfig.exoframeNetworkSwarm : serverConfig.exoframeNetwork,
+    'traefik.docker.network': serverConfig.exoframeNetwork,
     'traefik.enable': 'true',
   });
 
@@ -250,71 +236,38 @@ exports.start = async ({image, username, resultStream, existing = []}) => {
     Labels['traefik.frontend.rateLimit.rateSet.exo.burst'] = String(config.rateLimit.burst);
   }
 
-  // if running in swarm mode - run traefik as swarm service
-  if (serverConfig.swarm) {
-    // create service config
-    const serviceConfig = {
-      Name: name,
-      Labels,
-      TaskTemplate: {
-        ContainerSpec: {
-          Image: image,
-          Env,
-        },
-        Resources: {
-          Limits: {},
-          Reservations: {},
-        },
-        RestartPolicy,
-        Placement: {},
-      },
-      Mode: {
-        Replicated: {
-          Replicas: 1,
-        },
-      },
-      UpdateConfig: {
-        Parallelism: 2, // allow 2 instances to run at the same time
-        Delay: 10000000000, // 10s
-        Order: 'start-first', // start new instance first, then remove old one
-      },
-      Networks: [
-        {
-          Target: serverConfig.exoframeNetworkSwarm,
-          Aliases: config.hostname && config.hostname.length ? [config.hostname] : [],
-        },
-      ],
-    };
+  // if basic auth is set - add it to config
+  if (config.basicAuth && config.basicAuth.length) {
+    Labels['traefik.frontend.auth.basic.users'] = config.basicAuth;
+  }
 
-    // try to find existing service
-    const existingService = existing.find(
-      s => s.Spec.Labels['exoframe.project'] === project && s.Spec.TaskTemplate.ContainerSpec.Image === image
-    );
-    if (existingService) {
-      // assign required vars from existing services
-      serviceConfig.version = parseInt(existingService.Version.Index, 10);
-      serviceConfig.Name = existingService.Spec.Name;
-      serviceConfig.TaskTemplate.ForceUpdate = 1;
-
-      writeStatus(resultStream, {message: 'Updating serivce with following config:', serviceConfig, level: 'verbose'});
-
-      // update service
-      const service = docker.getService(existingService.ID);
-      await service.update(serviceConfig);
-
-      writeStatus(resultStream, {message: 'Service successfully updated!', level: 'verbose'});
-
-      return service.inspect();
+  // run startFromParams via plugins if available
+  const plugins = getPlugins();
+  logger.debug('Got plugins, running start:', plugins);
+  for (const plugin of plugins) {
+    // only run plugins that have startFromParams function
+    if (!plugin.start) {
+      continue;
     }
 
-    writeStatus(resultStream, {message: 'Starting serivce with following config:', serviceConfig, level: 'verbose'});
-
-    // create service
-    const service = await docker.createService(serviceConfig);
-
-    writeStatus(resultStream, {message: 'Service successfully started!', level: 'verbose'});
-
-    return service.inspect();
+    const result = await plugin.start({
+      config,
+      serverConfig,
+      project,
+      username,
+      name,
+      image,
+      Env,
+      serviceLabels: Labels,
+      writeStatus,
+      resultStream,
+      docker,
+    });
+    logger.debug('Executed start with plugin:', plugin.config.name, result);
+    if (result && plugin.config.exclusive) {
+      logger.debug('Start finished via exclusive plugin:', plugin.config.name);
+      return result;
+    }
   }
 
   // create config
@@ -327,6 +280,18 @@ exports.start = async ({image, username, resultStream, existing = []}) => {
       RestartPolicy,
     },
   };
+
+  // if volumes are set - add them to config
+  if (config.volumes && config.volumes.length) {
+    const mounts = config.volumes
+      .map(vol => vol.split(':'))
+      .map(([src, dest]) => ({
+        Type: 'volume',
+        Source: src,
+        Target: dest,
+      }));
+    containerConfig.HostConfig.Mounts = mounts;
+  }
 
   if (config.hostname && config.hostname.length) {
     containerConfig.NetworkingConfig = {
