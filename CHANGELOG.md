@@ -1,3 +1,29 @@
+# 4.0.0 / 2019-02-12
+
+BREAKING CHANGES:
+
+- Docker Swarm support is now a plugin (see [plugin docs](https://github.com/exoframejs/exoframe-plugin-swarm) for more info)
+
+Additions:
+
+- Add plugins support
+- Add method to get secret value
+- Add way to get exoframe-server logs
+- Add support for volumes for deployments
+- Add way to deploy projects from image and image tar file
+- Expose deployment labels using env vars
+- Add debug docker image build that uses node and js code as base
+- Add exoframe-server npm package binary, you can now `npm install exoframe-server`
+
+Changes:
+
+- Merge all networks from compose file during deployment
+- Use unique folders for each deployemnt to allow parallel deployments
+
+Fixes:
+
+- Use project base name for compose deployments to prevent overwriting
+
 # 3.3.0 / 2018-12-13
 
 - Add basic secrets implementation
