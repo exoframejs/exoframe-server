@@ -1,3 +1,7 @@
+# 4.0.2 / 2019-02-14
+
+- Fix home html page inclusion into bundle
+
 # 4.0.0 / 2019-02-12
 
 BREAKING CHANGES:
