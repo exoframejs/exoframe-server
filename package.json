@@ -16,7 +16,8 @@
   },
   "files": [
     "bin/exoframe-server.js",
-    "bin/server-core.js"
+    "bin/server-core.js",
+    "bin/home.html"
   ],
   "repository": "git@github.com:exoframejs/exoframe-server.git",
   "author": "Tim Ermilov <yamalight@gmail.com>",
