@@ -1,6 +1,6 @@
 {
   "name": "exoframe-server",
-  "version": "4.0.2",
+  "version": "4.0.3-dev",
   "description": "Exoframe is a self-hosted tool that allows simple one-command deployments using Docker",
   "main": "bin/server-core.js",
   "bin": "bin/exoframe-server.js",
@@ -9,10 +9,11 @@
     "test": "NODE_ENV=testing jest --coverage --silent --maxWorkers=2 --ci",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "build-bundle": "ncc build src/index.js -o dist",
-    "build": "pkg -t node10.4.1-alpine -o exoframe-server ."
+    "prepare-build": "mv dist/index.js bin/server-core.js && mv dist/home.html bin/home.html",
+    "build": "yarn build-bundle && yarn prepare-build && pkg -t node10.4.1-alpine -o exoframe-server ."
   },
   "pkg": {
-    "assets": "src/templates/*.html"
+    "assets": "bin/home.html"
   },
   "files": [
     "bin/exoframe-server.js",
