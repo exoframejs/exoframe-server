@@ -1,3 +1,7 @@
+# 4.0.3 / 2019-02-14
+
+- Fix home html page inclusion into pkg bundle
+
 # 4.0.2 / 2019-02-14
 
 - Fix home html page inclusion into bundle
