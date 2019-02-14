@@ -16,11 +16,6 @@ before_install:
 after_success:
   - docker rmi $(docker images -q)
   - yarn coveralls
-  # build npm binary
-  - yarn build-bundle
-  - mv dist/index.js bin/server-core.js
-  - mv dist/home.html bin/home.html
-  # build main docker image
   - yarn build
   - docker login -u $HUB_USER -p $HUB_PASS
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
