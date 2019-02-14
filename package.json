@@ -1,6 +1,6 @@
 {
   "name": "exoframe-server",
-  "version": "4.0.0",
+  "version": "4.0.2-dev",
   "description": "Exoframe is a self-hosted tool that allows simple one-command deployments using Docker",
   "main": "bin/server-core.js",
   "bin": "bin/exoframe-server.js",
@@ -16,7 +16,8 @@
   },
   "files": [
     "bin/exoframe-server.js",
-    "bin/server-core.js"
+    "bin/server-core.js",
+    "bin/home.html"
   ],
   "repository": "git@github.com:exoframejs/exoframe-server.git",
   "author": "Tim Ermilov <yamalight@gmail.com>",
