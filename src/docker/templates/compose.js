@@ -5,6 +5,7 @@ const path = require('path');
 const yaml = require('js-yaml');
 const uuid = require('uuid');
 const {spawn} = require('child_process');
+const {getHost, getEnv} = require('../../util');
 
 // generates new base name for deployment
 const generateBaseName = ({username, config}) =>
@@ -63,9 +64,9 @@ const updateCompose = ({username, baseName, serverConfig, composePath}) => {
 };
 
 // function to execute docker-compose file and return the output
-const executeCompose = ({cmd, resultStream, tempDockerDir, folder, writeStatus}) =>
+const executeCompose = ({cmd, resultStream, tempDockerDir, folder, writeStatus, env = {}}) =>
   new Promise(resolve => {
-    const dc = spawn('docker-compose', cmd, {cwd: path.join(tempDockerDir, folder)});
+    const dc = spawn('docker-compose', cmd, {cwd: path.join(tempDockerDir, folder), env: {...process.env, ...env}});
     const log = [];
 
     dc.stdout.on('data', data => {
@@ -137,9 +138,15 @@ exports.executeTemplate = async ({
   util.logger.debug('Compose modified:', composeConfig);
   util.writeStatus(resultStream, {message: 'Compose file modified', data: composeConfig, level: 'verbose'});
 
+  // generate host
+  const host = getHost({serverConfig, name: baseName, config});
+  const env = getEnv({username, config, name: baseName, host})
+    .reduce((merged, [key, value]) => ({...merged, [key]: value}), {});
+
   // re-build images if needed
   const {code: buildExitCode, log: buildLog} = await executeCompose({
     cmd: ['--project-name', baseName, 'build'],
+    env,
     resultStream,
     tempDockerDir,
     folder,
@@ -179,6 +186,7 @@ exports.executeTemplate = async ({
   // execute compose 'up -d'
   const exitCode = await executeCompose({
     cmd: ['--project-name', baseName, 'up', '-d'],
+    env,
     resultStream,
     tempDockerDir,
     folder,

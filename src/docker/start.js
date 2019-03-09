@@ -1,20 +1,10 @@
 // our modules
 const docker = require('./docker');
 const {initNetwork, createNetwork} = require('../docker/network');
-const {getProjectConfig, nameFromImage, projectFromConfig, writeStatus} = require('../util');
-const {getSecretsCollection} = require('../db/secrets');
+const {getProjectConfig, nameFromImage, projectFromConfig, writeStatus, getHost, getEnv} = require('../util');
 const {getConfig} = require('../config');
 const {getPlugins} = require('../plugins');
 const logger = require('../logger');
-
-// try to find secret with current value name and return secret value if present
-const valueOrSecret = (value, secrets) => {
-  const secret = secrets.find(s => `@${s.name}` === value);
-  if (secret) {
-    return secret.value;
-  }
-  return value;
-};
 
 exports.startFromParams = async ({
   image,
@@ -166,29 +156,13 @@ exports.start = async ({image, username, folder, resultStream, existing = []}) =
   // get project info
   const config = getProjectConfig(folder);
 
-  // generate host
-  // construct base domain from config, prepend with "." if it's not there
-  const baseDomain = serverConfig.baseDomain ? serverConfig.baseDomain.replace(/^(\.?)/, '.') : undefined;
-  // construc default domain using given base domain
-  const defaultDomain = baseDomain ? `${name}${baseDomain}` : undefined;
-  // construct host
-  const host = config.domain === undefined ? defaultDomain : config.domain;
   // generate project name
   const project = projectFromConfig({username, config});
 
-  // replace env vars values with secrets if needed
-  const secrets = getSecretsCollection().find({user: username});
-  // generate env vars (with secrets)
-  const userEnv = config.env
-    ? Object.keys(config.env).map(key => `${key}=${valueOrSecret(config.env[key], secrets)}`)
-    : [];
-  const exoEnv = [
-    `EXOFRAME_DEPLOYMENT=${name}`,
-    `EXOFRAME_USER=${username}`,
-    `EXOFRAME_PROJECT=${project}`,
-    `EXOFRAME_HOST=${host}`,
-  ];
-  const Env = userEnv.concat(exoEnv);
+  // generate host
+  const host = getHost({serverConfig, name, config});
+
+  const Env = getEnv({username, config, name, project, host}).map((pair) => pair.join('='));
 
   // construct restart policy
   let RestartPolicy = {};
