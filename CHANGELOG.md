@@ -1,3 +1,9 @@
+# 4.1.0 / 2019-03-27
+
+Additions:
+
+- Pass env vars (including secrets) to docker-compose
+
 # 4.0.3 / 2019-02-14
 
 - Fix home html page inclusion into pkg bundle
