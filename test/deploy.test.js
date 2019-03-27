@@ -15,6 +15,7 @@ const authToken = require('./fixtures/authToken');
 const {startServer} = require('../src');
 const docker = require('../src/docker/docker');
 const {initNetwork} = require('../src/docker/network');
+const {getSecretsCollection, secretsInited} = require('../src/db/secrets')
 
 // create tar streams
 const streamDockerImage = tar.pack(path.join(__dirname, 'fixtures', 'docker-image-project'));
@@ -400,7 +401,12 @@ test('Should update simple HTML project', async done => {
   done();
 });
 
+const testSecret = {user: 'admin', name: 'test-secret', value: 'custom-secret-value'};
+
 test('Should deploy simple compose project', async done => {
+  await secretsInited;
+  getSecretsCollection().insert(testSecret);
+
   const options = Object.assign(optionsBase, {
     payload: streamCompose,
   });
@@ -451,6 +457,8 @@ test('Should deploy simple compose project', async done => {
   expect(containerOne.Labels['traefik.enable']).toEqual('true');
   expect(containerTwo.Labels['traefik.enable']).toEqual('true');
   expect(containerOne.Labels['traefik.frontend.rule']).toEqual('Host:test.dev');
+  expect(containerOne.Labels['custom.envvar']).toEqual('custom-value');
+  expect(containerOne.Labels['custom.secret']).toEqual('custom-secret-value');
   expect(containerOne.NetworkSettings.Networks.exoframe).toBeDefined();
   expect(containerTwo.NetworkSettings.Networks.exoframe).toBeDefined();
 
@@ -513,6 +521,8 @@ test('Should update simple compose project', async done => {
   expect(containerOne.Labels['traefik.enable']).toEqual('true');
   expect(containerTwo.Labels['traefik.enable']).toEqual('true');
   expect(containerOne.Labels['traefik.frontend.rule']).toEqual('Host:test.dev');
+  expect(containerOne.Labels['custom.envvar']).toEqual('custom-value');
+  expect(containerOne.Labels['custom.secret']).toEqual('custom-secret-value');
   expect(containerOne.NetworkSettings.Networks.exoframe).toBeDefined();
   expect(containerTwo.NetworkSettings.Networks.exoframe).toBeDefined();
 
@@ -535,6 +545,7 @@ test('Should update simple compose project', async done => {
   await instanceOne.remove({force: true});
   const instanceTwo = docker.getContainer(containerTwo.Id);
   await instanceTwo.remove({force: true});
+  getSecretsCollection().remove(testSecret);
 
   done();
 });

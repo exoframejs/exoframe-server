@@ -4,5 +4,7 @@ services:
     build: .
     labels:
       traefik.frontend.rule: 'Host:test.dev'
+      custom.envvar: "${CUSTOM_LABEL}"
+      custom.secret: "${CUSTOM_SECRET}"
   redis:
     image: "redis:alpine"
