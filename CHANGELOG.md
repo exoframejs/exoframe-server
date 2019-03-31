@@ -1,3 +1,7 @@
+# 4.1.1 / 2019-03-31
+
+- Fix debug docker images, correctly include home html
+
 # 4.1.0 / 2019-03-27
 
 Additions:
