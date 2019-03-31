@@ -11,6 +11,9 @@ WORKDIR /usr/src/app
 COPY bin/server-core.js /usr/src/app/server-core.js
 COPY bin/exoframe-server.js /usr/src/app/exoframe-server.js
 
+# copy home.html
+COPY bin/home.html /usr/src/app/home.html
+
 # expose ports
 EXPOSE 8080
 
