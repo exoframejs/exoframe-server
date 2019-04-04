@@ -15,7 +15,7 @@ const authToken = require('./fixtures/authToken');
 const {startServer} = require('../src');
 const docker = require('../src/docker/docker');
 const {initNetwork} = require('../src/docker/network');
-const {getSecretsCollection, secretsInited} = require('../src/db/secrets')
+const {getSecretsCollection, secretsInited} = require('../src/db/secrets');
 
 // create tar streams
 const streamDockerImage = tar.pack(path.join(__dirname, 'fixtures', 'docker-image-project'));
@@ -29,6 +29,7 @@ const streamCompose = tar.pack(path.join(__dirname, 'fixtures', 'compose-project
 const streamComposeUpdate = tar.pack(path.join(__dirname, 'fixtures', 'compose-project'));
 const streamBrokenDocker = tar.pack(path.join(__dirname, 'fixtures', 'broken-docker-project'));
 const streamBrokenNode = tar.pack(path.join(__dirname, 'fixtures', 'broken-node-project'));
+const streamBrokenTemplate = tar.pack(path.join(__dirname, 'fixtures', 'broken-template-project'));
 const streamAdditionalLabels = tar.pack(path.join(__dirname, 'fixtures', 'additional-labels'));
 const streamTemplate = tar.pack(path.join(__dirname, 'fixtures', 'template-project'));
 
@@ -603,6 +604,34 @@ test('Should display error log for broken Node.js project', async done => {
   expect(error.log[error.log.length - 1]).toEqual(
     "The command '/bin/sh -c npm install --silent' returned a non-zero code: 1"
   );
+
+  // clean all exited containers
+  const allContainers = await docker.listContainers({all: true});
+  const exitedWithError = allContainers.filter(c => c.Status.includes('Exited (1)'));
+  await Promise.all(exitedWithError.map(c => docker.getContainer(c.Id)).map(c => c.remove()));
+
+  done();
+});
+
+test.only('Should display error log for project with broken template', async done => {
+  const options = Object.assign(optionsBase, {
+    payload: streamBrokenTemplate,
+  });
+
+  const response = await fastify.inject(options);
+  // parse result into lines
+  const result = response.payload
+    .split('\n')
+    .filter(l => l && l.length)
+    .map(line => JSON.parse(line));
+
+  // get last error
+  const error = result.pop();
+
+  // check response
+  expect(response.statusCode).toEqual(200);
+  expect(error.level).toEqual('error');
+  expect(error.message).toEqual(`Build failed! Couldn't find template: do-not-exist!`);
 
   // clean all exited containers
   const allContainers = await docker.listContainers({all: true});

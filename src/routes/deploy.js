@@ -69,6 +69,18 @@ const deploy = async ({username, folder, existing, resultStream}) => {
       }
     }
   }
+
+  // if template not found - throw an error
+  if (!template) {
+    logger.debug(`Build failed! Couldn't find template: ${config.template}`);
+    util.writeStatus(resultStream, {
+      message: `Build failed! Couldn't find template: ${config.template}!`,
+      level: 'error',
+    });
+    resultStream.end('');
+    return;
+  }
+
   logger.debug('Using template:', template);
   // execute fitting template
   await template.executeTemplate(templateProps);
