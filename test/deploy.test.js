@@ -613,7 +613,7 @@ test('Should display error log for broken Node.js project', async done => {
   done();
 });
 
-test.only('Should display error log for project with broken template', async done => {
+test('Should display error log for project with broken template', async done => {
   const options = Object.assign(optionsBase, {
     payload: streamBrokenTemplate,
   });
