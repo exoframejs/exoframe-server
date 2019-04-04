@@ -30,6 +30,8 @@ const streamComposeUpdate = tar.pack(path.join(__dirname, 'fixtures', 'compose-p
 const streamBrokenDocker = tar.pack(path.join(__dirname, 'fixtures', 'broken-docker-project'));
 const streamBrokenNode = tar.pack(path.join(__dirname, 'fixtures', 'broken-node-project'));
 const streamBrokenTemplate = tar.pack(path.join(__dirname, 'fixtures', 'broken-template-project'));
+const streamBrokenCompose = tar.pack(path.join(__dirname, 'fixtures', 'broken-compose-project'));
+const streamBrokenComposeStart = tar.pack(path.join(__dirname, 'fixtures', 'broken-compose-project-start'));
 const streamAdditionalLabels = tar.pack(path.join(__dirname, 'fixtures', 'additional-labels'));
 const streamTemplate = tar.pack(path.join(__dirname, 'fixtures', 'template-project'));
 
@@ -637,6 +639,50 @@ test('Should display error log for project with broken template', async done => 
   const allContainers = await docker.listContainers({all: true});
   const exitedWithError = allContainers.filter(c => c.Status.includes('Exited (1)'));
   await Promise.all(exitedWithError.map(c => docker.getContainer(c.Id)).map(c => c.remove()));
+
+  done();
+});
+
+test('Should display error log for broken compose project build', async done => {
+  const options = Object.assign(optionsBase, {
+    payload: streamBrokenCompose,
+  });
+
+  const response = await fastify.inject(options);
+  // parse result into lines
+  const result = response.payload
+    .split('\n')
+    .filter(l => l && l.length)
+    .map(line => JSON.parse(line));
+
+  // get last error
+  const error = result.pop();
+
+  // check response
+  expect(response.statusCode).toEqual(200);
+  expect(error.message).toEqual(`Deployment failed! Docker-compose build exited with code: 1.`);
+
+  done();
+});
+
+test('Should display error log for broken compose project start', async done => {
+  const options = Object.assign(optionsBase, {
+    payload: streamBrokenComposeStart,
+  });
+
+  const response = await fastify.inject(options);
+  // parse result into lines
+  const result = response.payload
+    .split('\n')
+    .filter(l => l && l.length)
+    .map(line => JSON.parse(line));
+
+  // get last error
+  const error = result.pop();
+
+  // check response
+  expect(response.statusCode).toEqual(200);
+  expect(error.message).toEqual(`Deployment failed! Docker-compose up exited with code: 1.`);
 
   done();
 });

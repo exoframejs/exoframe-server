@@ -140,8 +140,10 @@ exports.executeTemplate = async ({
 
   // generate host
   const host = getHost({serverConfig, name: baseName, config});
-  const env = getEnv({username, config, name: baseName, host})
-    .reduce((merged, [key, value]) => ({...merged, [key]: value}), {});
+  const env = getEnv({username, config, name: baseName, host}).reduce(
+    (merged, [key, value]) => ({...merged, [key]: value}),
+    {}
+  );
 
   // re-build images if needed
   const {code: buildExitCode, log: buildLog} = await executeCompose({
@@ -153,6 +155,16 @@ exports.executeTemplate = async ({
     writeStatus: util.writeStatus,
   });
   util.logger.debug('Compose build executed, exit code:', buildExitCode);
+
+  if (buildExitCode !== '0') {
+    util.writeStatus(resultStream, {
+      message: `Deployment failed! Docker-compose build exited with code: ${buildExitCode}.`,
+      log: buildLog,
+      level: 'error',
+    });
+    resultStream.end('');
+    return;
+  }
 
   // run compose via plugins if available
   const plugins = util.getPlugins();
@@ -184,7 +196,7 @@ exports.executeTemplate = async ({
   }
 
   // execute compose 'up -d'
-  const exitCode = await executeCompose({
+  const {code: exitCode, log: execLog} = await executeCompose({
     cmd: ['--project-name', baseName, 'up', '-d'],
     env,
     resultStream,
@@ -193,6 +205,16 @@ exports.executeTemplate = async ({
     writeStatus: util.writeStatus,
   });
   util.logger.debug('Compose up executed, exit code:', exitCode);
+
+  if (exitCode !== '0') {
+    util.writeStatus(resultStream, {
+      message: `Deployment failed! Docker-compose up exited with code: ${exitCode}.`,
+      log: execLog,
+      level: 'error',
+    });
+    resultStream.end('');
+    return;
+  }
 
   // get container infos
   const allContainers = await docker.daemon.listContainers({all: true});
