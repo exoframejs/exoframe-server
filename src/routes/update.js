@@ -55,7 +55,7 @@ module.exports = fastify => {
             await traefikContainer.remove();
           }
           // re-init traefik
-          initDocker({restart: true});
+          initDocker();
           // reply
           reply.code(200).send({updated: true});
           return;
