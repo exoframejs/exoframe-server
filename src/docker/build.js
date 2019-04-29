@@ -1,6 +1,11 @@
 // npm modules
+const {pullImage} = require("./init");
+
+const {getDockerAuthentication} = require("./init");
+
 const path = require('path');
 const tar = require('tar-fs');
+const fs = require('fs');
 
 // our modules
 const logger = require('../logger');
@@ -10,14 +15,21 @@ const {getProjectConfig, tagFromConfig, writeStatus} = require('../util');
 
 const noop = () => {};
 
-exports.buildFromParams = ({tarStream, tag, logLine = noop}) =>
+exports.buildFromParams = ({tarStream, tag, fromTag, logLine = noop}) =>
   new Promise(async (resolve, reject) => {
     // deploy as docker
     const log = [];
     // track errors
     let hasErrors = false;
+
+    const auth = getDockerAuthentication(fromTag);
+    if (auth) {
+      logger.debug(`Pulling image ${fromTag} with auth`);
+      await pullImage(fromTag)
+    }
+
     // send build command
-    const output = await docker.buildImage(tarStream, {t: tag, pull: true});
+    const output = await docker.buildImage(tarStream, {t: tag, pull: !auth});
     output.on('data', d => {
       const str = d.toString();
       const parts = str.split('\n');
@@ -58,6 +70,11 @@ exports.buildFromParams = ({tarStream, tag, logLine = noop}) =>
   });
 
 exports.build = async ({username, folder, resultStream}) => {
+  // dockerfile
+  const dockerfile = path.join(tempDockerDir, folder, 'Dockerfile');
+  const dockerfileContent = fs.readFileSync(dockerfile);
+  const fromTag = dockerfileContent.toString().match(/FROM (.*)/)[1];
+
   // get packed stream
   const tarStream = tar.pack(path.join(tempDockerDir, folder));
 
@@ -73,5 +90,5 @@ exports.build = async ({username, folder, resultStream}) => {
   const logLine = data => writeStatus(resultStream, data);
 
   // return build
-  return exports.buildFromParams({tarStream, tag, logLine});
+  return exports.buildFromParams({tarStream, tag, fromTag, logLine});
 };

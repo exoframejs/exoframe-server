@@ -22,6 +22,11 @@ const routes = require('./routes');
 exports.startServer = async (port = 8080) => {
   // create server
   const fastify = initFastify().register(fastifyAuth);
+  fastify.use((req, res, next) => {
+    // because fastify logger override is hell
+    logger.debug(`[${req.method}] ${req.url}`);
+    next();
+  });
 
   // enable cors if needed
   await waitForConfig();

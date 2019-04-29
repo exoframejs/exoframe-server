@@ -3,6 +3,7 @@ const deploy = require('./deploy');
 const list = require('./list');
 const remove = require('./remove');
 const logs = require('./logs');
+const registries = require('./registries');
 const update = require('./update');
 const version = require('./version');
 const templates = require('./templates');
@@ -17,6 +18,7 @@ module.exports = (fastify, opts, next) => {
   list(fastify);
   remove(fastify);
   logs(fastify);
+  registries(fastify);
   update(fastify);
   version(fastify);
   templates(fastify);
