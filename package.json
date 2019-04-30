@@ -7,6 +7,7 @@
   "scripts": {
     "start": "nodemon index.js",
     "test": "NODE_ENV=testing jest --coverage --silent --maxWorkers=2 --ci",
+    "watch": "NODE_ENV=testing jest --watch",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "build-bundle": "ncc build src/index.js -o dist",
     "prepare-build": "mv dist/index.js bin/server-core.js && mv dist/home.html bin/home.html",

@@ -103,9 +103,11 @@ let isConfigLoaded = new Promise(resolve => {
 const reloadUserConfig = () => {
   // mon
   try {
-    userConfig = Object.assign(defaultConfig, yaml.safeLoad(fs.readFileSync(configPath, 'utf8')));
-    logger.debug('loaded new config:', userConfig);
-    loadedResolve();
+    if (fs.existsSync(configPath)) {
+      userConfig = Object.assign(defaultConfig, yaml.safeLoad(fs.readFileSync(configPath, 'utf8')));
+      logger.debug('loaded new config:', userConfig);
+      loadedResolve();
+    }
   } catch (e) {
     logger.error('error parsing user config:', e);
   }

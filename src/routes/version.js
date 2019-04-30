@@ -3,6 +3,7 @@ const fetch = require('node-fetch');
 const cmp = require('semver-compare');
 
 // our modules
+const logger = require('../logger');
 const docker = require('../docker/docker');
 const pkg = require('../../package.json');
 
@@ -26,12 +27,18 @@ module.exports = fastify => {
         let traefikVersion = 'none';
         const allImages = await docker.listImages();
         const traefik = allImages.find(img => img.RepoTags && img.RepoTags.find(t => t.includes('traefik')));
-        if (traefik) {
-          traefikVersion = traefik.Labels['org.label-schema.version'];
+
+        if (traefik && traefik.Labels['org.opencontainers.image.version']) {
+          traefikVersion = traefik.Labels['org.opencontainers.image.version'];
         }
         // get latest versions
         const lastServerTag = await getLatestVersion(exoServerUrl);
         const lastTraefikTag = await getLatestVersion(traefikUrl);
+
+        logger.debug("Current version: " + pkg.version);
+        logger.debug("Last server tag: " + lastServerTag);
+        logger.debug("Last traefik tag: " + lastTraefikTag);
+        logger.debug("Current traefik version: " + traefikVersion);
         // reply
         reply.code(200).send({
           server: pkg.version,
@@ -42,6 +49,7 @@ module.exports = fastify => {
           traefikUpdate: cmp(lastTraefikTag, traefikVersion) > 0,
         });
       } catch (error) {
+        logger.warn(error);
         reply.code(500).send({error});
       }
     },
