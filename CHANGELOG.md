@@ -1,3 +1,10 @@
+# 4.1.2 / 2019-05-14
+
+- Fix traefik version fetching for new versions of traefik images
+- Fix compose install in Dockerfile
+- Correctly throw errors when docker-compose fails
+- Correctly throw error when template wasn't found
+
 # 4.1.1 / 2019-03-31
 
 - Fix debug docker images, correctly include home html
