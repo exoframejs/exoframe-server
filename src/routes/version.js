@@ -27,7 +27,8 @@ module.exports = fastify => {
         const allImages = await docker.listImages();
         const traefik = allImages.find(img => img.RepoTags && img.RepoTags.find(t => t.includes('traefik')));
         if (traefik) {
-          traefikVersion = traefik.Labels['org.label-schema.version'];
+          traefikVersion =
+            traefik.Labels['org.label-schema.version'] || traefik.Labels['org.opencontainers.image.version'];
         }
         // get latest versions
         const lastServerTag = await getLatestVersion(exoServerUrl);
