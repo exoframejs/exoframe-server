@@ -2,6 +2,7 @@
 const docker = require('../docker/docker');
 const {removeContainer} = require('../docker/util');
 const {getPlugins} = require('../plugins');
+const {removeFunction} = require('../faas');
 const logger = require('../logger');
 
 // removal of normal containers
@@ -41,6 +42,13 @@ module.exports = fastify => {
       // get username
       const {username} = request.user;
       const {id} = request.params;
+
+      // try and remove function
+      if (removeFunction({id, username})) {
+        // reply
+        reply.code(204).send('removed');
+        return;
+      }
 
       // run remove via plugins if available
       const plugins = getPlugins();

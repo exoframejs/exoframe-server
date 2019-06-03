@@ -1,16 +1,39 @@
 const chokidar = require('chokidar');
 const path = require('path');
+const rimraf = require('rimraf');
 
 const logger = require('../logger');
 const {functionToContainerFormat} = require('../util');
 const {faasFolder} = require('../config');
 
+// loaded functions storage
 const functions = {};
+
+// remove function
+const rmDir = path => new Promise(resolve => rimraf(path, resolve));
 
 exports.listFunctions = () =>
   Object.keys(functions).map(route =>
     functionToContainerFormat({config: functions[route].config, route, type: functions[route].type})
   );
+
+exports.removeFunction = async ({id, username}) => {
+  console.log('removing:', id, username);
+  const route = Object.keys(functions).find(route => functions[route].config.name === id);
+  const fn = functions[route];
+  console.log('fn found:', route, fn);
+  if (!fn) {
+    console.log('not found');
+    return;
+  }
+
+  // remove from cache
+  delete functions[route];
+  // remove files
+  await rmDir(fn.folder);
+
+  return true;
+};
 
 exports.setup = (fastify, opts, next) => {
   const watcher = chokidar.watch(faasFolder, {
@@ -34,6 +57,7 @@ exports.setup = (fastify, opts, next) => {
       route: funRoute,
       ...fun,
       config: funConfig,
+      folder: funPath,
     };
   });
 
