@@ -23,9 +23,12 @@ exports.setup = (fastify, opts, next) => {
     logger.debug(`Directory ${funPath} has been added`);
     const fun = require(funPath);
     const funConfig = require(funConfigPath);
+    const funRoute = fun.path || `/${funConfig.name}`;
     logger.debug(fun);
-    functions[fun.path] = {
-      fun,
+    functions[funRoute] = {
+      type: 'http',
+      route: funRoute,
+      ...fun,
       config: funConfig,
     };
   });
@@ -37,10 +40,10 @@ exports.setup = (fastify, opts, next) => {
     async handler(request, reply) {
       const route = request.params['*'];
       logger.debug('faas getting route:', route);
-      if (functions[route]) {
+      if (functions[route] && functions[route].type === 'http') {
         const event = request;
         const context = reply;
-        const res = await functions[route].fun.handler(event, context);
+        const res = await functions[route].handler(event, context);
         if (res) {
           reply.send(res);
         }

@@ -30,11 +30,12 @@ exports.executeTemplate = async ({config, serverConfig, username, tempDockerDir,
     util.logger.debug('Copied function to server..');
 
     // return new deployment
+    const frontend = require(destFolder).route || `/${config.name}`;
     const deployment = {
       Name: `/${config.name}`,
       Config: {
         Labels: {
-          'traefik.frontend.rule': `/func`,
+          'traefik.frontend.rule': frontend,
           'exoframe.project': config.name,
         },
       },
