@@ -15,6 +15,7 @@ const publicKeysPath = path.join(os.homedir(), '.ssh');
 const extensionsFolder = path.join(baseFolder, 'extensions');
 const recipesFolder = path.join(baseFolder, 'recipes');
 const pluginsFolder = path.join(baseFolder, 'plugins');
+const faasFolder = path.join(baseFolder, 'faas');
 // dir for temporary files used to build docker images
 const tempDir = path.join(baseFolder, 'deploying');
 
@@ -23,6 +24,7 @@ exports.baseFolder = baseFolder;
 exports.extensionsFolder = extensionsFolder;
 exports.recipesFolder = recipesFolder;
 exports.pluginsFolder = pluginsFolder;
+exports.faasFolder = faasFolder;
 exports.tempDockerDir = tempDir;
 
 // create base folder if doesn't exist

@@ -25,8 +25,10 @@
   "license": "MIT",
   "devDependencies": {
     "@zeit/ncc": "^0.18.5",
+    "chokidar": "^3.0.1",
     "cors": "^2.8.4",
     "coveralls": "^3.0.2",
+    "cpy": "^7.2.0",
     "dockerode": "^2.5.6",
     "fastify": "^2.4.1",
     "fastify-auth": "^0.5.0",

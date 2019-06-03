@@ -18,6 +18,7 @@ const {getConfig, waitForConfig} = require('./config');
 // paths
 const setupAuth = require('./auth');
 const routes = require('./routes');
+const {setup: faas} = require('./faas');
 
 exports.startServer = async (port = 8080) => {
   // create server
@@ -43,6 +44,7 @@ exports.startServer = async (port = 8080) => {
   // register plugins
   await setupAuth(fastify)
     .register(routes)
+    .register(faas)
     .ready();
 
   // start server

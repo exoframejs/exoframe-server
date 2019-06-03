@@ -7,7 +7,7 @@ const uuidv1 = require('uuid/v1');
 // our modules
 const logger = require('../logger');
 const util = require('../util');
-const {getConfig, tempDockerDir} = require('../config');
+const {getConfig, tempDockerDir, faasFolder} = require('../config');
 const docker = require('../docker/docker');
 const {pullImage} = require('../docker/init');
 const {build} = require('../docker/build');
@@ -33,7 +33,7 @@ const deploy = async ({username, folder, existing, resultStream}) => {
   // generate template props
   const templateProps = {
     config,
-    serverConfig,
+    serverConfig: {...serverConfig, faasFolder},
     existing,
     username,
     resultStream,
