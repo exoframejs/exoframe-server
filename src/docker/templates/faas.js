@@ -30,22 +30,8 @@ exports.executeTemplate = async ({config, serverConfig, username, tempDockerDir,
     util.logger.debug('Copied function to server..');
 
     // return new deployment
-    const frontend = require(destFolder).route || `/${config.name}`;
-    const deployment = {
-      Name: `/${config.name}`,
-      Config: {
-        Labels: {
-          'traefik.frontend.rule': frontend,
-          'exoframe.project': config.name,
-        },
-      },
-      NetworkSettings: {
-        Networks: {},
-      },
-      State: {
-        Status: 'running',
-      },
-    };
+    const {route, type} = require(destFolder);
+    const deployment = util.functionToContainerFormat({config, route, type});
     util.writeStatus(resultStream, {message: 'Deployment success!', deployments: [deployment], level: 'info'});
     resultStream.end('');
   } catch (e) {

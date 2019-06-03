@@ -2,11 +2,15 @@ const chokidar = require('chokidar');
 const path = require('path');
 
 const logger = require('../logger');
+const {functionToContainerFormat} = require('../util');
 const {faasFolder} = require('../config');
 
 const functions = {};
 
-exports.listFunctions = () => functions;
+exports.listFunctions = () =>
+  Object.keys(functions).map(route =>
+    functionToContainerFormat({config: functions[route].config, route, type: functions[route].type})
+  );
 
 exports.setup = (fastify, opts, next) => {
   const watcher = chokidar.watch(faasFolder, {

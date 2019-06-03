@@ -2,6 +2,7 @@
 const docker = require('../docker/docker');
 const {getConfig} = require('../config');
 const {getPlugins} = require('../plugins');
+const {listFunctions} = require('../faas');
 const logger = require('../logger');
 
 module.exports = fastify => {
@@ -15,6 +16,10 @@ module.exports = fastify => {
       // get config
       const config = getConfig();
 
+      // get functions
+      const functions = listFunctions();
+
+      // get containers
       const allContainers = await docker.listContainers({all: true});
       const userContainers = await Promise.all(
         allContainers
@@ -36,13 +41,13 @@ module.exports = fastify => {
         logger.debug('Running list with plugin:', plugin.config.name, result);
         if (result && plugin.config.exclusive) {
           logger.debug('List finished via exclusive plugin:', plugin.config.name);
-          reply.send({containers: userContainers, ...result});
+          reply.send({containers: userContainers.concat(functions), ...result});
           return;
         }
       }
 
       // return results
-      reply.send({containers: userContainers, services: []});
+      reply.send({containers: userContainers.concat(functions), services: []});
     },
   });
 };
