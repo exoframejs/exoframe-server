@@ -2,19 +2,15 @@ const {Signale} = require('signale');
 
 // prepare level
 const levelTesting = process.env.NODE_ENV === 'testing' ? 'error' : false;
-const level = levelTesting || process.env.NODE_ENV === 'production' ? 'info' : 'debug';
+const level = levelTesting || process.env.NODE_ENV === 'production' ? 'warn' : 'debug';
 
 const logger = new Signale({
   scope: 'exoframe-server',
+  logLevel: level,
   types: {
-    debug: {
-      stream: level === 'debug' ? [process.stdout] : [],
-    },
+    // override info type to show it in warn logging
     info: {
-      stream: ['debug', 'info'].includes(level) ? [process.stdout] : [],
-    },
-    warn: {
-      stream: ['debug', 'info'].includes(level) ? [process.stdout] : [],
+      logLevel: 'warn',
     },
   },
 });
