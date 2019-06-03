@@ -41,7 +41,9 @@ exports.setup = (fastify, opts, next) => {
         const event = request;
         const context = reply;
         const res = await functions[route].fun.handler(event, context);
-        reply.send(res);
+        if (res) {
+          reply.send(res);
+        }
         return;
       }
 
