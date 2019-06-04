@@ -45,17 +45,20 @@ exports.setup = (fastify, opts, next) => {
     if (!folder || !folder.trim().length) {
       return;
     }
+    // construct paths
     const funPath = path.join(faasFolder, folder);
     const funConfigPath = path.join(funPath, 'exoframe.json');
     logger.debug(`Directory ${funPath} has been added`);
+    // load code and config
     const fun = require(funPath);
     const funConfig = require(funConfigPath);
-    const funRoute = fun.path || `/${funConfig.name}`;
-    logger.debug(fun);
-    functions[funRoute] = {
-      type: 'http',
-      route: funRoute,
-      ...fun,
+    // expand config into default values
+    const config = {route: `/${funConfig.name}`, type: 'http', ...funConfig.function};
+    // store function in memory
+    functions[config.route] = {
+      type: config.type,
+      route: config.route,
+      handler: fun,
       config: funConfig,
       folder: funPath,
     };
