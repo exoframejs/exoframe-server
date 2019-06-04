@@ -5,6 +5,7 @@ const rimraf = require('rimraf');
 const logger = require('../logger');
 const {functionToContainerFormat} = require('../util');
 const {faasFolder} = require('../config');
+const runInWorker = require('./worker');
 
 // loaded functions storage
 const functions = {};
@@ -18,13 +19,18 @@ exports.listFunctions = () =>
   );
 
 exports.removeFunction = async ({id, username}) => {
-  console.log('removing:', id, username);
+  logger.debug('Removing function:', id, username);
   const route = Object.keys(functions).find(route => functions[route].config.name === id);
   const fn = functions[route];
-  console.log('fn found:', route, fn);
+  logger.debug('Function found:', route, fn);
   if (!fn) {
-    console.log('not found');
-    return;
+    logger.debug('Function not found');
+    return false;
+  }
+
+  // if running in worker - trigger cleanup
+  if (fn.type === 'worker') {
+    fn.worker.terminate();
   }
 
   // remove from cache
@@ -62,6 +68,20 @@ exports.setup = (fastify, opts, next) => {
       config: funConfig,
       folder: funPath,
     };
+
+    // we're done if it's http function
+    if (config.type === 'http') {
+      return;
+    }
+
+    // otherwise - execute work based on function
+    if (config.type === 'worker') {
+      const worker = runInWorker(functions[config.route]);
+      functions[config.route].worker = worker;
+      return;
+    }
+
+    logger.error('Unknown function type!', functions[config.route]);
   });
 
   // http handler

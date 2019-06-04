@@ -25,7 +25,7 @@ const removeUserContainer = async ({username, id, reply}) => {
     c => c.Labels['exoframe.user'] === username && c.Labels['exoframe.project'] === id
   );
   if (!containers.length) {
-    reply.code(404).send({error: 'Container not found!'});
+    reply.code(404).send({error: 'Container or function not found!'});
     return;
   }
   // remove all
@@ -44,7 +44,7 @@ module.exports = fastify => {
       const {id} = request.params;
 
       // try and remove function
-      if (removeFunction({id, username})) {
+      if (await removeFunction({id, username})) {
         // reply
         reply.code(204).send('removed');
         return;

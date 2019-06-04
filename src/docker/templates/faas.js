@@ -1,5 +1,4 @@
 // npm packages
-const fs = require('fs');
 const path = require('path');
 const cpy = require('cpy');
 
@@ -25,12 +24,12 @@ exports.executeTemplate = async ({config, serverConfig, username, tempDockerDir,
 
     // copy folder to current folder for functions
     const destFolder = path.join(serverConfig.faasFolder, folder);
-    console.log('copying', {faasFolder, destFolder});
+    util.logger.debug('copying', {faasFolder, destFolder});
     await cpy(faasFolder, destFolder);
     util.logger.debug('Copied function to server..');
 
     // return new deployment
-    const {route, type} = require(destFolder);
+    const {route, type} = {route: `/${config.name}`, type: 'http', ...config.function};
     const deployment = util.functionToContainerFormat({config, route, type});
     util.writeStatus(resultStream, {message: 'Deployment success!', deployments: [deployment], level: 'info'});
     resultStream.end('');
