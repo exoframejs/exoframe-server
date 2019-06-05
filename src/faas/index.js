@@ -46,7 +46,7 @@ exports.setup = (fastify, opts, next) => {
     cwd: faasFolder,
     depth: 1,
   });
-  watcher.on('addDir', folder => {
+  watcher.on('addDir', async folder => {
     // ignore empty current folder reference
     if (!folder || !folder.trim().length) {
       return;
@@ -60,6 +60,12 @@ exports.setup = (fastify, opts, next) => {
     const funConfig = require(funConfigPath);
     // expand config into default values
     const config = {route: `/${funConfig.name}`, type: 'http', ...funConfig.function};
+
+    // if function already exists - remove old version
+    if (functions[config.route]) {
+      await exports.removeFunction({id: funConfig.name});
+    }
+
     // store function in memory
     functions[config.route] = {
       type: config.type,
