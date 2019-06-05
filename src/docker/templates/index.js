@@ -25,7 +25,7 @@ module.exports = () => {
     return require(templatePath);
   });
 
-  return [imageTemplate, composeTemplate, dockerfileTemplate, nodeTemplate, nginxTemplate, faasTemplate].concat(
+  return [faasTemplate, imageTemplate, composeTemplate, dockerfileTemplate, nodeTemplate, nginxTemplate].concat(
     userTemplates
   );
 };

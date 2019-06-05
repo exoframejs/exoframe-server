@@ -1,4 +1,4 @@
-const chokidar = require('chokidar');
+const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
 
@@ -41,54 +41,60 @@ exports.removeFunction = async ({id, username}) => {
   return true;
 };
 
+exports.registerFunction = async folder => {
+  // ignore empty current folder reference
+  if (!folder || !folder.trim().length) {
+    return;
+  }
+  // construct paths
+  const funPath = path.join(faasFolder, folder);
+  const funConfigPath = path.join(funPath, 'exoframe.json');
+  logger.debug(`Directory ${funPath} has been added`);
+  // load code and config
+  const fun = require(funPath);
+  const funConfig = require(funConfigPath);
+  // expand config into default values
+  const config = {route: `/${funConfig.name}`, type: 'http', ...funConfig.function};
+
+  // if function already exists - remove old version
+  if (functions[config.route]) {
+    await exports.removeFunction({id: funConfig.name});
+  }
+
+  // store function in memory
+  functions[config.route] = {
+    type: config.type,
+    route: config.route,
+    handler: fun,
+    config: funConfig,
+    folder: funPath,
+  };
+
+  // we're done if it's http function
+  if (config.type === 'http') {
+    return;
+  }
+
+  // otherwise - execute work based on function
+  if (config.type === 'worker') {
+    const worker = runInWorker(functions[config.route]);
+    functions[config.route].worker = worker;
+    return;
+  }
+
+  logger.error('Unknown function type!', functions[config.route]);
+};
+
+const loadFunctions = () => {
+  const folders = fs.readdirSync(faasFolder);
+  for (const folder of folders) {
+    exports.registerFunction(folder);
+  }
+};
+
 exports.setup = (fastify, opts, next) => {
-  const watcher = chokidar.watch(faasFolder, {
-    cwd: faasFolder,
-    depth: 1,
-  });
-  watcher.on('addDir', async folder => {
-    // ignore empty current folder reference
-    if (!folder || !folder.trim().length) {
-      return;
-    }
-    // construct paths
-    const funPath = path.join(faasFolder, folder);
-    const funConfigPath = path.join(funPath, 'exoframe.json');
-    logger.debug(`Directory ${funPath} has been added`);
-    // load code and config
-    const fun = require(funPath);
-    const funConfig = require(funConfigPath);
-    // expand config into default values
-    const config = {route: `/${funConfig.name}`, type: 'http', ...funConfig.function};
-
-    // if function already exists - remove old version
-    if (functions[config.route]) {
-      await exports.removeFunction({id: funConfig.name});
-    }
-
-    // store function in memory
-    functions[config.route] = {
-      type: config.type,
-      route: config.route,
-      handler: fun,
-      config: funConfig,
-      folder: funPath,
-    };
-
-    // we're done if it's http function
-    if (config.type === 'http') {
-      return;
-    }
-
-    // otherwise - execute work based on function
-    if (config.type === 'worker') {
-      const worker = runInWorker(functions[config.route]);
-      functions[config.route].worker = worker;
-      return;
-    }
-
-    logger.error('Unknown function type!', functions[config.route]);
-  });
+  // load current functions
+  loadFunctions();
 
   // http handler
   fastify.route({

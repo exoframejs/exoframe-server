@@ -15,6 +15,7 @@ const {start} = require('../docker/start');
 const getTemplates = require('../docker/templates');
 const {removeContainer} = require('../docker/util');
 const {getPlugins} = require('../plugins');
+const {registerFunction} = require('../faas');
 
 // destruct locally used functions
 const {sleep, cleanTemp, unpack, getProjectConfig, projectFromConfig} = util;
@@ -44,6 +45,9 @@ const deploy = async ({username, folder, existing, resultStream}) => {
       build,
       start,
       pullImage,
+    },
+    faas: {
+      registerFunction,
     },
     util: Object.assign({}, util, {
       logger,

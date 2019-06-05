@@ -1,6 +1,7 @@
 // npm packages
+const fs = require('fs');
+const fse = require('fs-extra');
 const path = require('path');
-const cpy = require('cpy');
 
 // template name
 exports.name = 'faas';
@@ -16,17 +17,29 @@ exports.checkTemplate = async ({config}) => {
 };
 
 // function to execute current template
-exports.executeTemplate = async ({config, serverConfig, username, tempDockerDir, folder, resultStream, util}) => {
+exports.executeTemplate = async ({config, serverConfig, username, tempDockerDir, folder, resultStream, util, faas}) => {
   try {
     // generate dockerfile
-    const faasFolder = path.join(tempDockerDir, folder, '**', '*');
+    const faasFolder = path.join(tempDockerDir, folder);
     util.writeStatus(resultStream, {message: 'Deploying function project..', level: 'info'});
+
+    // execute yarn to install deps
+    const hasPackageJson = fs.existsSync(path.join(faasFolder, 'package.json'));
+    util.logger.debug('Function has package.json:', hasPackageJson);
+    if (hasPackageJson) {
+      const log = await util.runYarn({args: ['install'], cwd: faasFolder});
+      util.logger.debug('Installed function deps:', log);
+    }
 
     // copy folder to current folder for functions
     const destFolder = path.join(serverConfig.faasFolder, folder);
-    util.logger.debug('copying', {faasFolder, destFolder});
-    await cpy(faasFolder, destFolder);
+    util.logger.debug('Copying function from-to:', {faasFolder, destFolder});
+    await fse.move(faasFolder, destFolder);
     util.logger.debug('Copied function to server..');
+
+    // register new function
+    await faas.registerFunction(folder);
+    util.logger.debug('Registered function on server..');
 
     // return new deployment
     const {route, type} = {route: `/${config.name}`, type: 'http', ...config.function};
