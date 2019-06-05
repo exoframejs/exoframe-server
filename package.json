@@ -25,7 +25,6 @@
   "license": "MIT",
   "devDependencies": {
     "@zeit/ncc": "^0.18.5",
-    "chokidar": "^3.0.1",
     "cors": "^2.8.4",
     "coveralls": "^3.0.2",
     "dockerode": "^2.5.6",
