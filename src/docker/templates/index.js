@@ -12,7 +12,7 @@ const composeTemplate = require('./compose');
 const dockerfileTemplate = require('./dockerfile');
 const nodeTemplate = require('./node');
 const nginxTemplate = require('./nginx');
-const faasTemplate = require('./faas');
+const faasTemplate = require('../../faas/template');
 
 // load 3rd party templates
 module.exports = () => {
