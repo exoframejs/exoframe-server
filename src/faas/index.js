@@ -13,10 +13,22 @@ const functions = {};
 // remove function
 const rmDir = path => new Promise(resolve => rimraf(path, resolve));
 
+// basic logging function generator
+const loggerForRoute = route => msg => functions[route].log.push(`${new Date().toISOString()} ${msg}\n`);
+
 exports.listFunctions = () =>
   Object.keys(functions).map(route =>
     functionToContainerFormat({config: functions[route].config, route, type: functions[route].type})
   );
+
+exports.getLogsForFunction = id => {
+  const route = Object.keys(functions).find(route => functions[route].config.name === id);
+  const fn = functions[route];
+  if (!fn) {
+    return;
+  }
+  return fn.log;
+};
 
 exports.removeFunction = async ({id, username}) => {
   logger.debug('Removing function:', id, username);
@@ -68,6 +80,7 @@ exports.registerFunction = async folder => {
     handler: fun,
     config: funConfig,
     folder: funPath,
+    log: [],
   };
 
   // we're done if it's http function
@@ -77,7 +90,7 @@ exports.registerFunction = async folder => {
 
   // otherwise - execute work based on function
   if (config.type === 'worker') {
-    const worker = runInWorker(functions[config.route]);
+    const worker = runInWorker({meta: functions[config.route], log: loggerForRoute(config.route)});
     functions[config.route].worker = worker;
     return;
   }
@@ -105,7 +118,7 @@ exports.setup = (fastify, opts, next) => {
       logger.debug('faas getting route:', route);
       if (functions[route] && functions[route].type === 'http') {
         const event = request;
-        const context = reply;
+        const context = {reply, log: loggerForRoute(route)};
         const res = await functions[route].handler(event, context);
         if (res) {
           reply.send(res);
