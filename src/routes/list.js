@@ -2,7 +2,8 @@
 const docker = require('../docker/docker');
 const {getConfig} = require('../config');
 const {getPlugins} = require('../plugins');
-const {listFunctions} = require('../faas');
+const {functionToContainerFormat} = require('../util');
+const {listFunctions} = require('exoframe-faas');
 const logger = require('../logger');
 
 module.exports = fastify => {
@@ -17,7 +18,7 @@ module.exports = fastify => {
       const config = getConfig();
 
       // get functions
-      const functions = listFunctions();
+      const functions = listFunctions({functionToContainerFormat});
 
       // get containers
       const allContainers = await docker.listContainers({all: true});

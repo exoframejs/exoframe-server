@@ -15,7 +15,7 @@ const {start} = require('../docker/start');
 const getTemplates = require('../docker/templates');
 const {removeContainer} = require('../docker/util');
 const {getPlugins} = require('../plugins');
-const {registerFunction} = require('../faas');
+const {registerFunction} = require('exoframe-faas');
 
 // destruct locally used functions
 const {sleep, cleanTemp, unpack, getProjectConfig, projectFromConfig} = util;

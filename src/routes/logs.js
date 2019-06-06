@@ -6,7 +6,7 @@ const logger = require('../logger');
 
 // our modules
 const docker = require('../docker/docker');
-const {getLogsForFunction} = require('../faas');
+const {getLogsForFunction} = require('exoframe-faas');
 
 const generateLogsConfig = follow => ({
   follow: Boolean(follow),

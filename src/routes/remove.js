@@ -2,7 +2,7 @@
 const docker = require('../docker/docker');
 const {removeContainer} = require('../docker/util');
 const {getPlugins} = require('../plugins');
-const {removeFunction} = require('../faas');
+const {removeFunction} = require('exoframe-faas');
 const logger = require('../logger');
 
 // removal of normal containers

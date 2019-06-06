@@ -13,12 +13,12 @@ const {initDocker} = require('./docker/init');
 const {initPlugins} = require('./plugins');
 
 // config
-const {getConfig, waitForConfig} = require('./config');
+const {getConfig, waitForConfig, faasFolder} = require('./config');
 
 // paths
 const setupAuth = require('./auth');
 const routes = require('./routes');
-const {setup: faas} = require('./faas');
+const {setup: faas} = require('exoframe-faas');
 
 exports.startServer = async (port = 8080) => {
   // create server
@@ -44,7 +44,7 @@ exports.startServer = async (port = 8080) => {
   // register plugins
   await setupAuth(fastify)
     .register(routes)
-    .register(faas)
+    .register(faas({faasFolder}))
     .ready();
 
   // start server
