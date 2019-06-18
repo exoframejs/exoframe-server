@@ -5,7 +5,7 @@ language: node_js
 services:
   - docker
 
-node_js: 10
+node_js: 12
 
 cache: yarn
 
