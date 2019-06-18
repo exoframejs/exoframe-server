@@ -1,10 +1,16 @@
-FROM docker/compose:1.24.0
+FROM node:12.4-alpine
 
-# install required libs and yarn
-RUN apk update && apk add --no-cache libstdc++ libgcc yarn
+# install docker-compose
+RUN apk update \
+  && apk add --no-cache py-pip python-dev \
+  libffi-dev openssl-dev gcc libc-dev make \
+  && pip install docker-compose
 
-# copy binary
-COPY exoframe-server /
+# create new workdir
+WORKDIR /app
+
+# copy source
+COPY bin/ /app
 
 # set environment to production
 ENV NODE_ENV production
@@ -13,4 +19,4 @@ ENV NODE_ENV production
 EXPOSE 8080
 
 # set binary as entry point
-ENTRYPOINT ["/exoframe-server"]
+CMD ["node", "exoframe-server.js"]

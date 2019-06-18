@@ -9,27 +9,25 @@
     "test": "NODE_ENV=testing jest --coverage --silent --maxWorkers=2 --ci",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "build-bundle": "ncc build src/index.js -o dist",
-    "prepare-build": "mv dist/index.js bin/server-core.js && mv dist/home.html bin/home.html",
-    "build": "yarn build-bundle && yarn prepare-build && pkg -t node10.4.1-alpine -o exoframe-server ."
-  },
-  "pkg": {
-    "assets": "bin/home.html"
+    "prepare-build": "cp dist/index.js bin/server-core.js && cp -r dist/assets bin/",
+    "build": "yarn build-bundle && yarn prepare-build"
   },
   "files": [
     "bin/exoframe-server.js",
     "bin/server-core.js",
-    "bin/home.html"
+    "bin/assets/home.html",
+    "bin/assets/runner.js"
   ],
   "repository": "git@github.com:exoframejs/exoframe-server.git",
   "author": "Tim Ermilov <yamalight@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "@zeit/ncc": "^0.18.5",
+    "@zeit/ncc": "^0.19.1",
     "cors": "^2.8.4",
-    "coveralls": "^3.0.2",
+    "coveralls": "^3.0.4",
     "dockerode": "^2.5.6",
-    "exoframe-faas": "^0.1.0",
-    "fastify": "^2.4.1",
+    "exoframe-faas": "^1.0.0",
+    "fastify": "^2.5.0",
     "fastify-auth": "^0.5.0",
     "get-port": "^5.0.0",
     "highland": "^2.13.0",
@@ -41,7 +39,6 @@
     "mkdirp": "^0.5.1",
     "nock": "^10.0.4",
     "node-fetch": "^2.6.0",
-    "pkg": "^4.3.4",
     "rimraf": "^2.6.2",
     "semver-compare": "^1.0.0",
     "signale": "^1.3.0",
