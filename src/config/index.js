@@ -116,7 +116,11 @@ const reloadUserConfig = () => {
     logger.debug('loaded new config:', userConfig);
     loadedResolve();
   } catch (e) {
-    logger.error('error parsing user config:', e);
+    if (e.code === 'ENOENT') {
+      logger.warn('no config found, using default values..');
+    } else {
+      logger.error('error parsing user config:', e);
+    }
   }
 };
 
