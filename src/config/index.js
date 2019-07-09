@@ -34,6 +34,13 @@ try {
   fs.mkdirSync(baseFolder);
 }
 
+// create faas folder if doesn't exist
+try {
+  fs.statSync(faasFolder);
+} catch (e) {
+  fs.mkdirSync(faasFolder);
+}
+
 // create extensions folder if doesn't exist
 try {
   fs.statSync(extensionsFolder);
