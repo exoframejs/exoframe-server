@@ -15,6 +15,7 @@ const publicKeysPath = path.join(os.homedir(), '.ssh');
 const extensionsFolder = path.join(baseFolder, 'extensions');
 const recipesFolder = path.join(baseFolder, 'recipes');
 const pluginsFolder = path.join(baseFolder, 'plugins');
+const faasFolder = path.join(baseFolder, 'faas');
 // dir for temporary files used to build docker images
 const tempDir = path.join(baseFolder, 'deploying');
 
@@ -23,6 +24,7 @@ exports.baseFolder = baseFolder;
 exports.extensionsFolder = extensionsFolder;
 exports.recipesFolder = recipesFolder;
 exports.pluginsFolder = pluginsFolder;
+exports.faasFolder = faasFolder;
 exports.tempDockerDir = tempDir;
 
 // create base folder if doesn't exist
@@ -30,6 +32,13 @@ try {
   fs.statSync(baseFolder);
 } catch (e) {
   fs.mkdirSync(baseFolder);
+}
+
+// create faas folder if doesn't exist
+try {
+  fs.statSync(faasFolder);
+} catch (e) {
+  fs.mkdirSync(faasFolder);
 }
 
 // create extensions folder if doesn't exist
@@ -95,7 +104,7 @@ let userConfig = defaultConfig;
 
 // config loaded promise
 let loadedResolve = () => {};
-let isConfigLoaded = new Promise(resolve => {
+const isConfigLoaded = new Promise(resolve => {
   loadedResolve = resolve;
 });
 
@@ -107,7 +116,11 @@ const reloadUserConfig = () => {
     logger.debug('loaded new config:', userConfig);
     loadedResolve();
   } catch (e) {
-    logger.error('error parsing user config:', e);
+    if (e.code === 'ENOENT') {
+      logger.warn('no config found, using default values..');
+    } else {
+      logger.error('error parsing user config:', e);
+    }
   }
 };
 

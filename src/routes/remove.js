@@ -2,6 +2,7 @@
 const docker = require('../docker/docker');
 const {removeContainer} = require('../docker/util');
 const {getPlugins} = require('../plugins');
+const {removeFunction} = require('exoframe-faas');
 const logger = require('../logger');
 
 // removal of normal containers
@@ -24,7 +25,7 @@ const removeUserContainer = async ({username, id, reply}) => {
     c => c.Labels['exoframe.user'] === username && c.Labels['exoframe.project'] === id
   );
   if (!containers.length) {
-    reply.code(404).send({error: 'Container not found!'});
+    reply.code(404).send({error: 'Container or function not found!'});
     return;
   }
   // remove all
@@ -41,6 +42,13 @@ module.exports = fastify => {
       // get username
       const {username} = request.user;
       const {id} = request.params;
+
+      // try and remove function
+      if (await removeFunction({id, username})) {
+        // reply
+        reply.code(204).send('removed');
+        return;
+      }
 
       // run remove via plugins if available
       const plugins = getPlugins();

@@ -5,13 +5,17 @@ language: node_js
 services:
   - docker
 
-node_js: 10
+node_js: 12
 
 cache: yarn
 
 before_install:
   - curl -L https://github.com/docker/compose/releases/download/1.23.2/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
+
+script:
+  - yarn test
+  - yarn lint
 
 after_success:
   - docker rmi $(docker images -q)

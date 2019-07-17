@@ -104,7 +104,7 @@ exports.getHost = ({serverConfig, name, config}) => {
 
 exports.getEnv = ({username, config, name, host, project = config.project || name}) => {
   // replace env vars values with secrets if needed
-  const secrets = getSecretsCollection().find({ user: username });
+  const secrets = getSecretsCollection().find({user: username});
   // generate env vars (with secrets)
   const userEnv = config.env
     ? Object.entries(config.env).map(([key, value]) => [key, valueOrSecret(value, secrets)])
@@ -117,3 +117,20 @@ exports.getEnv = ({username, config, name, host, project = config.project || nam
     ['EXOFRAME_HOST', host],
   ];
 };
+
+exports.functionToContainerFormat = ({config, route, type = 'http'}) => ({
+  Name: `/${config.name}`,
+  Config: {
+    Labels: {
+      'traefik.frontend.rule': type === 'http' ? route || `/${config.name}` : 'Non-HTTP',
+      'exoframe.project': config.name,
+      'exoframe.type': `Function (${type})`,
+    },
+  },
+  NetworkSettings: {
+    Networks: {},
+  },
+  State: {
+    Status: 'running',
+  },
+});

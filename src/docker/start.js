@@ -162,7 +162,7 @@ exports.start = async ({image, username, folder, resultStream, existing = []}) =
   // generate host
   const host = getHost({serverConfig, name, config});
 
-  const Env = getEnv({username, config, name, project, host}).map((pair) => pair.join('='));
+  const Env = getEnv({username, config, name, project, host}).map(pair => pair.join('='));
 
   // construct restart policy
   let RestartPolicy = {};
