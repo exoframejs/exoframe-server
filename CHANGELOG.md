@@ -1,3 +1,7 @@
+# 5.0.1 / 2019-07-17
+
+- Update node.js to v12.6 in dockerfile
+
 # 5.0.0 / 2019-07-17
 
 Additions:
