@@ -1,3 +1,20 @@
+# 5.0.0 / 2019-07-17
+
+Additions:
+
+- Add function deployments
+- Add linting, npm scripts and run it in travis
+
+Changes:
+
+- Use node 12 as lowest required version
+- Remove pkg and use node:alpine base for resulting image
+
+Fixes:
+
+- Rename nginx template to static template
+- Show warning instead of error when user config does not exist
+
 # 4.1.2 / 2019-05-14
 
 - Fix traefik version fetching for new versions of traefik images
