@@ -6,6 +6,7 @@ const logger = require('../logger');
 
 // our modules
 const docker = require('../docker/docker');
+const {getLogsForFunction} = require('exoframe-faas');
 
 const generateLogsConfig = follow => ({
   follow: Boolean(follow),
@@ -89,6 +90,16 @@ module.exports = fastify => {
       const {username} = request.user;
       const {id} = request.params;
       const {follow} = request.query;
+
+      // try to get function logs first
+      const fnLogs = getLogsForFunction(id);
+      if (fnLogs) {
+        // wrap logs into stream
+        const logsStream = _(fnLogs).flatten();
+        // send wrapped highland stream as response
+        reply.send(new Readable().wrap(logsStream));
+        return;
+      }
 
       // run logs via plugins if available
       const plugins = getPlugins();

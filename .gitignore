@@ -6,4 +6,4 @@ test/fixtures/deploying/
 test/fixtures/secrets.db
 dist/
 bin/server-core.js
-bin/home.html
+bin/assets/

@@ -130,6 +130,6 @@ test('Should return error when removing nonexistent project', async done => {
   const result = JSON.parse(response.payload);
   // check response
   expect(response.statusCode).toEqual(404);
-  expect(result).toMatchObject({error: 'Container not found!'});
+  expect(result).toMatchObject({error: 'Container or function not found!'});
   done();
 });

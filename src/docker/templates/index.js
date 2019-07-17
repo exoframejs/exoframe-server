@@ -12,6 +12,7 @@ const composeTemplate = require('./compose');
 const dockerfileTemplate = require('./dockerfile');
 const nodeTemplate = require('./node');
 const nginxTemplate = require('./nginx');
+const {template: faasTemplate} = require('exoframe-faas');
 
 // load 3rd party templates
 module.exports = () => {
@@ -24,5 +25,7 @@ module.exports = () => {
     return require(templatePath);
   });
 
-  return [imageTemplate, composeTemplate, dockerfileTemplate, nodeTemplate, nginxTemplate].concat(userTemplates);
+  return [faasTemplate, imageTemplate, composeTemplate, dockerfileTemplate, nodeTemplate, nginxTemplate].concat(
+    userTemplates
+  );
 };
