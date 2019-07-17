@@ -104,7 +104,7 @@ let userConfig = defaultConfig;
 
 // config loaded promise
 let loadedResolve = () => {};
-let isConfigLoaded = new Promise(resolve => {
+const isConfigLoaded = new Promise(resolve => {
   loadedResolve = resolve;
 });
 
