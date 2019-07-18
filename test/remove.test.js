@@ -27,7 +27,7 @@ const projectName = 'rmtestproject';
 // fastify ref
 let fastify;
 
-const generateContainerConfig = ({name, username, project, baseName}) => ({
+const generateContainerConfig = ({name, username, project, baseName, url}) => ({
   Image: 'busybox:latest',
   Cmd: ['sh', '-c', 'sleep 1000'],
   name,
@@ -36,7 +36,7 @@ const generateContainerConfig = ({name, username, project, baseName}) => ({
     'exoframe.user': username,
     'exoframe.project': project,
     'traefik.backend': baseName,
-    'traefik.frontend.rule': 'Host:test.example.com',
+    'traefik.frontend.rule': 'Host:' + url,
   },
 });
 
@@ -57,6 +57,7 @@ beforeAll(async () => {
     username: 'admin',
     project: 'rmtest1',
     baseName: 'exo-admin-rmtest1',
+    url: 'test',
   });
   const container = await docker.createContainer(containerConfig);
   await container.start();
@@ -67,6 +68,7 @@ beforeAll(async () => {
     username: 'admin',
     project: projectName,
     baseName: 'exo-admin-rmtest2',
+    url: 'test',
   });
   const projectContainer1 = await docker.createContainer(prjContainerConfig1);
   await projectContainer1.start();
@@ -76,6 +78,7 @@ beforeAll(async () => {
     username: 'admin',
     project: projectName,
     baseName: 'exo-admin-rmtest3',
+    url: 'test.example.com',
   });
   const projectContainer2 = await docker.createContainer(prjContainerConfig2);
   await projectContainer2.start();
