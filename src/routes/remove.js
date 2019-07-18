@@ -20,18 +20,25 @@ const removeUserContainer = async ({username, id, reply}) => {
     return;
   }
 
-  // if not found by name - try to find by project
-  const containers = allContainers.filter(
-    c => c.Labels['exoframe.user'] === username && c.Labels['exoframe.project'] === id
+  // if not found by name - try to find by domain.
+  let containers = allContainers.filter(
+    c => c.Labels['exoframe.user'] === username && c.Labels['traefik.frontend.rule'] === `Host:${id}`
   );
-  if (!containers.length) {
-    reply.code(404).send({error: 'Container or function not found!'});
-    return;
+
+  if (containers.length) {
+    await Promise.all(containers.map(removeContainer));
+    reply.code(204).send('removed');
   }
-  // remove all
-  await Promise.all(containers.map(removeContainer));
-  // reply
-  reply.code(204).send('removed');
+
+  // if not found by name - try to find by project
+  containers = allContainers.filter(c => c.Labels['exoframe.user'] === username && c.Labels['exoframe.project'] === id);
+
+  if (containers.length) {
+    await Promise.all(containers.map(removeContainer));
+    reply.code(204).send('removed');
+  }
+
+  reply.code(404).send({error: 'Container or function not found!'});
 };
 
 module.exports = fastify => {
