@@ -145,4 +145,5 @@ test('Should remove by url', async done => {
   const response = await fastify.inject(options);
 
   expect(response.statusCode).toEqual(204);
+  done();
 });
