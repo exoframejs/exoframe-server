@@ -76,7 +76,7 @@ beforeAll(async () => {
   const prjContainerConfig2 = generateContainerConfig({
     name: 'rmtest3',
     username: 'admin',
-    project: projectName,
+    project: projectName + '_custom',
     baseName: 'exo-admin-rmtest3',
     url: 'test.example.com',
   });
