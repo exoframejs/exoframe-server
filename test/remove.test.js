@@ -36,7 +36,7 @@ const generateContainerConfig = ({name, username, project, baseName}) => ({
     'exoframe.user': username,
     'exoframe.project': project,
     'traefik.backend': baseName,
-    'traefik.frontend.rule': 'Host:test',
+    'traefik.frontend.rule': 'Host:test.example.com',
   },
 });
 
@@ -132,4 +132,14 @@ test('Should return error when removing nonexistent project', async done => {
   expect(response.statusCode).toEqual(404);
   expect(result).toMatchObject({error: 'Container or function not found!'});
   done();
+});
+
+test('Should remove by url', async done => {
+  const options = Object.assign({}, baseOptions, {
+    url: `/remove/test.example.com`,
+  });
+
+  const response = await fastify.inject(options);
+
+  expect(response.statusCode).toEqual(204);
 });
