@@ -7,3 +7,6 @@ test/fixtures/secrets.db
 dist/
 bin/server-core.js
 bin/assets/
+
+.idea/
+package-lock.json
