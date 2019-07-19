@@ -25,7 +25,7 @@ const removeUserContainer = async ({username, id, reply}) => {
     return c.Labels['exoframe.user'] === username && c.Labels['traefik.frontend.rule'] === 'Host:' + id;
   });
 
-  if (containersByUrl.length && containersByUrl.length > 0) {
+  if (containersByUrl.length) {
     await Promise.all(containersByUrl.map(removeContainer));
     reply.code(204).send('removed');
     return;
