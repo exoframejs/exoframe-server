@@ -6,7 +6,8 @@ test/fixtures/deploying/
 test/fixtures/secrets.db
 dist/
 bin/server-core.js
-bin/assets/
+bin/runner.js
+bin/home.html
 
 .idea/
 package-lock.json
