@@ -1,3 +1,7 @@
+# 5.0.2 / 2019-07-19
+
+- Fix build process for newer ncc versions
+
 # 5.0.1 / 2019-07-17
 
 - Update node.js to v12.6 in dockerfile
