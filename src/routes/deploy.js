@@ -175,13 +175,16 @@ module.exports = fastify => {
       const resultStream = _();
       // deploy new versions
       deploy({username, folder, payload: request.payload, resultStream});
-      // schedule cleanup
-      scheduleCleanup({username, project, existing});
       // reply with deploy stream
       const responseStream = new Readable().wrap(resultStream);
       reply.code(200).send(responseStream);
-      // schedule temp folder cleanup on end
-      responseStream.on('end', () => cleanTemp(folder));
+      // schedule temp folder and container cleanup on deployment end
+      responseStream.on('end', () => {
+        // schedule container cleanup
+        scheduleCleanup({username, project, existing});
+        // clean temp folder
+        cleanTemp(folder);
+      });
     },
   });
 };
