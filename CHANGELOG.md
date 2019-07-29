@@ -1,3 +1,7 @@
+# 5.0.3 / 2019-07-29
+
+- Correctly cleanup old containers on deployment update (https://github.com/exoframejs/exoframe/issues/253)
+
 # 5.0.2 / 2019-07-19
 
 - Fix build process for newer ncc versions
