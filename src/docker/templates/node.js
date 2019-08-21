@@ -29,6 +29,9 @@ ${yarnOrNpm({hasYarn, hasLock})}
 # copy app itself
 COPY . /usr/src/app
 
+# run build if needed
+RUN npm run build --if-present
+
 EXPOSE 80
 
 CMD ["npm", "start"]
