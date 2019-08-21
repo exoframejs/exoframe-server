@@ -601,8 +601,8 @@ test('Should display error log for broken Node.js project', async done => {
   // check response
   expect(response.statusCode).toEqual(200);
   expect(error.message).toEqual('Build failed! See build log for details.');
-  expect(error.log[0].includes('Step 1/8 : FROM node:latest')).toBeTruthy();
-  expect(error.log.find(l => l.includes('Step 2/8 : RUN mkdir -p /usr/src/app'))).toBeDefined();
+  expect(error.log[0].includes('FROM node:latest')).toBeTruthy();
+  expect(error.log.find(l => l.includes('RUN mkdir -p /usr/src/app'))).toBeDefined();
   expect(error.log[error.log.length - 1]).toEqual(
     "The command '/bin/sh -c npm install --silent' returned a non-zero code: 1"
   );
