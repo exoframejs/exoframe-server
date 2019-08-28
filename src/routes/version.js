@@ -9,10 +9,16 @@ const pkg = require('../../package.json');
 // urls for tags request
 const exoServerUrl = `https://api.github.com/repos/exoframejs/exoframe-server/releases`;
 const traefikUrl = 'https://api.github.com/repos/containous/traefik/releases';
+const traefikVersionPrefix = 'v1.7';
 
-const getLatestVersion = async url => {
+const getLatestVersion = async (url, versionPrefix) => {
   const res = await fetch(url).then(r => r.json());
-  const latestRelease = res.filter(r => !r.draft && !r.prerelease).shift();
+  const latestRelease = res
+    // filter out drafts and pre-releases
+    .filter(r => !r.draft && !r.prerelease)
+    // if version prefix is provided - filter out releases that don't match it
+    .filter(r => (versionPrefix ? r.tag_name.startsWith(versionPrefix) : true))
+    .shift();
   return latestRelease.tag_name;
 };
 
@@ -32,7 +38,7 @@ module.exports = fastify => {
         }
         // get latest versions
         const lastServerTag = await getLatestVersion(exoServerUrl);
-        const lastTraefikTag = await getLatestVersion(traefikUrl);
+        const lastTraefikTag = await getLatestVersion(traefikUrl, traefikVersionPrefix);
         // reply
         reply.code(200).send({
           server: pkg.version,
