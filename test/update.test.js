@@ -14,6 +14,8 @@ const {sleep} = require('../src/util');
 
 // old traefik and server images
 const traefikTag = 'traefik:1.3-alpine';
+const traefikVersion = 'v1.7';
+const traefikNewTag = `traefik:${traefikVersion}`;
 const serverTag = 'exoframe/server:1.0.0';
 
 // options base
@@ -43,7 +45,7 @@ beforeAll(async () => {
   // get all images
   const oldImages = await docker.listImages();
   // remove current :latest images
-  const latestTraefik = oldImages.find(img => img.RepoTags && img.RepoTags.includes('traefik:latest'));
+  const latestTraefik = oldImages.find(img => img.RepoTags && img.RepoTags.includes(traefikNewTag));
   if (latestTraefik) {
     const limg = docker.getImage(latestTraefik.Id);
     await limg.remove({force: true});
@@ -61,7 +63,7 @@ beforeAll(async () => {
   // get old one and tag it as latest
   oldTraefik = images.find(img => img.RepoTags && img.RepoTags.includes(traefikTag));
   const timg = docker.getImage(oldTraefik.Id);
-  await timg.tag({repo: 'traefik', tag: 'latest'});
+  await timg.tag({repo: 'traefik', tag: traefikVersion});
   oldServer = images.find(img => img.RepoTags && img.RepoTags.includes(serverTag));
   const simg = docker.getImage(oldServer.Id);
   await simg.tag({repo: 'exoframe/server', tag: 'latest'});
@@ -139,7 +141,7 @@ test('Should update traefik', async done => {
 
   // check docker services
   const allImages = await docker.listImages();
-  const newTraefik = allImages.find(it => it.RepoTags && it.RepoTags.includes('traefik:latest'));
+  const newTraefik = allImages.find(it => it.RepoTags && it.RepoTags.includes(traefikNewTag));
   expect(newTraefik.Id).not.toBe(oldTraefik.Id);
 
   done();
