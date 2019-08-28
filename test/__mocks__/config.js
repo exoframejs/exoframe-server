@@ -25,7 +25,7 @@ const testConfig = {
   },
   compress: true,
   updateChannel: 'stable',
-  traefikImage: 'traefik:latest',
+  traefikImage: 'traefik:v1.7',
   traefikName: 'exoframe-traefik',
   traefikArgs: [],
   exoframeNetwork: 'exoframe',
