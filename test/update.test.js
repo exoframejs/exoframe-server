@@ -120,7 +120,7 @@ test('Should deploy traefik', async done => {
   expect(container.Ports.find(p => p.PrivatePort === 80)).toBeTruthy();
   expect(container.Ports.find(p => p.PublicPort === 80)).toBeTruthy();
   expect(container.Mounts.find(m => m.Destination === '/var/run/docker.sock')).toBeTruthy();
-  expect(container.Mounts.find(m => m.Destination === '/var/acme')).toBeTruthy();
+  expect(container.Mounts.find(m => m.Destination === '/var/traefik')).toBeTruthy();
 
   // cleanup
   const instance = docker.getContainer(container.Id);
