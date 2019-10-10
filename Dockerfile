@@ -1,4 +1,4 @@
-FROM node:12.6-alpine
+FROM node:12.11-alpine
 
 # install docker-compose
 RUN apk update \
