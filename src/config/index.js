@@ -89,7 +89,7 @@ const defaultConfig = {
   baseDomain: false,
   cors: false,
   updateChannel: 'stable',
-  traefikImage: 'traefik:v1.7',
+  traefikImage: 'traefik:latest',
   traefikName: 'exoframe-traefik',
   traefikArgs: [],
   exoframeNetwork: 'exoframe',

@@ -33,7 +33,6 @@ const updateCompose = ({username, baseName, serverConfig, composePath}) => {
   // modify services
   Object.keys(compose.services).forEach(svcKey => {
     const name = `${baseName}-${svcKey}-${uid.split('-').shift()}`;
-    const backend = `${baseName}-${svcKey}`;
     const networks = Array.from(new Set([network, ...(compose.services[svcKey].networks || ['default'])]));
     // update basic settings
     const ext = {
@@ -48,8 +47,6 @@ const updateCompose = ({username, baseName, serverConfig, composePath}) => {
       'exoframe.deployment': name,
       'exoframe.user': username,
       'exoframe.project': baseName,
-      'traefik.port': '80',
-      'traefik.backend': backend,
       'traefik.docker.network': network,
       'traefik.enable': 'true',
     };

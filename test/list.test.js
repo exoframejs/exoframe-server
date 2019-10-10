@@ -8,7 +8,7 @@ const getPort = require('get-port');
 // our packages
 const authToken = require('./fixtures/authToken');
 const {startServer} = require('../src');
-const {pullImage} = require('../src/docker/init');
+const {pullImage} = require('../src/docker/util');
 const docker = require('../src/docker/docker');
 
 // options base

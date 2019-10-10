@@ -8,7 +8,7 @@ const uuidv1 = require('uuid/v1');
 // our modules
 const logger = require('../logger');
 const {getConfig, recipesFolder, tempDockerDir} = require('../config');
-const {pullImage} = require('../docker/init');
+const {pullImage} = require('../docker/util');
 const docker = require('../docker/docker');
 const {build, buildFromParams} = require('../docker/build');
 const {start, startFromParams} = require('../docker/start');
