@@ -28,8 +28,7 @@ const generateContainerConfig = ({name, username, project, baseName}) => ({
     'exoframe.deployment': name,
     'exoframe.user': username,
     'exoframe.project': project,
-    'traefik.backend': baseName,
-    'traefik.frontend.rule': 'Host:test',
+    [`traefik.http.routers.${name}.rule`]: 'Host(`test`)',
   },
 });
 
@@ -89,16 +88,16 @@ test('Should list deployed projects', async done => {
   expect(container.Name.startsWith(`/${containerConfig1.name}`)).toBeTruthy();
   expect(container.Config.Labels['exoframe.deployment']).toEqual(containerConfig1.Labels['exoframe.deployment']);
   expect(container.Config.Labels['exoframe.user']).toEqual(containerConfig1.Labels['exoframe.user']);
-  expect(container.Config.Labels['traefik.backend']).toEqual(containerConfig1.Labels['traefik.backend']);
-  expect(container.Config.Labels['traefik.frontend.rule']).toEqual(containerConfig1.Labels['traefik.frontend.rule']);
+  expect(container.Config.Labels[`traefik.http.routers.${containerConfig1.name}.rule`]).toEqual(
+    containerConfig1.Labels[`traefik.http.routers.${containerConfig1.name}.rule`]
+  );
 
   // check second container info
   const containerTwo = result.containers.find(r => r.Name.startsWith(`/${containerConfig2.name}`));
   expect(containerTwo.Name.startsWith(`/${containerConfig2.name}`)).toBeTruthy();
   expect(containerTwo.Config.Labels['exoframe.deployment'].startsWith(containerConfig2.name)).toBeTruthy();
   expect(containerTwo.Config.Labels['exoframe.user']).toEqual(containerConfig2.Labels['exoframe.user']);
-  expect(containerTwo.Config.Labels['traefik.backend']).toEqual(containerConfig2.Labels['traefik.backend']);
-  expect(containerTwo.Config.Labels['traefik.frontend.rule']).toEqual('Host:test');
+  expect(containerTwo.Config.Labels[`traefik.http.routers.${containerConfig2.name}.rule`]).toEqual('Host(`test`)');
 
   await container1.remove({force: true});
   await container2.remove({force: true});

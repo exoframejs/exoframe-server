@@ -22,7 +22,10 @@ const removeUserContainer = async ({username, id, reply}) => {
 
   // if not found by name - try to find by domain.
   const containersByUrl = allContainers.filter(c => {
-    return c.Labels['exoframe.user'] === username && c.Labels['traefik.frontend.rule'] === 'Host:' + id;
+    return (
+      c.Labels['exoframe.user'] === username &&
+      c.Labels[`traefik.http.routers.${c.Labels['exoframe.deployment']}.rule`] === `Host(\`${id}\`)`
+    );
   });
 
   if (containersByUrl.length) {

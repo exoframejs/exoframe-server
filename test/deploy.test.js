@@ -95,14 +95,12 @@ test('Should deploy simple docker project', async done => {
   expect(containerInfo.Labels['exoframe.deployment']).toEqual(name);
   expect(containerInfo.Labels['exoframe.user']).toEqual('admin');
   expect(containerInfo.Labels['exoframe.project']).toEqual('test-project');
-  expect(containerInfo.Labels['traefik.backend']).toEqual(`${name}.test`);
   expect(containerInfo.Labels['traefik.docker.network']).toEqual('exoframe');
   expect(containerInfo.Labels['traefik.enable']).toEqual('true');
   expect(containerInfo.NetworkSettings.Networks.exoframe).toBeDefined();
   expect(containerInfo.Mounts.length).toEqual(1);
   expect(containerInfo.Mounts[0].Type).toEqual('volume');
   expect(containerInfo.Mounts[0].Name).toEqual('test');
-  expect(containerInfo.Mounts[0].Source).toEqual('/var/lib/docker/volumes/test/_data');
   expect(containerInfo.Mounts[0].Destination).toEqual('/volume');
 
   const containerData = docker.getContainer(containerInfo.Id);
@@ -152,7 +150,6 @@ test('Should deploy simple project from image and image tar', async done => {
   expect(containerInfo.Labels['exoframe.deployment']).toEqual(name);
   expect(containerInfo.Labels['exoframe.user']).toEqual('admin');
   expect(containerInfo.Labels['exoframe.project']).toEqual('test-image-project');
-  expect(containerInfo.Labels['traefik.backend']).toEqual(`${name}.test`);
   expect(containerInfo.Labels['traefik.docker.network']).toEqual('exoframe');
   expect(containerInfo.Labels['traefik.enable']).toEqual('true');
   expect(containerInfo.NetworkSettings.Networks.exoframe).toBeDefined();
@@ -198,7 +195,6 @@ test('Should deploy simple project from external image', async done => {
   expect(containerInfo.Labels['exoframe.deployment']).toEqual(name);
   expect(containerInfo.Labels['exoframe.user']).toEqual('admin');
   expect(containerInfo.Labels['exoframe.project']).toEqual('test-extimage-project');
-  expect(containerInfo.Labels['traefik.backend']).toEqual(`${name}.test`);
   expect(containerInfo.Labels['traefik.docker.network']).toEqual('exoframe');
   expect(containerInfo.Labels['traefik.enable']).toEqual('true');
   expect(containerInfo.NetworkSettings.Networks.exoframe).toBeDefined();
@@ -248,10 +244,9 @@ test('Should deploy simple node project', async done => {
   expect(container.Labels['exoframe.deployment']).toEqual(name);
   expect(container.Labels['exoframe.user']).toEqual('admin');
   expect(container.Labels['exoframe.project']).toEqual(name.replace(`-${deployId}`, ''));
-  expect(container.Labels['traefik.backend']).toEqual('localhost');
   expect(container.Labels['traefik.docker.network']).toEqual('exoframe');
   expect(container.Labels['traefik.enable']).toEqual('true');
-  expect(container.Labels['traefik.frontend.rule']).toEqual('Host:localhost');
+  expect(container.Labels[`traefik.http.routers.${name}.rule`]).toEqual('Host(`localhost`)');
   expect(container.NetworkSettings.Networks.exoframe).toBeDefined();
 
   // cleanup
@@ -294,10 +289,9 @@ test('Should deploy simple node project with package-lock', async done => {
   expect(container.Labels['exoframe.deployment']).toEqual(name);
   expect(container.Labels['exoframe.user']).toEqual('admin');
   expect(container.Labels['exoframe.project']).toEqual(name.replace(`-${deployId}`, ''));
-  expect(container.Labels['traefik.backend']).toEqual('localhost');
   expect(container.Labels['traefik.docker.network']).toEqual('exoframe');
   expect(container.Labels['traefik.enable']).toEqual('true');
-  expect(container.Labels['traefik.frontend.rule']).toEqual('Host:localhost');
+  expect(container.Labels[`traefik.http.routers.${name}.rule`]).toEqual('Host(`localhost`)');
   expect(container.NetworkSettings.Networks.exoframe).toBeDefined();
 
   // cleanup
@@ -336,15 +330,14 @@ test('Should deploy simple HTML project', async done => {
   expect(container.Labels['exoframe.deployment']).toEqual(name);
   expect(container.Labels['exoframe.user']).toEqual('admin');
   expect(container.Labels['exoframe.project']).toEqual('simple-html');
-  expect(container.Labels['traefik.backend']).toEqual(name);
   expect(container.Labels['traefik.docker.network']).toEqual('exoframe');
   expect(container.Labels['traefik.enable']).toEqual('true');
-  expect(container.Labels['traefik.frontend.rateLimit.extractorFunc']).toEqual('client.ip');
-  expect(container.Labels['traefik.frontend.rateLimit.rateSet.exo.period']).toEqual('1s');
-  expect(container.Labels['traefik.frontend.rateLimit.rateSet.exo.average']).toEqual('1');
-  expect(container.Labels['traefik.frontend.rateLimit.rateSet.exo.burst']).toEqual('5');
-  expect(container.Labels['traefik.frontend.rule']).toBeUndefined();
-  expect(container.Labels['traefik.frontend.auth.basic.users']).toEqual('user:$apr1$$9Cv/OMGj$$ZomWQzuQbL.3TRCS81A1g/');
+  expect(container.Labels[`traefik.http.middlewares.${name}-rate.ratelimit.average`]).toEqual('1');
+  expect(container.Labels[`traefik.http.middlewares.${name}-rate.ratelimit.burst`]).toEqual('5');
+  expect(container.Labels[`traefik.http.routers.${name}.rule`]).toBeUndefined();
+  expect(container.Labels[`traefik.http.middlewares.${name}-auth.basicauth.users`]).toEqual(
+    'user:$apr1$$9Cv/OMGj$$ZomWQzuQbL.3TRCS81A1g/'
+  );
   expect(container.NetworkSettings.Networks.exoframe).toBeDefined();
 
   // store initial deploy id
@@ -383,10 +376,9 @@ test('Should update simple HTML project', async done => {
   expect(container.Labels['exoframe.deployment']).toEqual(name);
   expect(container.Labels['exoframe.user']).toEqual('admin');
   expect(container.Labels['exoframe.project']).toEqual('simple-html');
-  expect(container.Labels['traefik.backend']).toEqual(name);
   expect(container.Labels['traefik.docker.network']).toEqual('exoframe');
   expect(container.Labels['traefik.enable']).toEqual('true');
-  expect(container.Labels['traefik.frontend.rule']).toBeUndefined();
+  expect(container.Labels[`traefik.http.routers.${name}.rule`]).toBeUndefined();
   expect(container.NetworkSettings.Networks.exoframe).toBeDefined();
 
   // get old container
@@ -453,13 +445,11 @@ test('Should deploy simple compose project', async done => {
   expect(containerTwo.Labels['exoframe.user']).toEqual('admin');
   expect(containerOne.Labels['exoframe.project']).toEqual(nameOne.replace(`-web-${deployIdOne}`, ''));
   expect(containerTwo.Labels['exoframe.project']).toEqual(nameTwo.replace(`-redis-${deployIdTwo}`, ''));
-  expect(containerOne.Labels['traefik.backend']).toEqual(nameOne.replace(`-${deployIdOne}`, ''));
-  expect(containerTwo.Labels['traefik.backend']).toEqual(nameTwo.replace(`-${deployIdTwo}`, ''));
   expect(containerOne.Labels['traefik.docker.network']).toEqual('exoframe');
   expect(containerTwo.Labels['traefik.docker.network']).toEqual('exoframe');
   expect(containerOne.Labels['traefik.enable']).toEqual('true');
   expect(containerTwo.Labels['traefik.enable']).toEqual('true');
-  expect(containerOne.Labels['traefik.frontend.rule']).toEqual('Host:test.dev');
+  expect(containerOne.Labels[`traefik.http.routers.web.rule`]).toEqual('Host(`test.dev`)');
   expect(containerOne.Labels['custom.envvar']).toEqual('custom-value');
   expect(containerOne.Labels['custom.secret']).toEqual('custom-secret-value');
   expect(containerOne.NetworkSettings.Networks.exoframe).toBeDefined();
@@ -517,13 +507,11 @@ test('Should update simple compose project', async done => {
   expect(containerTwo.Labels['exoframe.user']).toEqual('admin');
   expect(containerOne.Labels['exoframe.project']).toEqual(nameOne.replace(`-web-${deployIdOne}`, ''));
   expect(containerTwo.Labels['exoframe.project']).toEqual(nameTwo.replace(`-redis-${deployIdTwo}`, ''));
-  expect(containerOne.Labels['traefik.backend']).toEqual(nameOne.replace(`-${deployIdOne}`, ''));
-  expect(containerTwo.Labels['traefik.backend']).toEqual(nameTwo.replace(`-${deployIdTwo}`, ''));
   expect(containerOne.Labels['traefik.docker.network']).toEqual('exoframe');
   expect(containerTwo.Labels['traefik.docker.network']).toEqual('exoframe');
   expect(containerOne.Labels['traefik.enable']).toEqual('true');
   expect(containerTwo.Labels['traefik.enable']).toEqual('true');
-  expect(containerOne.Labels['traefik.frontend.rule']).toEqual('Host:test.dev');
+  expect(containerOne.Labels[`traefik.http.routers.web.rule`]).toEqual('Host(`test.dev`)');
   expect(containerOne.Labels['custom.envvar']).toEqual('custom-value');
   expect(containerOne.Labels['custom.secret']).toEqual('custom-secret-value');
   expect(containerOne.NetworkSettings.Networks.exoframe).toBeDefined();
@@ -752,10 +740,9 @@ test('Should deploy project with configured template', async done => {
   expect(container.Labels['exoframe.deployment']).toEqual(name);
   expect(container.Labels['exoframe.user']).toEqual('admin');
   expect(container.Labels['exoframe.project']).toEqual(name.replace(`-${deployId}`, ''));
-  expect(container.Labels['traefik.backend']).toEqual('localhost');
   expect(container.Labels['traefik.docker.network']).toEqual('exoframe');
   expect(container.Labels['traefik.enable']).toEqual('true');
-  expect(container.Labels['traefik.frontend.rule']).toEqual('Host:localhost');
+  expect(container.Labels[`traefik.http.routers.${name}.rule`]).toEqual('Host(`localhost`)');
   expect(container.NetworkSettings.Networks.exoframe).toBeDefined();
 
   // cleanup

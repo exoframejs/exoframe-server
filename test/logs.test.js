@@ -27,8 +27,7 @@ const generateContainerConfig = ({name, cmd, username, project, baseName}) => ({
     'exoframe.deployment': name,
     'exoframe.user': username,
     'exoframe.project': project,
-    'traefik.backend': baseName,
-    'traefik.frontend.rule': 'Host:test',
+    [`traefik.http.routers.${name}.rule`]: `Host(\`test\`)`,
   },
 });
 
