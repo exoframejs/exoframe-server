@@ -234,7 +234,7 @@ exports.start = async ({image, username, folder, resultStream, existing = []}) =
   const middlewares = [];
 
   // if we have letsencrypt enabled - enable https redirect
-  if (config.letsencrypt || (config.letsencrypt === undefined && serverConfig.letsencrypt)) {
+  if (serverConfig.letsencrypt && (config.letsencrypt || config.letsencrypt === undefined)) {
     Labels[`traefik.http.middlewares.${name}-https.redirectscheme.scheme`] = 'https';
     middlewares.push(`${name}-https@docker`);
   }
