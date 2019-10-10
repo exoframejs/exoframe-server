@@ -11,17 +11,8 @@ const logger = require('../logger');
  */
 const portFromImage = async image => {
   const img = await docker.getImage(image).inspect();
-  if (!img.Config.ExposedPorts) {
-    return;
-  }
   const ports = Object.keys(img.Config.ExposedPorts);
-  if (!ports || !ports.length) {
-    return;
-  }
   const firstPort = ports[0];
-  if (!firstPort) {
-    return;
-  }
   const port = firstPort.split('/')[0];
   return port;
 };
@@ -101,8 +92,7 @@ exports.startFromParams = async ({
     let usePort = port;
     // if user hasn't given port - detect it from image exposed ports
     if (!usePort) {
-      usePort = await portFromImage(image);
-      if (!usePort) usePort = 80;
+      usePort = await portFromImage(image).catch(() => 80);
       logger.debug('Detected deployment port:', usePort);
     }
     Labels[`traefik.http.services.${projectName}.loadbalancer.server.port`] = String(port);
@@ -260,9 +250,8 @@ exports.start = async ({image, username, folder, resultStream, existing = []}) =
     let {port} = config;
     // if user hasn't given port - detect it from image exposed ports
     if (!port) {
-      port = await portFromImage(image);
-      // default to 80 if detection failed
-      if (!port) port = 80;
+      // try to detect port and default to 80 if failed
+      port = await portFromImage(image).catch(() => 80);
       logger.debug('Detected deployment port:', port);
     }
     Labels[`traefik.http.services.${project}.loadbalancer.server.port`] = String(port);
