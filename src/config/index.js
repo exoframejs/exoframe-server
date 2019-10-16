@@ -91,6 +91,7 @@ const defaultConfig = {
   updateChannel: 'stable',
   traefikImage: 'traefik:latest',
   traefikName: 'exoframe-traefik',
+  traefikPath: path.join(os.homedir(), '.exoframe', 'traefik'),
   traefikArgs: [],
   exoframeNetwork: 'exoframe',
   publicKeysPath,

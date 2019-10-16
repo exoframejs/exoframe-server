@@ -10,10 +10,6 @@ const docker = require('./docker');
 const logger = require('../logger');
 const {pullImage} = require('./util');
 
-// config vars
-const baseFolder = path.join(os.homedir(), '.exoframe');
-const traefikPath = path.join(baseFolder, 'traefik');
-
 // export traefik init function
 exports.initTraefik = async exoNet => {
   await waitForConfig();
@@ -30,9 +26,9 @@ exports.initTraefik = async exoNet => {
 
   // build traefik path
   try {
-    fs.statSync(traefikPath);
+    fs.statSync(config.traefikPath);
   } catch (e) {
-    mkdirp.sync(traefikPath);
+    mkdirp.sync(config.traefikPath);
   }
 
   // get all containers
@@ -107,7 +103,7 @@ exports.initTraefik = async exoNet => {
     },
     HostConfig: {
       RestartPolicy,
-      Binds: ['/var/run/docker.sock:/var/run/docker.sock', `${traefikPath}:/var/traefik`],
+      Binds: ['/var/run/docker.sock:/var/run/docker.sock', `${config.traefikPath}:/var/traefik`],
       PortBindings: {
         '80/tcp': [{HostPort: '80'}],
         '443/tcp': [{HostPort: '443'}],
