@@ -92,7 +92,6 @@ exports.initTraefik = async exoNet => {
   const letsencrypt = [
     '--entryPoints.web.address=:80',
     '--entryPoints.websecure.address=:443',
-    `--certificatesResolvers.exoframe.acme.tlschallenge=true`,
     `--certificatesResolvers.exoframe.acme.email=${config.letsencryptEmail}`,
     '--certificatesResolvers.exoframe.acme.storage=/var/traefik/acme.json',
     '--certificatesResolvers.exoframe.acme.httpChallenge.entryPoint=web',
