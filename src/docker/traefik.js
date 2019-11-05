@@ -12,7 +12,6 @@ const {pullImage} = require('./util');
 
 // config vars
 const baseFolder = path.join(os.homedir(), '.exoframe');
-const traefikPath = path.join(baseFolder, 'traefik');
 
 // export traefik init function
 exports.initTraefik = async exoNet => {
@@ -28,15 +27,38 @@ exports.initTraefik = async exoNet => {
     return;
   }
 
-  // build traefik path
-  try {
-    fs.statSync(traefikPath);
-  } catch (e) {
-    mkdirp.sync(traefikPath);
-  }
+  // build local traefik path
+  let traefikPath = path.join(baseFolder, 'traefik');
+  let initLocal = true;
 
   // get all containers
   const allContainers = await docker.listContainers({all: true});
+  // find server container
+  const server = allContainers.find(c => c.Names.find(n => n.startsWith('/exoframe-server')));
+  // if server was found - extract traefik path from it
+  if (server) {
+    const serverContainer = docker.getContainer(server.Id);
+    const serverInfo = await serverContainer.inspect();
+    const volumes = serverInfo.HostConfig.Binds;
+    const configVol = (volumes || []).find(v => v.endsWith(':/root/.exoframe'));
+    if (configVol) {
+      const configPath = configVol.replace(':/root/.exoframe', '');
+      traefikPath = path.join(configPath, 'traefik');
+      logger.info('Running in docker, using existing volume to mount traefik config:', traefikPath);
+      initLocal = false;
+    }
+  }
+
+  // if server volume wasn't found - create local folder if needed
+  if (initLocal) {
+    try {
+      fs.statSync(traefikPath);
+    } catch (e) {
+      mkdirp.sync(traefikPath);
+    }
+    logger.info('Running without docker, using local folder for traefik config:', traefikPath);
+  }
+
   // try to find traefik instance
   const traefik = allContainers.find(c => c.Names.find(n => n.startsWith(`/${config.traefikName}`)));
 
