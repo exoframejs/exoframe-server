@@ -1,3 +1,9 @@
+# 6.0.1 / 2019-11-05
+
+Fixes:
+
+- Correctly redirect http to https when using letsencrypt
+
 # 6.0.0 / 2019-11-05
 
 Breaking changes:
