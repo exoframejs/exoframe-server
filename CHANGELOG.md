@@ -1,3 +1,9 @@
+# 6.0.2 / 2019-11-05
+
+Fixes:
+
+- Fix http to https redirect logic (harder than it seems :| )
+
 # 6.0.1 / 2019-11-05
 
 Fixes:
