@@ -122,7 +122,7 @@ exports.functionToContainerFormat = ({config, route, type = 'http'}) => ({
   Name: `/${config.name}`,
   Config: {
     Labels: {
-      'traefik.frontend.rule': type === 'http' ? route || `/${config.name}` : 'Non-HTTP',
+      [`traefik.http.routers.${config.name}.rule`]: type === 'http' ? route || `/${config.name}` : 'Non-HTTP',
       'exoframe.project': config.name,
       'exoframe.type': `Function (${type})`,
     },

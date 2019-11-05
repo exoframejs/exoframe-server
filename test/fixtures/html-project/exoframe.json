@@ -4,7 +4,6 @@
   "project": "simple-html",
   "restart": "no",
   "rateLimit": {
-    "period": "1s",
     "average": 1,
     "burst": 5
   },

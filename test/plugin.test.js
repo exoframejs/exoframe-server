@@ -13,6 +13,7 @@ const getPort = require('get-port');
 
 // our packages
 const authToken = require('./fixtures/authToken');
+const {secretsInited} = require('../src/db/secrets');
 const {initPlugins, getPlugins} = require('../src/plugins');
 const {initDocker} = require('../src/docker/init');
 const {start, startFromParams} = require('../src/docker/start');
@@ -28,9 +29,13 @@ const options = {
   },
 };
 
-test('Should init plugins', async done => {
+beforeAll(async done => {
+  await secretsInited;
   await initPlugins();
+  done();
+});
 
+test('Should init plugins', async done => {
   const plugins = getPlugins();
   expect(plugins.length).toEqual(1);
 
@@ -41,7 +46,6 @@ test('Should init plugins', async done => {
 });
 
 test('init', async done => {
-  await initPlugins();
   await initDocker();
 
   const plugins = getPlugins();
@@ -52,8 +56,6 @@ test('init', async done => {
 });
 
 test('start', async done => {
-  await initPlugins();
-
   await start({image: 'test', username: 'admin', folder: testProjectPath, resultStream: {}});
 
   const plugins = getPlugins();
@@ -64,8 +66,6 @@ test('start', async done => {
 });
 
 test('startFromParams', async done => {
-  await initPlugins();
-
   await startFromParams({
     image: 'test',
     deploymentName: 'test-deploy',
@@ -85,8 +85,6 @@ test('startFromParams', async done => {
 });
 
 test('list', async done => {
-  await initPlugins();
-
   // start server
   const port = await getPort();
   const fastify = await startServer(port);
@@ -107,9 +105,6 @@ test('list', async done => {
 });
 
 test('logs', async done => {
-  // load plugins
-  await initPlugins();
-
   // start server
   const port = await getPort();
   const fastify = await startServer(port);
@@ -130,9 +125,6 @@ test('logs', async done => {
 });
 
 test('remove', async done => {
-  // load plugins
-  await initPlugins();
-
   // start server
   const port = await getPort();
   const fastify = await startServer(port);

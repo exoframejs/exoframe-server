@@ -36,5 +36,6 @@ exports.initPlugins = async () => {
     logger.warn(`WARNING! You have installed ${exclusivePlugins.length} exclusive mode plugins!
 This might cause unexpected behaviour during Exoframe deployemnts.
 Please, only include one exclusive plugin at a time!`);
+    logger.debug('Exclusive plugins list:', exclusivePlugins);
   }
 };

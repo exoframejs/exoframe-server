@@ -9,7 +9,7 @@ const pkg = require('../../package.json');
 // urls for tags request
 const exoServerUrl = `https://api.github.com/repos/exoframejs/exoframe-server/releases`;
 const traefikUrl = 'https://api.github.com/repos/containous/traefik/releases';
-const traefikVersionPrefix = 'v1.7';
+const traefikVersionPrefix = 'v2';
 
 const getLatestVersion = async (url, versionPrefix) => {
   const res = await fetch(url).then(r => r.json());

@@ -9,12 +9,13 @@ const getPort = require('get-port');
 const authToken = require('./fixtures/authToken');
 const {startServer} = require('../src');
 const docker = require('../src/docker/docker');
-const {pullImage, initDocker} = require('../src/docker/init');
+const {initDocker} = require('../src/docker/init');
+const {pullImage} = require('../src/docker/util');
 const {sleep} = require('../src/util');
 
 // old traefik and server images
 const traefikTag = 'traefik:1.3-alpine';
-const traefikVersion = 'v1.7';
+const traefikVersion = 'latest';
 const traefikNewTag = `traefik:${traefikVersion}`;
 const serverTag = 'exoframe/server:1.0.0';
 
@@ -119,7 +120,7 @@ test('Should deploy traefik', async done => {
   expect(container.Ports.find(p => p.PrivatePort === 80)).toBeTruthy();
   expect(container.Ports.find(p => p.PublicPort === 80)).toBeTruthy();
   expect(container.Mounts.find(m => m.Destination === '/var/run/docker.sock')).toBeTruthy();
-  expect(container.Mounts.find(m => m.Destination === '/var/acme')).toBeTruthy();
+  expect(container.Mounts.find(m => m.Destination === '/var/traefik')).toBeTruthy();
 
   // cleanup
   const instance = docker.getContainer(container.Id);

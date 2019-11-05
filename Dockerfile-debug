@@ -1,4 +1,4 @@
-FROM node:lts
+FROM node:12
 
 # install required libs, docker-compose and yarn
 RUN apt-get update && apt-get install python-pip -y && pip install docker-compose
