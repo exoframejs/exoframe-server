@@ -1,3 +1,20 @@
+# 6.0.0 / 2019-11-05
+
+Breaking changes:
+
+- Exoframe server has been updated to work with Traefik v2.0
+
+Additions:
+
+- Config command now includes additional port, compess and letsencrypt settings
+- Allow disabling letsencrypt on inidividual deployments
+
+Fixes:
+
+- Use server volume for traefik config mapping when running in docker
+
+For migration guide see [Exoframe CLI Changelog](https://github.com/exoframejs/exoframe/blob/master/CHANGELOG.md#600--2019-11-05)
+
 # 5.0.4 / 2019-08-28
 
 - Pin traefik to v1.7.x
