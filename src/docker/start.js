@@ -79,6 +79,7 @@ exports.startFromParams = async ({
   if (serverConfig.letsencrypt) {
     Labels[`traefik.http.middlewares.${name}-https.redirectscheme.scheme`] = 'https';
     Labels[`traefik.http.routers.${name}.tls.certresolver`] = 'exoframeChallenge';
+    Labels[`traefik.http.routers.${name}.entrypoints`] = 'websecure';
     middlewares.push(`${name}-https@docker`);
   }
 
@@ -238,6 +239,7 @@ exports.start = async ({image, username, folder, resultStream, existing = []}) =
   if (serverConfig.letsencrypt && (config.letsencrypt || config.letsencrypt === undefined)) {
     Labels[`traefik.http.middlewares.${name}-https.redirectscheme.scheme`] = 'https';
     Labels[`traefik.http.routers.${name}.tls.certresolver`] = 'exoframeChallenge';
+    Labels[`traefik.http.routers.${name}.entrypoints`] = 'websecure';
     middlewares.push(`${name}-https@docker`);
   }
 
