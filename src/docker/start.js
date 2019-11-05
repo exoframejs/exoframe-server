@@ -80,6 +80,10 @@ exports.startFromParams = async ({
     Labels[`traefik.http.middlewares.${name}-https.redirectscheme.scheme`] = 'https';
     Labels[`traefik.http.routers.${name}.tls.certresolver`] = 'exoframeChallenge';
     Labels[`traefik.http.routers.${name}.entrypoints`] = 'websecure';
+    // redirect http to https
+    Labels[`traefik.http.middlewares.${name}-redirect.redirectscheme.scheme`] = 'https';
+    Labels[`traefik.http.routers.${name}-web.entrypoints`] = 'web';
+    Labels[`traefik.http.routers.${name}-web.middlewares`] = `${name}-redirect@docker`;
     middlewares.push(`${name}-https@docker`);
   }
 
@@ -99,6 +103,7 @@ exports.startFromParams = async ({
     }
     Labels[`traefik.http.services.${projectName}.loadbalancer.server.port`] = String(port);
     Labels[`traefik.http.routers.${name}.rule`] = frontend;
+    Labels[`traefik.http.routers.${name}-web.rule`] = frontend;
   }
 
   // remove or stringify all middlewares
@@ -240,6 +245,10 @@ exports.start = async ({image, username, folder, resultStream, existing = []}) =
     Labels[`traefik.http.middlewares.${name}-https.redirectscheme.scheme`] = 'https';
     Labels[`traefik.http.routers.${name}.tls.certresolver`] = 'exoframeChallenge';
     Labels[`traefik.http.routers.${name}.entrypoints`] = 'websecure';
+    // redirect http to https
+    Labels[`traefik.http.middlewares.${name}-redirect.redirectscheme.scheme`] = 'https';
+    Labels[`traefik.http.routers.${name}-web.entrypoints`] = 'web';
+    Labels[`traefik.http.routers.${name}-web.middlewares`] = `${name}-redirect@docker`;
     middlewares.push(`${name}-https@docker`);
   }
 
@@ -259,7 +268,9 @@ exports.start = async ({image, username, folder, resultStream, existing = []}) =
       logger.debug('Detected deployment port:', port);
     }
     Labels[`traefik.http.services.${project}.loadbalancer.server.port`] = String(port);
-    Labels[`traefik.http.routers.${name}.rule`] = host.includes('Host(') ? host : `Host(\`${host}\`)`;
+    const rule = host.includes('Host(') ? host : `Host(\`${host}\`)`;
+    Labels[`traefik.http.routers.${name}.rule`] = rule;
+    Labels[`traefik.http.routers.${name}-web.rule`] = rule;
   }
 
   // if rate-limit is set - add it to config
