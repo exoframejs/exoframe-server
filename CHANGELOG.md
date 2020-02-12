@@ -1,3 +1,11 @@
+# 6.1.0 / 2020-02-12
+
+- Allow using custom traefik middlewares from exoframe config
+- Add version label to docker images
+- Update node.js to v12.15
+- Update dependencies
+- Use npm instead of yarn for repo
+
 # 6.0.2 / 2019-11-05
 
 Fixes:
