@@ -699,6 +699,12 @@ test('Should have additional labels', async done => {
   expect(containerInfo).toBeDefined();
   expect(containerInfo.Labels['custom.label']).toEqual('additional-label');
 
+  // check middlewares
+  const name = completeDeployments[0].Name.slice(1);
+  const middlewaresLabel = containerInfo.Labels[`traefik.http.routers.${name}.middlewares`];
+  expect(middlewaresLabel).toContain('my-redirectregex@docker');
+  expect(middlewaresLabel).toContain('my-test@docker');
+
   // cleanup
   const instance = docker.getContainer(containerInfo.Id);
   await instance.remove({force: true});
