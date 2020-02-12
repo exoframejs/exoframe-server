@@ -7,27 +7,28 @@ services:
 
 node_js: lts/erbium
 
-cache: yarn
+cache: npm
 
 before_install:
   - curl -L https://github.com/docker/compose/releases/download/1.23.2/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
 
 script:
-  - yarn test
-  - yarn lint
+  - npm test
+  - npm run lint
 
 after_success:
   - docker rmi $(docker images -q)
-  - yarn coveralls
-  - yarn build
+  - npm run coveralls
+  - npm run build
   - docker login -u $HUB_USER -p $HUB_PASS
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
   - export DEBUG_TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "debug_latest"; else echo "debug_$TRAVIS_BRANCH" ; fi`
-  - docker build --pull -t exoframe/server:$TAG .
+  - export VERSION=`node -pe "require('./package.json').version"`
+  - docker build --pull --label "version=$VERSION" -t exoframe/server:$TAG .
   - if [ -z "$TRAVIS_TAG" ]; then echo "No tag, skipping"; else docker tag exoframe/server:$TAG exoframe/server:$TRAVIS_TAG; fi
   # build debug docker image
-  - docker build --pull -f Dockerfile-debug -t exoframe/server:$DEBUG_TAG .
+  - docker build --pull -f Dockerfile-debug --label "version=$VERSION" -t exoframe/server:$DEBUG_TAG .
   # push all images to registry
   - docker push exoframe/server
 
@@ -38,7 +39,7 @@ env:
 
 deploy:
   - provider: npm
-    skip_cleanup: true
+    edge: true
     email: yamalight@gmail.com
     api_key:
       secure: jx1saIbfvgwhhRJiNv0zlSGoCncgsyZCHTJM4GBmD832JB3TG8NPJJM3YRorZh+Z8UdIbqshYMfrxLkD7YrerHdC69c3ruLPc9XjThIYKpNSIUB++VH6aeGWk33KLuTFo9F2w9ByXWlyYGGapM75zfrj6nfmbCV6nBJDz6ecUC1j06l1l+V9p+JCbbcd0W7PEIzYlWCtDa7Ix8sPYK0sU7tHbBdQJB9t1Bn9sPJ/g3Qyb1DBBSHkG4UhZyXNQYyF0+GVgSYsXwzkxVJqN7K6HtEYmzRL57sLlDtk5yK9Fd5xyV0OSo3diWw6VOoywqHtznVSX1LSLfiapdYq9tQyvxqPYBA7lTtBpqQ+7iTWb0Mpp2ozhlM00LGyKiWxX6OgrveBbQcJS4GTVDkdPzZB8DSh+MsGA2nSJD4hHu0WdsLdUNIhHXV937LDbuPozngbxpm6jj2BU+cnIuaeoKyLh29Kke1dIrj2pFy3Rnki/LdPoZ6sXLn4AqEi4Iish5rPdMfVZ+Emd+H59R0MBc/N6/lmWtiFowDyuOBNYDFJc1SF0Fgs1oIMZqVv7gUMkMKg9zSZFDbFo2nuQzu/W7uGujA9Ry6u2l3Tx2Gya4Anlm+ebIDeK042EeXNx1HU8SPmP4QEKPQfQyjauxIZ9t/Mk1NAAEYuIRwSIOr0Akxs0Ng=
@@ -46,7 +47,7 @@ deploy:
       repo: exoframejs/exoframe-server
       tags: true
   - provider: npm
-    skip_cleanup: true
+    edge: true
     tag: next
     email: yamalight@gmail.com
     api_key:

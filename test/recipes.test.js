@@ -4,6 +4,7 @@ jest.mock('../src/config', () => require('./__mocks__/config'));
 
 // npm packages
 const fs = require('fs');
+const mkdirp = require('mkdirp');
 const path = require('path');
 const getPort = require('get-port');
 
@@ -64,7 +65,7 @@ test('Should install new recipe and return list of questions', async done => {
 test('Should execute recipe', async done => {
   // write test module to folder
   const folder = path.join(recipesFolder, 'node_modules', testRunRecipe);
-  fs.mkdirSync(folder);
+  mkdirp.sync(folder);
   fs.writeFileSync(
     path.join(folder, 'index.js'),
     `exports.runSetup = async ({answers}) => {

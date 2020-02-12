@@ -229,6 +229,17 @@ exports.start = async ({image, username, folder, resultStream, existing = []}) =
   }
   const additionalLabels = config.labels || {};
 
+  const configMiddlewares = Object.keys(additionalLabels)
+    // we want all middlewares
+    .filter(label => label.startsWith('traefik.http.middlewares.'))
+    // map them to name with @docker postfix
+    .map(label => {
+      const [middlewareName] = label.replace('traefik.http.middlewares.', '').split('.');
+      return `${middlewareName}@docker`;
+    })
+    // concat with other middlewares from config if present
+    .concat(config.middlewares || []);
+
   const Labels = Object.assign({}, additionalLabels, {
     'exoframe.deployment': name,
     'exoframe.user': username,
@@ -238,7 +249,7 @@ exports.start = async ({image, username, folder, resultStream, existing = []}) =
   });
 
   // create middlewares array
-  const middlewares = [];
+  const middlewares = configMiddlewares || [];
 
   // if we have letsencrypt enabled - enable https redirect
   if (serverConfig.letsencrypt && (config.letsencrypt || config.letsencrypt === undefined)) {
@@ -289,7 +300,7 @@ exports.start = async ({image, username, folder, resultStream, existing = []}) =
 
   // remove or stringify all middlewares
   if (middlewares.length > 0) {
-    Labels[`traefik.http.routers.${name}.middlewares`] = middlewares.join(',');
+    Labels[`traefik.http.routers.${name}.middlewares`] = [...new Set(middlewares)].join(',');
   }
 
   // run startFromParams via plugins if available

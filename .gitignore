@@ -8,6 +8,4 @@ dist/
 bin/server-core.js
 bin/runner.js
 bin/home.html
-
 .idea/
-package-lock.json
