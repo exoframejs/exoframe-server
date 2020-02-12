@@ -25,7 +25,7 @@ after_success:
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
   - export DEBUG_TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "debug_latest"; else echo "debug_$TRAVIS_BRANCH" ; fi`
   - export VERSION=`node -pe "require('./package.json').version"`
-  - docker build --pull -t --label "version=$VERSION" exoframe/server:$TAG .
+  - docker build --pull --label "version=$VERSION" -t exoframe/server:$TAG .
   - if [ -z "$TRAVIS_TAG" ]; then echo "No tag, skipping"; else docker tag exoframe/server:$TAG exoframe/server:$TRAVIS_TAG; fi
   # build debug docker image
   - docker build --pull -f Dockerfile-debug --label "version=$VERSION" -t exoframe/server:$DEBUG_TAG .
