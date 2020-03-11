@@ -40,9 +40,10 @@ exports.initTraefik = async exoNet => {
     const serverContainer = docker.getContainer(server.Id);
     const serverInfo = await serverContainer.inspect();
     const volumes = serverInfo.HostConfig.Binds;
-    const configVol = (volumes || []).find(v => v.endsWith(':/root/.exoframe'));
+    const mountRegex = RegExp(':/root/.exoframe(:rw|:ro)?$');
+    const configVol = (volumes || []).find(v => mountRegex.test(v));
     if (configVol) {
-      const configPath = configVol.replace(':/root/.exoframe', '');
+      const configPath = configVol.replace(mountRegex, '');
       traefikPath = path.join(configPath, 'traefik');
       logger.info('Running in docker, using existing volume to mount traefik config:', traefikPath);
       initLocal = false;
