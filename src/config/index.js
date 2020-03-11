@@ -91,7 +91,7 @@ const defaultConfig = {
   updateChannel: 'stable',
   traefikImage: 'traefik:latest',
   traefikName: 'exoframe-traefik',
-  traefikArgs: [],
+  traefikDisableGeneratedConfig: false,
   exoframeNetwork: 'exoframe',
   publicKeysPath,
   plugins: {

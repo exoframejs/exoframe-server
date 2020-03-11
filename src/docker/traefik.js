@@ -3,6 +3,7 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const mkdirp = require('mkdirp');
+const yaml = require('js-yaml');
 
 // our modules
 const {getConfig, waitForConfig} = require('../config');
@@ -12,6 +13,59 @@ const {pullImage} = require('./util');
 
 // config vars
 const baseFolder = path.join(os.homedir(), '.exoframe');
+
+async function generateTraefikConfig(config) {
+  // letsencrypt flags
+  const letsencrypt = {
+    entryPoints: {
+      websecure: {
+        address: ':443',
+      },
+    },
+    certificatesResolvers: {
+      exoframeChallenge: {
+        acme: {
+          httpChallenge: {
+            entryPoint: 'web',
+          },
+          email: config.letsencryptEmail || null,
+          storage: '/var/traefik/acme.json',
+        },
+      },
+    },
+  };
+
+  let traefikConfig = {
+    log: {
+      level: config.debug ? 'DEBUG' : 'warning',
+      filePath: '/var/traefik/traefik.log',
+    },
+    entryPoints: {
+      web: {
+        address: ':80',
+      },
+    },
+    providers: {
+      docker: {
+        endpoint: 'unix:///var/run/docker.sock',
+        exposedByDefault: false,
+      },
+    },
+    ...(config.letsencrypt ? letsencrypt : {}),
+  };
+
+  const traefikConfigPath = path.join(baseFolder, 'traefik', 'traefik.yml');
+
+  if (fs.existsSync(traefikConfigPath)) {
+    const oldTraefikConfig = yaml.safeLoad(fs.readFileSync(traefikConfigPath, 'utf8'));
+    traefikConfig = {...traefikConfig, ...oldTraefikConfig};
+  }
+
+  const traefikConfigString = yaml.safeDump(traefikConfig);
+
+  // write new traefik config
+  fs.writeFileSync(traefikConfigPath, traefikConfigString);
+}
 
 // export traefik init function
 exports.initTraefik = async exoNet => {
@@ -23,7 +77,7 @@ exports.initTraefik = async exoNet => {
 
   // check if traefik management is disabled
   if (!config.traefikImage) {
-    logger.info('Traefik managment disabled, skipping init..');
+    logger.info('Traefik managment disabled, skipping init.');
     return;
   }
 
@@ -58,9 +112,17 @@ exports.initTraefik = async exoNet => {
   // try to find traefik instance
   const traefik = allContainers.find(c => c.Names.find(n => n.startsWith(`/${config.traefikName}`)));
 
+  // generate traefik config
+  if (!config.traefikDisableGeneratedConfig) {
+    await generateTraefikConfig(config, traefikPath);
+  }
+
   // if traefik exists and running - just return
   if (traefik && !traefik.Status.includes('Exited')) {
-    logger.info('Traefik already running, docker init done!');
+    logger.info('Traefik already running. Restarting traefik ...');
+    const traefikContainer = docker.getContainer(traefik.Id);
+    await traefikContainer.restart();
+    logger.info('Docker init done!');
     return;
   }
 
@@ -81,51 +143,24 @@ exports.initTraefik = async exoNet => {
     logger.debug(pullLog);
   }
 
-  // debug flags
-  const debug = ['--log.level=DEBUG'];
-
-  // letsencrypt flags
-  const letsencrypt = [
-    '--entryPoints.web.address=:80',
-    '--entryPoints.websecure.address=:443',
-    '--certificatesresolvers.exoframeChallenge.acme.httpchallenge=true',
-    `--certificatesResolvers.exoframeChallenge.acme.email=${config.letsencryptEmail}`,
-    '--certificatesResolvers.exoframeChallenge.acme.storage=/var/traefik/acme.json',
-    '--certificatesResolvers.exoframeChallenge.acme.httpChallenge.entryPoint=web',
-  ];
-
-  // construct command
-  const Cmd = [
-    '--providers.docker',
-    '--providers.docker.exposedByDefault=false',
-    '--log.filePath=/var/traefik/traefik.log',
-    ...(config.letsencrypt ? letsencrypt : []),
-    ...(config.debug ? debug : []),
-    ...(config.traefikArgs || []),
-  ];
-
-  const Labels = {
-    'exoframe.deployment': 'exo-traefik',
-    'exoframe.user': 'admin',
-  };
-
-  const RestartPolicy = {
-    Name: 'on-failure',
-    MaximumRetryCount: 2,
-  };
-
   // start traefik in docker
   const container = await docker.createContainer({
     Image: config.traefikImage,
     name: config.traefikName,
-    Cmd,
-    Labels,
+    Cmd: '--configFile=/var/traefik/traefik.yml',
+    Labels: {
+      'exoframe.deployment': 'exo-traefik',
+      'exoframe.user': 'admin',
+    },
     ExposedPorts: {
       '80/tcp': {},
       '443/tcp': {},
     },
     HostConfig: {
-      RestartPolicy,
+      RestartPolicy: {
+        Name: 'on-failure',
+        MaximumRetryCount: 2,
+      },
       Binds: ['/var/run/docker.sock:/var/run/docker.sock', `${traefikPath}:/var/traefik`],
       PortBindings: {
         '80/tcp': [{HostPort: '80'}],
