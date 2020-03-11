@@ -37,13 +37,9 @@ exports.initTraefik = async exoNet => {
   const server = allContainers.find(c => c.Names.find(n => n.startsWith('/exoframe-server')));
   // if server was found - extract traefik path from it
   if (server) {
-    const serverContainer = docker.getContainer(server.Id);
-    const serverInfo = await serverContainer.inspect();
-    const volumes = serverInfo.HostConfig.Binds;
-    const configVol = (volumes || []).find(v => v.endsWith(':/root/.exoframe'));
+    const configVol = (server.Mounts || []).find(v => v.Destination === '/root/.exoframe');
     if (configVol) {
-      const configPath = configVol.replace(':/root/.exoframe', '');
-      traefikPath = path.join(configPath, 'traefik');
+      traefikPath = path.join(configVol.Source, 'traefik');
       logger.info('Running in docker, using existing volume to mount traefik config:', traefikPath);
       initLocal = false;
     }
