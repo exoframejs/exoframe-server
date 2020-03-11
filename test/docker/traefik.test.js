@@ -64,7 +64,6 @@ describe('Traefik', () => {
   });
 
   test('Should mount config folder to traefik', () => {
-    console.log(container.Mounts);
     expect(container.Mounts.find(m => m.Destination === '/var/run/docker.sock')).toBeTruthy();
     expect(container.Mounts.find(m => m.Destination === '/var/traefik')).toBeTruthy();
   });
