@@ -15,6 +15,20 @@ Exoframe is a self-hosted tool that allows simple one-command deployments using 
 
 For more details on how to get it up and running please follow the following link [how to setup exoframe-server](https://github.com/exoframejs/exoframe/tree/master/docs).
 
+## Development
+
+``` bash
+# Start the development setup:
+yarn docker:start
+
+# Run something inside of the exoframe container:
+yarn docker:exec [command]
+
+# Test your code:
+yarn lint
+yarn test
+```
+
 ## License
 
 Licensed under MIT.

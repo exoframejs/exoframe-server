@@ -81,10 +81,10 @@ jobs:
           echo VERSION=$VERSION
 
           # Build docker image
-          docker build --quiet --cache-from $IMAGE_NAME:$TAG --label "version=$VERSION" -t $IMAGE_NAME:$TAG .
+          docker build -f docker/Dockerfile --quiet --cache-from $IMAGE_NAME:$TAG --label "version=$VERSION" -t $IMAGE_NAME:$TAG .
           
           # Build debug docker image
-          docker build -f Dockerfile.debug --quiet --cache-from $IMAGE_NAME:$DEBUG_TAG --label "version=$VERSION" -t $IMAGE_NAME:$DEBUG_TAG .
+          docker build -f docker/Dockerfile.debug --quiet --cache-from $IMAGE_NAME:$DEBUG_TAG --label "version=$VERSION" -t $IMAGE_NAME:$DEBUG_TAG .
 
           # if git action = tag
           if [[ "$GITHUB_REF" == "refs/tags/"* ]]; then
