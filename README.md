@@ -2,7 +2,8 @@
 
 > Simple Docker deployment tool
 
-[![Build Status](https://travis-ci.org/exoframejs/exoframe-server.svg?branch=master)](https://travis-ci.org/exoframejs/exoframe-server)
+[![CI: Test](https://github.com/exoframejs/exoframe-server/workflows/Test/badge.svg)](https://github.com/exoframejs/exoframe-server/actions?query=workflow%3ATest)
+[![CI: Deploy](https://github.com/exoframejs/exoframe-server/workflows/Deploy/badge.svg)](https://github.com/exoframejs/exoframe-server/actions?query=workflow%3ADeploy)
 [![Coverage Status](https://coveralls.io/repos/github/exoframejs/exoframe-server/badge.svg?branch=master)](https://coveralls.io/github/exoframejs/exoframe-server?branch=master)
 [![Docker Pulls](https://img.shields.io/docker/pulls/exoframe/server.svg)](https://hub.docker.com/r/exoframe/server/)
 [![Docker image size](https://images.microbadger.com/badges/image/exoframe/server.svg)](https://microbadger.com/images/exoframe/server)
