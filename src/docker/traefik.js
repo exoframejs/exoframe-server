@@ -14,7 +14,15 @@ const {pullImage} = require('./util');
 // config vars
 const baseFolder = path.join(os.homedir(), '.exoframe');
 
-async function generateTraefikConfig(config) {
+function getTraefikPath(volumePath) {
+  return path.join(volumePath, 'traefik');
+}
+
+function getInternalTraefikPath(volumePath) {
+  return path.join(volumePath, '.internal', 'traefik');
+}
+
+async function generateTraefikConfig(config, volumePath) {
   // letsencrypt flags
   const letsencrypt = {
     entryPoints: {
@@ -54,24 +62,34 @@ async function generateTraefikConfig(config) {
     ...(config.letsencrypt ? letsencrypt : {}),
   };
 
-  const traefikConfigPath = path.join(baseFolder, 'traefik', 'traefik.yml');
+  // load user definend config
+  const traefikCustomConfigPath = path.join(getTraefikPath(volumePath), 'traefik.yml');
+  if (fs.existsSync(traefikCustomConfigPath)) {
+    logger.info('Using custom traefik config:', traefikCustomConfigPath);
 
-  if (fs.existsSync(traefikConfigPath)) {
-    const oldTraefikConfig = yaml.safeLoad(fs.readFileSync(traefikConfigPath, 'utf8'));
-    traefikConfig = {...traefikConfig, ...oldTraefikConfig};
+    const traefikCustomConfig = yaml.safeLoad(fs.readFileSync(traefikCustomConfigPath, 'utf8'));
+
+    // merge custom
+    traefikConfig = {...traefikConfig, ...traefikCustomConfig};
   }
 
-  const traefikConfigString = yaml.safeDump(traefikConfig);
+  // create internal traefik config folder
+  try {
+    fs.statSync(getInternalTraefikPath(volumePath));
+  } catch (e) {
+    mkdirp.sync(getInternalTraefikPath(volumePath));
+  }
 
-  // write new traefik config
-  fs.writeFileSync(traefikConfigPath, traefikConfigString);
+  // write new generated traefik config
+  const generatedTraefikConfigPath = path.join(getInternalTraefikPath(volumePath), 'traefik.yml');
+  fs.writeFileSync(generatedTraefikConfigPath, yaml.safeDump(traefikConfig));
 }
 
 // export traefik init function
 exports.initTraefik = async exoNet => {
   await waitForConfig();
 
-  logger.info('Initializing traefik...');
+  logger.info('Initializing traefik ...');
   // get config
   const config = getConfig();
 
@@ -82,7 +100,7 @@ exports.initTraefik = async exoNet => {
   }
 
   // build local traefik path
-  let traefikPath = path.join(baseFolder, 'traefik');
+  let volumePath = baseFolder;
   let initLocal = true;
 
   // get all containers
@@ -93,8 +111,8 @@ exports.initTraefik = async exoNet => {
   if (server) {
     const configVol = (server.Mounts || []).find(v => v.Destination === '/root/.exoframe');
     if (configVol) {
-      traefikPath = path.join(configVol.Source, 'traefik');
-      logger.info('Running in docker, using existing volume to mount traefik config:', traefikPath);
+      volumePath = configVol.Source;
+      logger.info('Server is running inside docker.');
       initLocal = false;
     }
   }
@@ -102,11 +120,11 @@ exports.initTraefik = async exoNet => {
   // if server volume wasn't found - create local folder if needed
   if (initLocal) {
     try {
-      fs.statSync(traefikPath);
+      fs.statSync(volumePath);
     } catch (e) {
-      mkdirp.sync(traefikPath);
+      mkdirp.sync(volumePath);
     }
-    logger.info('Running without docker, using local folder for traefik config:', traefikPath);
+    logger.info('Server is running without docker.');
   }
 
   // try to find traefik instance
@@ -114,10 +132,10 @@ exports.initTraefik = async exoNet => {
 
   // generate traefik config
   if (!config.traefikDisableGeneratedConfig) {
-    await generateTraefikConfig(config, traefikPath);
+    await generateTraefikConfig(config, baseFolder);
   }
 
-  // if traefik exists and running - just return
+  // if traefik exists and running - restart it to reload config
   if (traefik && !traefik.Status.includes('Exited')) {
     logger.info('Traefik already running. Restarting traefik ...');
     const traefikContainer = docker.getContainer(traefik.Id);
@@ -128,7 +146,7 @@ exports.initTraefik = async exoNet => {
 
   // if container is exited - remove and recreate
   if (traefik && traefik.Status.startsWith('Exited')) {
-    logger.info('Exited traefik instance found, re-creating...');
+    logger.info('Exited traefik instance found, re-creating ...');
     const traefikContainer = docker.getContainer(traefik.Id);
     // remove
     await traefikContainer.remove();
@@ -138,7 +156,7 @@ exports.initTraefik = async exoNet => {
   const allImages = await docker.listImages();
   const traefikImage = allImages.find(img => img.RepoTags && img.RepoTags.includes(config.traefikImage));
   if (!traefikImage) {
-    logger.info('No traefik image found, pulling..');
+    logger.info('No traefik image found, pulling ...');
     const pullLog = await pullImage(config.traefikImage);
     logger.debug(pullLog);
   }
@@ -147,7 +165,7 @@ exports.initTraefik = async exoNet => {
   const container = await docker.createContainer({
     Image: config.traefikImage,
     name: config.traefikName,
-    Cmd: '--configFile=/var/traefik/traefik.yml',
+    Cmd: '--configFile=/var/traefik-config/traefik.yml',
     Labels: {
       'exoframe.deployment': 'exo-traefik',
       'exoframe.user': 'admin',
@@ -161,18 +179,24 @@ exports.initTraefik = async exoNet => {
         Name: 'on-failure',
         MaximumRetryCount: 2,
       },
-      Binds: ['/var/run/docker.sock:/var/run/docker.sock', `${traefikPath}:/var/traefik`],
+      Binds: [
+        '/var/run/docker.sock:/var/run/docker.sock', // docker socket
+        `${getInternalTraefikPath(volumePath)}:/var/traefik-config`, // mount generated config
+        `${getTraefikPath(volumePath)}:/var/traefik`, // mount folder for traefik.log, acme.json
+      ],
       PortBindings: {
         '80/tcp': [{HostPort: '80'}],
         '443/tcp': [{HostPort: '443'}],
       },
     },
   });
+
   // connect traefik to exoframe net
   await exoNet.connect({
     Container: container.id,
   });
+
   // start container
   await container.start();
-  logger.info('Traefik instance started..');
+  logger.info('Traefik instance started ...');
 };
