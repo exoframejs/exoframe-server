@@ -11,7 +11,7 @@
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "build-bundle": "ncc build src/index.js -o dist",
     "prepare-build": "cp dist/index.js bin/server-core.js && cp dist/runner.js bin/runner.js && cp dist/home.html bin/home.html",
-    "build": "npm run build-bundle && npm run prepare-build"
+    "build": "yarn build-bundle && yarn prepare-build"
   },
   "files": [
     "bin/exoframe-server.js",
