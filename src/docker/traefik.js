@@ -169,6 +169,7 @@ exports.initTraefik = async exoNet => {
     Labels: {
       'exoframe.deployment': 'exo-traefik',
       'exoframe.user': 'admin',
+      ...(config.traefikLabels || {}), // custom traefik labels
     },
     ExposedPorts: {
       '80/tcp': {},
