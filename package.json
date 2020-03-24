@@ -6,12 +6,17 @@
   "bin": "bin/exoframe-server.js",
   "scripts": {
     "start": "node index.js",
+    "watch": "nodemon --watch src/ index.js",
+    "docker:start": "docker-compose -f docker/docker-compose.yml up",
+    "docker:exec": "docker-compose -f docker/docker-compose.yml exec server",
+    "docker:cleanup": "docker rm -f exoframe-server; docker rm -f exoframe-traefik",
+    "cleanup": "yarn docker:cleanup",
     "lint": "eslint src/ test/ bin/exoframe-server.js",
-    "test": "NODE_ENV=testing jest --coverage --silent --maxWorkers=2 --ci",
+    "test": "NODE_ENV=testing jest --coverage --silent --maxWorkers=2 --ci --detectOpenHandles --forceExit",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "build-bundle": "ncc build src/index.js -o dist",
     "prepare-build": "cp dist/index.js bin/server-core.js && cp dist/runner.js bin/runner.js && cp dist/home.html bin/home.html",
-    "build": "npm run build-bundle && npm run prepare-build"
+    "build": "yarn build-bundle && yarn prepare-build"
   },
   "files": [
     "bin/exoframe-server.js",
@@ -49,6 +54,7 @@
     "mkdirp": "^1.0.3",
     "nock": "^11.7.0",
     "node-fetch": "^2.6.0",
+    "nodemon": "^2.0.2",
     "prettier": "^1.18.2",
     "rimraf": "^3.0.0",
     "semver-compare": "^1.0.0",
