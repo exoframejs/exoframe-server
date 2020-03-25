@@ -34,8 +34,6 @@ jobs:
         run: yarn lint
       - name: test
         run: yarn test
-      - name: coveralls
-        run: yarn coveralls
 
   publish:
     needs: test
@@ -58,6 +56,13 @@ jobs:
         run: yarn --frozen-lockfile
       - name: build
         run: yarn build
+
+
+      # upload coverage
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # deploy to npm
       - run: npm publish --access public
