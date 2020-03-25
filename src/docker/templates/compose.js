@@ -144,7 +144,7 @@ exports.executeTemplate = async ({
 
   // re-build images if needed
   const {code: buildExitCode, log: buildLog} = await executeCompose({
-    cmd: ['--project-name', baseName, '--force-rm', 'build'],
+    cmd: ['--project-name', baseName, 'build', '--force-rm'],
     env,
     resultStream,
     tempDockerDir,
