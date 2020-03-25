@@ -13,7 +13,6 @@
     "cleanup": "yarn docker:cleanup",
     "lint": "eslint src/ test/ bin/exoframe-server.js",
     "test": "NODE_ENV=testing jest --ci --detectOpenHandles --forceExit --coverage --silent",
-    "coveralls": "cat ./coverage/lcov.info | coveralls",
     "build-bundle": "ncc build src/index.js -o dist",
     "prepare-build": "cp dist/index.js bin/server-core.js && cp dist/runner.js bin/runner.js && cp dist/home.html bin/home.html",
     "build": "yarn build-bundle && yarn prepare-build"
