@@ -11,7 +11,7 @@ const getPort = require('get-port');
 // our packages
 const {startServer} = require('../src');
 const {auth: authConfig} = require('../config');
-const {getTokenCollection} = require('../src/db');
+const {dbLoaded, getTokenCollection} = require('../src/db');
 
 let server;
 let authToken = '';
@@ -25,6 +25,8 @@ jest.setTimeout(60000);
 beforeAll(async () => {
   const port = await getPort();
   server = await startServer(port);
+  await dbLoaded;
+
   return server;
 });
 

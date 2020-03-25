@@ -6,7 +6,7 @@ const {spawn} = require('child_process');
 const tar = require('tar-fs');
 const rimraf = require('rimraf');
 const uuid = require('uuid');
-const {getSecretsCollection} = require('../db/secrets');
+const {getSecretsCollection} = require('../db');
 
 // our modules
 const {tempDockerDir: tempDir} = require('../config');
