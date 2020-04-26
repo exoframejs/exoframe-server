@@ -1,6 +1,6 @@
 #!/bin/bash
 
-read -p 'Enable ssl? Pres Enter for none: ' ssl
+read -p 'Enable ssl? Press Enter for none: ' ssl
 read -p 'Enter your server domain: ' domain
 read -p 'Enter /path/to/exoframe-folder should be path on your server: ' config
 read -p 'Enter /home/user/.ssh/authorized_keys should point to your authorized_keys file: ' ssh
