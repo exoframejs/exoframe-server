@@ -21,7 +21,7 @@ while getopts_long 'Dhe:d:p: dry-run help email: domain: password:' OPTKEY; do
             ;;
         '?'|'h'|'help')
             echo -e "$(c G)Usage:$(c)"
-            echo -e "  -D, --dry-run     $(c G)Dry run. Print command instead of executiing it$(c)"
+            echo -e "  -D, --dry-run     $(c G)Dry run. Print command instead of executing it.$(c)"
             echo -e "  -e, --email       $(c G)Enter email to enable SSL support.$(c)"
             echo -e "  -d, --domain      $(c G)Enter exoframe-server domain.$(c)"
             echo -e "  -p, --password    $(c G)Enter your private key used for JWT encryption.$(c)"
