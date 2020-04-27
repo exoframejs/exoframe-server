@@ -1,20 +1,25 @@
 #!/bin/bash
 
-read -p 'Enable ssl? Press Enter for none: ' ssl
-read -p 'Enter your server domain: ' domain
-read -p 'Enter /path/to/exoframe-folder should be path on your server: ' config
-read -p 'Enter /home/user/.ssh/authorized_keys should point to your authorized_keys file: ' ssh
+FILE=$HOME/.exoframe/server.config.yml
+
+read -p 'Enter exoframe-server domain: ' domain
+if [ ! -f "$FILE" ]; then
+    read -p 'Enter email to enable SSL support: ' ssl
+fi
 read -sp 'Enter your private key used for JWT encryption: ' passvar
 
 VAR="docker run -d \
 -v /var/run/docker.sock:/var/run/docker.sock \
--v $config:/root/.exoframe \
--v $ssh/authorized_keys:/root/.ssh/authorized_keys:ro \
+-v $HOME/.exoframe:/root/.exoframe \
+-v $HOME/.ssh/authorized_keys:/root/.ssh/authorized_keys:ro \
 -e EXO_PRIVATE_KEY=$passvar \
 --label traefik.enable=true \
 --label traefik.http.routers.exoframe-server.rule=Host(\`exoframe.$domain\`)"
 
 if [ $ssl ]; then
+    echo "letsencrypt: true" > $FILE
+    echo "letsencryptEmail: $ssl" >> $FILE
+
     VAR+=" \
 --label traefik.http.routers.exoframe-server-web.rule=Host(\`exoframe.$domain\`) \
 --label traefik.http.routers.exoframe-server.tls.certresolver=exoframeChallenge \
