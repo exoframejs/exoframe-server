@@ -2,17 +2,17 @@
 
 FILE=$HOME/.exoframe/server.config.yml
 DRY_RUN=0
-
-# https://github.com/ppo/bash-colors
-c() { [ $# -eq 0 ] && echo "\033[0m" || echo "$1" | sed -E "s/(.)/‹\1›/g;s/([KRGYBMCW])/3\1/g;s/([krgybmcw])/4\1/g;s/S/22/;y/sufnKRGYBMCWkrgybmcw›/14570123456701234567m/;s/‹/\\\033[/g"; }
+ssl=""
 
 usage()
 {
-    echo -e "$(c G)Usage:$(c)"
-    echo -e "  -D, --dry-run     $(c G)Dry run. Print command instead of executing it.$(c)"
-    echo -e "  -e, --email       $(c G)Enter email to enable SSL support.$(c)"
-    echo -e "  -d, --domain      $(c G)Enter exoframe-server domain.$(c)"
-    echo -e "  -p, --password    $(c G)Enter your private key used for JWT encryption.$(c)"
+    echo
+    echo "Usage:"
+    echo "  -D, --dry-run     Dry run. Print command instead of executing it."
+    echo "  -e, --email       Enter email to enable SSL support."
+    echo "  -d, --domain      Enter exoframe-server domain."
+    echo "  -p, --password    Enter your private key used for JWT encryption."
+    echo
 }
 
 while [ "$1" != "" ]; do
@@ -36,6 +36,7 @@ while [ "$1" != "" ]; do
         * )
             usage
             exit 1
+            ;;
     esac
     shift
 done
@@ -43,7 +44,7 @@ done
 if [ ! $domain ]; then
     read -p "Enter exoframe-server domain: " domain
 fi
-if [ ! -f "$FILE" ] && [ ! $ssl ]; then
+if [ ! -f "$FILE" ] && [ $ssl = "" ]; then
     read -p "Enter email to enable SSL support: " ssl
 fi
 if [ ! $passvar ]; then
@@ -81,17 +82,17 @@ VAR+=" \
 exoframe/server"
 
 if [ $DRY_RUN -eq 1 ]; then
-    echo
-    echo
-    echo -e "$(c G)Commands to run inside server:$(c)"
+    echo 
+    echo "Commands to run inside server:"
     if [ $ssl ]; then
         echo
-        echo -e "$(c B)mkdir -p $(dirname $FILE) && touch $FILE$(c)"
-        echo -e "$(c B)echo \"letsencrypt: true\" >> $FILE$(c)"
-        echo -e "$(c B)echo \"letsencryptEmail: $ssl\" >> $FILE$(c)"
+        echo "mkdir -p $(dirname $FILE) && touch $FILE"
+        echo "echo \"letsencrypt: true\" >> $FILE"
+        echo "echo \"letsencryptEmail: $ssl\" >> $FILE"
+        echo
     fi
     echo
-    echo -e "$(c B)$VAR$(c)"
+    echo "$VAR"
 else
     $VAR
 fi
