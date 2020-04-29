@@ -1,45 +1,44 @@
 #!/bin/bash
 
-source "getopts_long.bash"
-
 FILE=$HOME/.exoframe/server.config.yml
 DRY_RUN=0
 
-while getopts_long 'Dhe:d:p: dry-run help email: domain: password:' OPTKEY; do
-    case ${OPTKEY} in
-        'D'|'dry-run')
+# https://github.com/ppo/bash-colors
+c() { [ $# -eq 0 ] && echo "\033[0m" || echo "$1" | sed -E "s/(.)/‹\1›/g;s/([KRGYBMCW])/3\1/g;s/([krgybmcw])/4\1/g;s/S/22/;y/sufnKRGYBMCWkrgybmcw›/14570123456701234567m/;s/‹/\\\033[/g"; }
+
+usage()
+{
+    echo -e "$(c G)Usage:$(c)"
+    echo -e "  -D, --dry-run     $(c G)Dry run. Print command instead of executing it.$(c)"
+    echo -e "  -e, --email       $(c G)Enter email to enable SSL support.$(c)"
+    echo -e "  -d, --domain      $(c G)Enter exoframe-server domain.$(c)"
+    echo -e "  -p, --password    $(c G)Enter your private key used for JWT encryption.$(c)"
+}
+
+while [ "$1" != "" ]; do
+    case $1 in
+        -D | --dry-run )
             DRY_RUN=1
             ;;
-        'e'|'email')
-            ssl=$OPTARG
+        -e | --email ) shift
+            ssl=$1
             ;;
-        'd'|'domain')
-            domain=$OPTARG
+        -d | --domain ) shift
+            domain=$1
             ;;
-        'p'|'password')
-            passvar=$OPTARG
+        -p | --password ) shift
+            passvar=$1
             ;;
-        '?'|'h'|'help')
-            echo -e "$(c G)Usage:$(c)"
-            echo -e "  -D, --dry-run     $(c G)Dry run. Print command instead of executing it.$(c)"
-            echo -e "  -e, --email       $(c G)Enter email to enable SSL support.$(c)"
-            echo -e "  -d, --domain      $(c G)Enter exoframe-server domain.$(c)"
-            echo -e "  -p, --password    $(c G)Enter your private key used for JWT encryption.$(c)"
-            exit 0
+        -h | --help )
+            usage
+            exit
             ;;
-        ':')
-            echo -e "$(c R)MISSING ARGUMENT for option -- ${OPTARG}$(c)" >&2
+        * )
+            usage
             exit 1
-            ;;
-        *)
-            echo -e "$(c R)Misconfigured OPTSPEC or uncaught option -- ${OPTKEY}$(c)" >&2
-            exit 1
-            ;;
     esac
+    shift
 done
-
-shift $(( OPTIND - 1 ))
-[[ "${1}" == "--" ]] && shift
 
 if [ ! $domain ]; then
     read -p "Enter exoframe-server domain: " domain
@@ -84,15 +83,15 @@ exoframe/server"
 if [ $DRY_RUN -eq 1 ]; then
     echo
     echo
-    echo -e "$(c G)Command to run inside server:$(c)"
+    echo -e "$(c G)Commands to run inside server:$(c)"
     if [ $ssl ]; then
         echo
-        echo -e "$(c R)mkdir -p $(dirname $FILE) && touch $FILE$(c)"
-        echo -e "$(c R)echo \"letsencrypt: true\" >> $FILE$(c)"
-        echo -e "$(c R)echo \"letsencryptEmail: $ssl\" >> $FILE$(c)"
+        echo -e "$(c B)mkdir -p $(dirname $FILE) && touch $FILE$(c)"
+        echo -e "$(c B)echo \"letsencrypt: true\" >> $FILE$(c)"
+        echo -e "$(c B)echo \"letsencryptEmail: $ssl\" >> $FILE$(c)"
     fi
     echo
-    echo -e "$(c R)$VAR$(c)"
+    echo -e "$(c B)$VAR$(c)"
 else
     $VAR
 fi
