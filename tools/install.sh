@@ -2,7 +2,7 @@
 
 FILE=$HOME/.exoframe/server.config.yml
 DRY_RUN=0
-ssl=""
+ssl=false
 
 usage()
 {
@@ -44,7 +44,7 @@ done
 if [ ! $domain ]; then
     read -p "Enter exoframe-server domain: " domain
 fi
-if [ ! -f "$FILE" ] && [ $ssl = "" ]; then
+if [ ! -f "$FILE" ] && [ $ssl = false ]; then
     read -p "Enter email to enable SSL support: " ssl
 fi
 if [ ! $passvar ]; then
