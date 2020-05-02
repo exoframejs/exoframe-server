@@ -59,5 +59,8 @@
   },
   "jest": {
     "testEnvironment": "node"
+  },
+  "engines": {
+    "node" : "> ^10"
   }
 }

@@ -3,6 +3,7 @@
 FILE=$HOME/.exoframe/server.config.yml
 DRY_RUN=0
 ssl=false
+INERACTIVE=true
 
 usage()
 {
@@ -38,16 +39,17 @@ while [ "$1" != "" ]; do
             exit 1
             ;;
     esac
+    INERACTIVE=false
     shift
 done
 
-if [ ! $domain ]; then
+if [ ! $domain ] && [ $INERACTIVE = true ]; then
     read -p "Enter exoframe-server domain: " domain
 fi
-if [ ! -f "$FILE" ] && [ $ssl = false ]; then
+if [ ! -f "$FILE" ] && [ $ssl = false ] && [ $INERACTIVE = true ]; then
     read -p "Enter email to enable SSL support: " ssl
 fi
-if [ ! $passvar ]; then
+if [ ! $passvar ] && [ $INERACTIVE = true ]; then
     read -sp "Enter your private key used for JWT encryption: " passvar
 fi
 
@@ -59,7 +61,7 @@ VAR="docker run -d \
 --label traefik.enable=true \
 --label traefik.http.routers.exoframe-server.rule=Host(\`exoframe.$domain\`)"
 
-if [ $ssl ]; then
+if [ $ssl ] && [ $ssl != false ]; then
     if [ $DRY_RUN -eq 0 ]; then
         mkdir -p $(dirname $FILE) && touch $FILE
         echo "letsencrypt: true" >> $FILE
@@ -82,9 +84,9 @@ VAR+=" \
 exoframe/server"
 
 if [ $DRY_RUN -eq 1 ]; then
-    echo 
+    echo
     echo "Commands to run inside server:"
-    if [ $ssl ]; then
+    if [ $ssl ] && [ $ssl != false ]; then
         echo
         echo "mkdir -p $(dirname $FILE) && touch $FILE"
         echo "echo \"letsencrypt: true\" >> $FILE"
@@ -94,5 +96,5 @@ if [ $DRY_RUN -eq 1 ]; then
     echo
     echo "$VAR"
 else
-    $VAR
+    $VAR | (echo && echo && echo "$VAR" && echo)
 fi
