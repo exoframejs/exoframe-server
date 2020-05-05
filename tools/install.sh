@@ -3,7 +3,7 @@
 FILE=$HOME/.exoframe/server.config.yml
 DRY_RUN=0
 ssl=false
-INERACTIVE=true
+INTERACTIVE=true
 
 usage()
 {
@@ -39,17 +39,17 @@ while [ "$1" != "" ]; do
             exit 1
             ;;
     esac
-    INERACTIVE=false
+    INTERACTIVE=false
     shift
 done
 
-if [ ! $domain ] && [ $INERACTIVE = true ]; then
+if [ ! $domain ] && [ $INTERACTIVE = true ]; then
     read -p "Enter exoframe-server domain: " domain
 fi
-if [ ! -f "$FILE" ] && [ $ssl = false ] && [ $INERACTIVE = true ]; then
+if [ ! -f "$FILE" ] && [ $ssl = false ] && [ $INTERACTIVE = true ]; then
     read -p "Enter email to enable SSL support: " ssl
 fi
-if [ ! $passvar ] && [ $INERACTIVE = true ]; then
+if [ ! $passvar ] && [ $INTERACTIVE = true ]; then
     read -sp "Enter your private key used for JWT encryption: " passvar
 fi
 
