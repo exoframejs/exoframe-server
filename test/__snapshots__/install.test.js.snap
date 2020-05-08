@@ -18,8 +18,8 @@ exports[`Test install script Should print help 1`] = `
 Usage:
   -D, --dry-run     Dry run. Print command instead of executing it.
   -e, --email       Enter email to enable SSL support.
-  -d, --domain      Enter exoframe-server domain.
-  -p, --password    Enter your private key used for JWT encryption.
+  -d, --domain      * Enter exoframe-server domain.
+  -p, --password    * Enter your private key used for JWT encryption.
 
 "
 `;
