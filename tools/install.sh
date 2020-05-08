@@ -11,8 +11,8 @@ usage()
     echo "Usage:"
     echo "  -D, --dry-run     Dry run. Print command instead of executing it."
     echo "  -e, --email       Enter email to enable SSL support."
-    echo "  -d, --domain      Enter exoframe-server domain."
-    echo "  -p, --password    Enter your private key used for JWT encryption."
+    echo "  -d, --domain      * Enter exoframe-server domain."
+    echo "  -p, --password    * Enter your private key used for JWT encryption."
     echo
 }
 
@@ -51,6 +51,12 @@ if [ ! -f "$FILE" ] && [ $ssl = false ] && [ $INTERACTIVE = true ]; then
 fi
 if [ ! $passvar ] && [ $INTERACTIVE = true ]; then
     read -sp "Enter your private key used for JWT encryption: " passvar
+fi
+
+if [ $INTERACTIVE = false ] && ([ ! $passvar ] || [ ! $domain ]); then
+    echo "Required params are missing"
+    usage
+    exit 1
 fi
 
 VAR="docker run -d \
