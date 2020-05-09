@@ -13,7 +13,7 @@ const tar = require('tar-fs');
 // our packages
 const authToken = require('./fixtures/authToken');
 const {startServer} = require('../src');
-const {getSecretsCollection} = require('../src/db/secrets');
+const {dbLoaded, getSecretsCollection} = require('../src/db');
 const docker = require('../src/docker/docker');
 
 // create tar streams
@@ -35,6 +35,9 @@ beforeAll(async () => {
   // start server
   const port = await getPort();
   fastify = await startServer(port);
+
+  await dbLoaded;
+
   return fastify;
 });
 

@@ -2,6 +2,7 @@
 const initFastify = require('fastify');
 const fastifyAuth = require('fastify-auth');
 const cors = require('cors');
+const {dbLoaded} = require('./db');
 
 // our packages
 const logger = require('./logger');
@@ -56,6 +57,11 @@ exports.startServer = async (port = 8080) => {
 
 // export start function
 exports.start = async port => {
+  logger.info('Starting exoframe ...');
+
+  // load database
+  await dbLoaded;
+
   // init plugins
   await initPlugins();
 

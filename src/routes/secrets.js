@@ -1,5 +1,5 @@
 // our modules
-const {secretsInited, getSecretsCollection} = require('../db/secrets');
+const {getSecretsCollection} = require('../db');
 
 module.exports = fastify => {
   fastify.route({
@@ -9,8 +9,6 @@ module.exports = fastify => {
       // get username
       const {username} = request.user;
 
-      // wait for db to init if required
-      await secretsInited;
       // find user secrets
       const secrets = getSecretsCollection()
         .find({user: username})
@@ -28,8 +26,6 @@ module.exports = fastify => {
       const {username} = request.user;
       const {secretName} = request.params;
 
-      // wait for db to init if required
-      await secretsInited;
       // find user secrets
       const secret = getSecretsCollection().findOne({user: username, name: secretName});
 
@@ -46,8 +42,6 @@ module.exports = fastify => {
       // get secret data
       const {secretName, secretValue} = request.body;
 
-      // wait for db to init if required
-      await secretsInited;
       // create new secret for current user
       const secret = {user: username, name: secretName, value: secretValue};
       getSecretsCollection().insert(secret);
@@ -68,8 +62,6 @@ module.exports = fastify => {
         reply.code(200).send({removed: false, reason: 'Secret does not exist'});
         return;
       }
-      // wait for db to init if required
-      await secretsInited;
       // remove token from collection
       getSecretsCollection().remove(existingSecret);
       // send back to user

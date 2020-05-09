@@ -13,7 +13,7 @@ const getPort = require('get-port');
 
 // our packages
 const authToken = require('./fixtures/authToken');
-const {secretsInited} = require('../src/db/secrets');
+const {dbLoaded} = require('../src/db');
 const {initPlugins, getPlugins} = require('../src/plugins');
 const {initDocker} = require('../src/docker/init');
 const {start, startFromParams} = require('../src/docker/start');
@@ -30,7 +30,7 @@ const options = {
 };
 
 beforeAll(async done => {
-  await secretsInited;
+  await dbLoaded;
   await initPlugins();
   done();
 });
