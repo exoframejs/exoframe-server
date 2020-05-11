@@ -1,3 +1,10 @@
+# 6.2.0 / 2020-05-11
+
+- Add autoprune config to execute prune after deployments if enabled
+- Add basic system prune endpoint
+- Add server install script (thanks to FDiskas)
+- Added possibility to customize traefik config (thanks to anbraten)
+
 # 6.1.0 / 2020-02-12
 
 - Allow using custom traefik middlewares from exoframe config
