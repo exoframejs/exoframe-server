@@ -32,3 +32,11 @@ exports.pullImage = tag =>
       stream.once('end', () => resolve(log));
     });
   });
+
+// prunes builder cache, unused images and volumes
+exports.pruneDocker = async () => {
+  // TODO: re-enable pruneBuilder once fixed in dockerode
+  // await docker.pruneBuilder();
+  const result = await Promise.all([docker.pruneImages(), docker.pruneVolumes()]);
+  return result;
+};
