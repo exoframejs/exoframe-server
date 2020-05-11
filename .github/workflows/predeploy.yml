@@ -2,8 +2,8 @@ name: Deploy
 
 on:
   push:
-    tags:
-      - '*'
+    branches:
+      - develop
 
 env:
   YARN_CACHE_FOLDER: ~/.yarn
@@ -62,7 +62,9 @@ jobs:
         run: yarn build
 
       # deploy to npm
-      - run: npm publish --access public
+      - run: |
+          npm version prerelease --preid=dev --no-git-tag-version
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 

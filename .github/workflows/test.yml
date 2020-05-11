@@ -23,9 +23,18 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '12.x'
+          registry-url: https://registry.npmjs.org
       - name: install
         run: yarn --frozen-lockfile
+
+      # lint, test, report coverage
       - name: lint
         run: yarn lint
       - name: test
         run: yarn test
+
+      # upload coverage
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
