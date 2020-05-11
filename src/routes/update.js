@@ -92,9 +92,7 @@ module.exports = fastify => {
           // get image and its hash
           const allImages = await docker.listImages();
           const serverImage = allImages.find(img => img.RepoTags && img.RepoTags.includes(serverImageName));
-          const hash = serverImage.Id.split(':')
-            .pop()
-            .substr(0, 12);
+          const hash = serverImage.Id.split(':').pop().substr(0, 12);
           // init config
           const dockerConfig = {
             Image: serverImageName,

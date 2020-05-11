@@ -3,7 +3,7 @@
 // npm packages
 const fs = require('fs');
 const path = require('path');
-const uuidv1 = require('uuid/v1');
+const {v1: uuidv1} = require('uuid');
 
 // our modules
 const logger = require('../logger');

@@ -5,7 +5,7 @@ const path = require('path');
 const {spawn} = require('child_process');
 const tar = require('tar-fs');
 const rimraf = require('rimraf');
-const uuid = require('uuid');
+const {v1: uuidv1} = require('uuid');
 const {getSecretsCollection} = require('../db/secrets');
 
 // our modules
@@ -49,7 +49,7 @@ exports.baseNameFromImage = image =>
 
 exports.nameFromImage = image => {
   const baseName = exports.baseNameFromImage(image);
-  const uid = uuid.v1();
+  const uid = uuidv1();
   return `${baseName}-${uid.split('-').shift()}`;
 };
 

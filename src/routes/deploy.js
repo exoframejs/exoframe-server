@@ -2,7 +2,7 @@
 // npm modules
 const _ = require('highland');
 const {Readable} = require('stream');
-const uuidv1 = require('uuid/v1');
+const {v1: uuidv1} = require('uuid');
 
 // our modules
 const logger = require('../logger');

@@ -3,7 +3,7 @@ const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
-const uuid = require('uuid');
+const {v1: uuidv1} = require('uuid');
 const {spawn} = require('child_process');
 const {getHost, getEnv} = require('../../util');
 
@@ -13,7 +13,7 @@ const generateBaseName = ({username, config}) =>
 
 // function to update compose file with required vars
 const updateCompose = ({username, baseName, serverConfig, composePath}) => {
-  const uid = uuid.v1();
+  const uid = uuidv1();
 
   // read compose file
   const compose = yaml.safeLoad(fs.readFileSync(composePath, 'utf8'));

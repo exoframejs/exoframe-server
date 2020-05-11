@@ -14,7 +14,8 @@ exports.removeContainer = async containerInfo => {
   }
 };
 
-// pull image
+// asynchronously pulls docker image
+// returns log after finished
 exports.pullImage = tag =>
   new Promise(async (resolve, reject) => {
     let log = '';
