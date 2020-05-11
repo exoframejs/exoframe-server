@@ -8,6 +8,7 @@ const version = require('./version');
 const templates = require('./templates');
 const setup = require('./setup');
 const secrets = require('./secrets');
+const system = require('./system');
 
 module.exports = (fastify, opts, next) => {
   // enable auth for all routes
@@ -22,6 +23,7 @@ module.exports = (fastify, opts, next) => {
   templates(fastify);
   setup(fastify);
   secrets(fastify);
+  system(fastify);
 
   next();
 };

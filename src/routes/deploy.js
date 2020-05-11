@@ -2,14 +2,14 @@
 // npm modules
 const _ = require('highland');
 const {Readable} = require('stream');
-const uuidv1 = require('uuid/v1');
+const {v1: uuidv1} = require('uuid');
 
 // our modules
 const logger = require('../logger');
 const util = require('../util');
 const {getConfig, tempDockerDir, faasFolder} = require('../config');
 const docker = require('../docker/docker');
-const {pullImage} = require('../docker/util');
+const {pullImage, pruneDocker} = require('../docker/util');
 const {build} = require('../docker/build');
 const {start} = require('../docker/start');
 const getTemplates = require('../docker/templates');
@@ -90,6 +90,15 @@ const deploy = async ({username, folder, existing, resultStream}) => {
   await template.executeTemplate(templateProps);
 };
 
+// schedule docker prune for next tick (if enabled in config)
+const schedulePrune = () => {
+  // get server config
+  const serverConfig = getConfig();
+  if (serverConfig.autoprune) {
+    process.nextTick(pruneDocker);
+  }
+};
+
 const scheduleCleanup = ({username, project, existing}) => {
   process.nextTick(async () => {
     // wait a bit for it to start
@@ -119,6 +128,9 @@ const scheduleCleanup = ({username, project, existing}) => {
       const notRemoved = existing.filter(c => !toRemove.find(rc => rc.Id === c.Id));
       scheduleCleanup({username, project, existing: notRemoved});
     }
+
+    // run prune on next tick if enabled in config
+    schedulePrune();
   });
 };
 
@@ -138,7 +150,7 @@ module.exports = fastify => {
       // create new highland stream for results
       const resultStream = _();
       // run deploy
-      deploy({username, folder, resultStream});
+      deploy({username, folder, resultStream}).then(() => schedulePrune());
       // reply with deploy stream
       const responseStream = new Readable().wrap(resultStream);
       reply.code(200).send(responseStream);

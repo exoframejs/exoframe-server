@@ -14,7 +14,8 @@ exports.removeContainer = async containerInfo => {
   }
 };
 
-// pull image
+// asynchronously pulls docker image
+// returns log after finished
 exports.pullImage = tag =>
   new Promise(async (resolve, reject) => {
     let log = '';
@@ -31,3 +32,13 @@ exports.pullImage = tag =>
       stream.once('end', () => resolve(log));
     });
   });
+
+// prunes builder cache, unused images and volumes
+exports.pruneDocker = async () => {
+  // TODO: re-enable pruneBuilder once fixed in dockerode
+  // await docker.pruneBuilder();
+  logger.debug('Running prune..');
+  const result = await Promise.all([docker.pruneImages(), docker.pruneVolumes()]);
+  logger.debug('Prune done:', result);
+  return result;
+};

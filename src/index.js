@@ -42,10 +42,7 @@ exports.startServer = async (port = 8080) => {
   fastify.addContentTypeParser('*', (req, done) => done());
 
   // register plugins
-  await setupAuth(fastify)
-    .register(routes)
-    .register(faas({faasFolder}))
-    .ready();
+  await setupAuth(fastify).register(routes).register(faas({faasFolder})).ready();
 
   // start server
   await fastify.listen(port, '0.0.0.0');

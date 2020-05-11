@@ -4,7 +4,7 @@ const {join} = require('path');
 const {promisify} = require('util');
 const jwt = require('jsonwebtoken');
 const sshpk = require('sshpk');
-const uuid = require('uuid');
+const {v1: uuidv1} = require('uuid');
 
 // our packages
 const {auth} = require('../../config');
@@ -46,7 +46,7 @@ const loginRoutes = (fastify, opts, next) => {
     path: '/login',
     async handler(request, reply) {
       // generate login request with phrase and uuid
-      const uid = uuid.v1();
+      const uid = uuidv1();
       const doc = {phrase: `hello exoframe ${uid}`, uid};
       // store in request collection
       reqCollection.insert(doc);

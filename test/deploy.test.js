@@ -235,10 +235,7 @@ test('Should deploy simple node project', async done => {
   const allContainers = await docker.listContainers();
   const container = allContainers.find(c => c.Names.includes(completeDeployments[0].Name));
   const name = completeDeployments[0].Name.slice(1);
-  const deployId = name
-    .split('-')
-    .slice(-1)
-    .shift();
+  const deployId = name.split('-').slice(-1).shift();
 
   expect(container).toBeDefined();
   expect(container.Labels['exoframe.deployment']).toEqual(name);
@@ -280,10 +277,7 @@ test('Should deploy simple node project with package-lock', async done => {
   const allContainers = await docker.listContainers();
   const container = allContainers.find(c => c.Names.includes(completeDeployments[0].Name));
   const name = completeDeployments[0].Name.slice(1);
-  const deployId = name
-    .split('-')
-    .slice(-1)
-    .shift();
+  const deployId = name.split('-').slice(-1).shift();
 
   expect(container).toBeDefined();
   expect(container.Labels['exoframe.deployment']).toEqual(name);
@@ -428,14 +422,8 @@ test('Should deploy simple compose project', async done => {
   const containerTwo = allContainers.find(c => c.Names.includes(completeDeployments[1].Name));
   const nameOne = completeDeployments[0].Name.slice(1);
   const nameTwo = completeDeployments[1].Name.slice(1);
-  const deployIdOne = nameOne
-    .split('-')
-    .slice(-1)
-    .shift();
-  const deployIdTwo = nameTwo
-    .split('-')
-    .slice(-1)
-    .shift();
+  const deployIdOne = nameOne.split('-').slice(-1).shift();
+  const deployIdTwo = nameTwo.split('-').slice(-1).shift();
 
   expect(containerOne).toBeDefined();
   expect(containerTwo).toBeDefined();
@@ -490,14 +478,8 @@ test('Should update simple compose project', async done => {
   const containerTwo = allContainers.find(c => c.Names.includes(completeDeployments[1].Name));
   const nameOne = completeDeployments[0].Name.slice(1);
   const nameTwo = completeDeployments[1].Name.slice(1);
-  const deployIdOne = nameOne
-    .split('-')
-    .slice(-1)
-    .shift();
-  const deployIdTwo = nameTwo
-    .split('-')
-    .slice(-1)
-    .shift();
+  const deployIdOne = nameOne.split('-').slice(-1).shift();
+  const deployIdTwo = nameTwo.split('-').slice(-1).shift();
 
   expect(containerOne).toBeDefined();
   expect(containerTwo).toBeDefined();
@@ -737,10 +719,7 @@ test('Should deploy project with configured template', async done => {
   const container = allContainers.find(c => c.Names.includes(completeDeployments[0].Name));
   const name = completeDeployments[0].Name.slice(1);
   expect(name.startsWith('exo-admin-test-static-deploy-')).toBeTruthy();
-  const deployId = name
-    .split('-')
-    .slice(-1)
-    .shift();
+  const deployId = name.split('-').slice(-1).shift();
 
   expect(container).toBeDefined();
   expect(container.Labels['exoframe.deployment']).toEqual(name);
