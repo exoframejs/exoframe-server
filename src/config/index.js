@@ -86,6 +86,7 @@ const defaultConfig = {
   letsencrypt: false,
   letsencryptEmail: 'admin@domain.com',
   compress: true,
+  autoprune: false,
   baseDomain: false,
   cors: false,
   updateChannel: 'stable',
