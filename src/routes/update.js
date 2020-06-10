@@ -101,6 +101,7 @@ module.exports = fastify => {
             Labels: oldServerInfo.Config.Labels,
             HostConfig: {
               Binds: oldServerInfo.HostConfig.Binds,
+              RestartPolicy: oldServerInfo.HostConfig.RestartPolicy,
             },
           };
           // start new self
