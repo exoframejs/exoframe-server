@@ -1,3 +1,7 @@
+# 6.2.2 / 2020-06-11
+
+- Correctly include non-secure endpoint into traefik config when using letsencrypt
+
 # 6.2.1 / 2020-06-11
 
 - Keep the restart policy after container update
