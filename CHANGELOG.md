@@ -1,3 +1,7 @@
+# 6.2.1 / 2020-06-11
+
+- Keep the restart policy after container update
+
 # 6.2.0 / 2020-05-11
 
 - Add autoprune config to execute prune after deployments if enabled
