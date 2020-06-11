@@ -26,6 +26,9 @@ async function generateTraefikConfig(config, volumePath) {
   // letsencrypt flags
   const letsencrypt = {
     entryPoints: {
+      web: {
+        address: ':80',
+      },
       websecure: {
         address: ':443',
       },
