@@ -440,6 +440,8 @@ test('Should deploy simple compose project', async done => {
   expect(containerOne.Labels[`traefik.http.routers.web.rule`]).toEqual('Host(`test.dev`)');
   expect(containerOne.Labels['custom.envvar']).toEqual('custom-value');
   expect(containerOne.Labels['custom.secret']).toEqual('custom-secret-value');
+  expect(containerTwo.Labels.username).toEqual('user1234');
+  expect(containerTwo.Labels.password).toEqual('abcde=cddfd=gdfg');
   expect(containerOne.NetworkSettings.Networks.exoframe).toBeDefined();
   expect(containerTwo.NetworkSettings.Networks.exoframe).toBeDefined();
 
@@ -496,6 +498,8 @@ test('Should update simple compose project', async done => {
   expect(containerOne.Labels[`traefik.http.routers.web.rule`]).toEqual('Host(`test.dev`)');
   expect(containerOne.Labels['custom.envvar']).toEqual('custom-value');
   expect(containerOne.Labels['custom.secret']).toEqual('custom-secret-value');
+  expect(containerTwo.Labels.username).toEqual('user1234');
+  expect(containerTwo.Labels.password).toEqual('abcde=cddfd=gdfg');
   expect(containerOne.NetworkSettings.Networks.exoframe).toBeDefined();
   expect(containerTwo.NetworkSettings.Networks.exoframe).toBeDefined();
 
