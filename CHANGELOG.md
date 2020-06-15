@@ -1,3 +1,7 @@
+# 6.2.3 / 2020-06-15
+
+- Map docker-compose label lists to object notation when supplied (thanks to Harjot1Singh)
+
 # 6.2.2 / 2020-06-11
 
 - Correctly include non-secure endpoint into traefik config when using letsencrypt
