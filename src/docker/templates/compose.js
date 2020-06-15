@@ -11,6 +11,18 @@ const {getHost, getEnv} = require('../../util');
 const generateBaseName = ({username, config}) =>
   `exo-${_.kebabCase(username)}-${_.kebabCase(config.name.split(':').shift())}`;
 
+// maps array labels to objects, if necessary
+const asObjectLabels = labels =>
+  !Array.isArray(labels)
+    ? labels
+    : labels.reduce((acc, label) => {
+        // Split at =, but only retain first value
+        const [name, ...values] = label.split('=');
+        const value = values.join('=');
+
+        return {...acc, [name]: value};
+      }, {});
+
 // function to update compose file with required vars
 const updateCompose = ({username, baseName, serverConfig, composePath}) => {
   const uid = uuidv1();
@@ -51,7 +63,7 @@ const updateCompose = ({username, baseName, serverConfig, composePath}) => {
       'traefik.enable': 'true',
     };
 
-    compose.services[svcKey].labels = Object.assign({}, extLabels, compose.services[svcKey].labels);
+    compose.services[svcKey].labels = Object.assign({}, extLabels, asObjectLabels(compose.services[svcKey].labels));
   });
 
   // write new compose back to file

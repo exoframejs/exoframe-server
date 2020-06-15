@@ -8,3 +8,6 @@ services:
       custom.secret: '${CUSTOM_SECRET}'
   redis:
     image: 'redis:alpine'
+    labels:
+      - username=user1234
+      - "password=abcde=cddfd=gdfg"

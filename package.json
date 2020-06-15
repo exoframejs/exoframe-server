@@ -1,6 +1,6 @@
 {
   "name": "exoframe-server",
-  "version": "6.2.2",
+  "version": "6.2.3-dev.2",
   "description": "Exoframe is a self-hosted tool that allows simple one-command deployments using Docker",
   "main": "bin/server-core.js",
   "bin": "bin/exoframe-server.js",
