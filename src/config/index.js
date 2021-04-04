@@ -93,7 +93,7 @@ const defaultConfig = {
   traefikImage: 'traefik:latest',
   traefikName: 'exoframe-traefik',
   traefikLabels: {},
-  traefikPorts:{},
+  traefikPorts: {},
   traefikDisableGeneratedConfig: false,
   exoframeNetwork: 'exoframe',
   publicKeysPath,
