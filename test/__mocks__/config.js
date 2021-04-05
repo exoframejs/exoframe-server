@@ -29,8 +29,6 @@ const testConfig = {
   traefikName: 'exoframe-traefik',
   traefikArgs: [],
   traefikPorts: {
-    '80/tcp': {},
-    '443/tcp': {},
     '3000/tcp': {},
     '3000/udp': {},
   },
