@@ -33,6 +33,7 @@ const streamBrokenTemplate = tar.pack(path.join(__dirname, 'fixtures', 'broken-t
 const streamBrokenCompose = tar.pack(path.join(__dirname, 'fixtures', 'broken-compose-project'));
 const streamBrokenComposeStart = tar.pack(path.join(__dirname, 'fixtures', 'broken-compose-project-start'));
 const streamAdditionalLabels = tar.pack(path.join(__dirname, 'fixtures', 'additional-labels'));
+const streamAdditionalPorts = tar.pack(path.join(__dirname, 'fixtures', 'additional-ports'));
 const streamTemplate = tar.pack(path.join(__dirname, 'fixtures', 'template-project'));
 
 // options base
@@ -690,6 +691,36 @@ test('Should have additional labels', async done => {
   const middlewaresLabel = containerInfo.Labels[`traefik.http.routers.${name}.middlewares`];
   expect(middlewaresLabel).toContain('my-redirectregex@docker');
   expect(middlewaresLabel).toContain('my-test@docker');
+
+  // cleanup
+  const instance = docker.getContainer(containerInfo.Id);
+  await instance.remove({force: true});
+
+  done();
+});
+test('Should have additional ports', async done => {
+  const options = Object.assign(optionsBase, {
+    payload: streamAdditionalPorts,
+  });
+
+  const response = await fastify.inject(options);
+  // parse result into lines
+  const result = response.payload
+    .split('\n')
+    .filter(l => l && l.length)
+    .map(line => JSON.parse(line));
+
+  // find deployments
+  const completeDeployments = result.find(it => it.deployments && it.deployments.length).deployments;
+
+  // check response
+  expect(response.statusCode).toEqual(200);
+
+  // check docker services
+  const allContainers = await docker.listContainers();
+  const containerInfo = allContainers.find(c => c.Names.includes(completeDeployments[0].Name));
+  expect(containerInfo).toBeDefined();
+  expect(containerInfo.Ports).toEqual(['3000/tcp', '3000/udp']);
 
   // cleanup
   const instance = docker.getContainer(containerInfo.Id);

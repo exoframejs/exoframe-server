@@ -1,0 +1,11 @@
+{
+  "name": "test-additional-labels",
+  "domain": false,
+  "project": "simple-html",
+  "restart": "no",
+  "traefikPorts": {
+    "3000/tcp": {},
+    "3000/udp": {}
+  },
+  "middlewares": ["my-test@docker"]
+}
