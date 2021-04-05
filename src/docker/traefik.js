@@ -192,7 +192,6 @@ exports.initTraefik = async exoNet => {
       PortBindings: {
         '80/tcp': [{HostPort: '80'}],
         '443/tcp': [{HostPort: '443'}],
-        ...(config.traefikPorts || {}), // custom traefik ports
       },
     },
   });
