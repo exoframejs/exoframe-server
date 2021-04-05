@@ -698,6 +698,7 @@ test('Should have additional labels', async done => {
 
   done();
 });
+
 test('Should have additional ports', async done => {
   const options = Object.assign(optionsBase, {
     payload: streamAdditionalPorts,
@@ -720,7 +721,8 @@ test('Should have additional ports', async done => {
   const allContainers = await docker.listContainers();
   const containerInfo = allContainers.find(c => c.Names.includes(completeDeployments[0].Name));
   expect(containerInfo).toBeDefined();
-  expect(containerInfo.Ports).toEqual(['3000/tcp', '3000/udp']);
+  expect(containerInfo.Ports.find(p => p.PrivatePort === 3000)).toBeTruthy();
+  expect(containerInfo.Ports.find(p => p.PublicPort === 3000)).toBeTruthy();
 
   // cleanup
   const instance = docker.getContainer(containerInfo.Id);
