@@ -31,6 +31,8 @@ const testConfig = {
   traefikPorts: {
     '80/tcp': {},
     '443/tcp': {},
+    '3000/tcp': {},
+    '3000/udp': {},
   },
   exoframeNetwork: 'exoframe',
   publicKeysPath,
