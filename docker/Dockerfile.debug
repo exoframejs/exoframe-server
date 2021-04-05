@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:lts-alpine
 
 # install required libs, docker-compose and yarn
 RUN apt-get update && apt-get install python-pip -y && pip install docker-compose
