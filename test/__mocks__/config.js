@@ -28,6 +28,10 @@ const testConfig = {
   traefikImage: 'traefik:latest',
   traefikName: 'exoframe-traefik',
   traefikArgs: [],
+  traefikPorts: {
+    '3000/tcp': [{HostPort: '3000'}],
+    '3000/udp': [{HostPort: '3000'}],
+  },
   exoframeNetwork: 'exoframe',
   publicKeysPath,
 };

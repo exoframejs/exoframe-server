@@ -114,7 +114,7 @@ test('Should deploy traefik', async done => {
   expect(container.Labels['exoframe.deployment']).toEqual('exo-traefik');
   expect(container.Labels['exoframe.user']).toEqual('admin');
   expect(container.NetworkSettings.Networks.exoframe).toBeDefined();
-  expect(container.Ports.length).toEqual(2);
+  expect(container.Ports.length).toEqual(4);
   expect(container.Ports.find(p => p.PrivatePort === 443)).toBeTruthy();
   expect(container.Ports.find(p => p.PublicPort === 443)).toBeTruthy();
   expect(container.Ports.find(p => p.PrivatePort === 80)).toBeTruthy();

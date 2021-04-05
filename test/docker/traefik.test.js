@@ -56,11 +56,17 @@ describe('Traefik', () => {
   });
 
   test('Should open traefik ports', () => {
-    expect(container.Ports.length).toEqual(2);
+    expect(container.Ports.length).toEqual(4);
     expect(container.Ports.find(p => p.PrivatePort === 443)).toBeTruthy();
     expect(container.Ports.find(p => p.PublicPort === 443)).toBeTruthy();
     expect(container.Ports.find(p => p.PrivatePort === 80)).toBeTruthy();
     expect(container.Ports.find(p => p.PublicPort === 80)).toBeTruthy();
+  });
+
+  test('Should open additional traefik ports', () => {
+    expect(container.Ports.length).toEqual(4);
+    expect(container.Ports.find(p => p.PrivatePort === 3000)).toBeTruthy();
+    expect(container.Ports.find(p => p.PublicPort === 3000)).toBeTruthy();
   });
 
   test('Should mount config folder to traefik', () => {
