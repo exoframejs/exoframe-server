@@ -1,9 +1,8 @@
 FROM node:lts-alpine
 
 # install docker-compose
-RUN apk update \
-  && apk add --no-cache py-pip python-dev \
-  libffi-dev openssl-dev gcc libc-dev make \
+RUN apk add --no-cache py-pip python-dev \
+  libffi-dev openssl-dev gcc libc-dev make python3 \
   && pip install docker-compose
 
 # create new workdir
