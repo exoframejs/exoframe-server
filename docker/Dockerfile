@@ -1,7 +1,7 @@
 FROM node:lts-alpine
 
 # install docker-compose
-RUN apk add --no-cache py-pip python-dev \
+RUN apk add --no-cache py3-pip python3-dev \
   libffi-dev openssl-dev gcc libc-dev make python3 \
   && pip install docker-compose
 
