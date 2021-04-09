@@ -40,13 +40,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # Test docker builds
-      - name: build docker image
+      - name: build docker images
         run: |
-          REF=${GITHUB_REF##*/}
-          TAG=$REF
-          DEBUG_TAG="debug_$TAG"
-          VERSION=$(node -pe "require('./package.json').version")
           # Build docker image
-          docker build -f docker/Dockerfile --quiet --cache-from $IMAGE_NAME:$TAG --label "version=$VERSION" -t $IMAGE_NAME:$TAG .
+          docker build -f docker/Dockerfile --quiet .
           # Build debug docker image
-          docker build -f docker/Dockerfile.debug --quiet --cache-from $IMAGE_NAME:$DEBUG_TAG --label "version=$VERSION" -t $IMAGE_NAME:$DEBUG_TAG .
+          docker build -f docker/Dockerfile.debug --quiet .
