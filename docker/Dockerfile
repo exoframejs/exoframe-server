@@ -2,7 +2,7 @@ FROM node:lts-alpine
 
 # install docker-compose
 RUN apk add curl
-RUN curl -L --fail https://github.com/docker/compose/releases/download/1.29.0/run.sh -o /usr/local/bin/docker-compose
+RUN curl -L --fail https://github.com/docker/compose/releases/latest/download/run.sh -o /usr/local/bin/docker-compose
 RUN chmod +x /usr/local/bin/docker-compose
 
 # create new workdir
