@@ -1,9 +1,7 @@
 FROM node:lts-alpine
 
 # install docker-compose
-RUN apk add curl
-RUN curl -L --fail https://github.com/docker/compose/releases/latest/download/run.sh -o /usr/local/bin/docker-compose
-RUN chmod +x /usr/local/bin/docker-compose
+RUN apk add --no-cache docker docker-compose
 
 # create folder and set it as workdir
 RUN mkdir -p /usr/src/app
