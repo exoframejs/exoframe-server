@@ -33,12 +33,6 @@ jobs:
       - name: test
         run: yarn test
 
-      # upload coverage
-      - name: Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
       # Test docker builds
       - name: build docker images
         run: |
@@ -46,3 +40,9 @@ jobs:
           docker build -f docker/Dockerfile --quiet .
           # Build debug docker image
           docker build -f docker/Dockerfile.debug --quiet .
+
+      # upload coverage
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
