@@ -1,9 +1,9 @@
 FROM node:lts-alpine
 
 # install required libs, docker-compose
-RUN apk add --no-cache py-pip python-dev \
-  libffi-dev openssl-dev gcc libc-dev make python3 \
-  && pip install docker-compose
+RUN apk add curl
+RUN curl -L --fail https://github.com/docker/compose/releases/download/1.29.0/run.sh -o /usr/local/bin/docker-compose
+RUN chmod +x /usr/local/bin/docker-compose
 
 # create folder and set it as workdir
 RUN mkdir -p /usr/src/app
