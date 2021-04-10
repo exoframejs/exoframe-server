@@ -33,7 +33,9 @@ jobs:
       - name: test
         run: yarn test
 
-      # Test docker builds
+      # Test builds
+      - name: build
+        run: yarn build
       - name: build docker images
         run: |
           # Build docker image
