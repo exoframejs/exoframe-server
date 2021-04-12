@@ -33,6 +33,16 @@ jobs:
       - name: test
         run: yarn test
 
+      # Test builds
+      - name: build
+        run: yarn build
+      - name: build docker images
+        run: |
+          # Build docker image
+          docker build -f docker/Dockerfile --quiet .
+          # Build debug docker image
+          docker build -f docker/Dockerfile.debug --quiet .
+
       # upload coverage
       - name: Coveralls
         uses: coverallsapp/github-action@master
