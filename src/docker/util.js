@@ -38,7 +38,7 @@ exports.pruneDocker = async () => {
   // TODO: re-enable pruneBuilder once fixed in dockerode
   // await docker.pruneBuilder();
   logger.debug('Running prune..');
-  const result = await Promise.all([docker.pruneImages(), docker.pruneVolumes()]);
+  const result = await Promise.all([docker.pruneImages({filters: {dangling: {false: true}}}), docker.pruneVolumes()]);
   logger.debug('Prune done:', result);
   return result;
 };
